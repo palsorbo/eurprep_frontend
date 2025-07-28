@@ -49,13 +49,13 @@ export default function TopicCard({
 
     return (
         <div
-            className={`bg-white rounded-xl shadow-sm border ${COLORS.neutral.slate.border} p-6 transition-all duration-200 cursor-pointer ${isSelected
-                ? `ring-2 ring-${COLORS.primary.blue[500]} border-${COLORS.primary.blue[500]} shadow-md`
-                : `${COLORS.neutral.slate.borderHover} hover:shadow-md`
+            className={`bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition-all duration-200 cursor-pointer ${isSelected
+                ? 'ring-2 ring-sky-500 border-sky-500 shadow-md'
+                : 'hover:border-slate-300 hover:shadow-md'
                 } ${className}`}
             onClick={() => {
                 if (navigateToTopic && trackId) {
-                    navigate(`/tracks/${trackId}/practice/${topic.id}`)
+                    navigate(`/app/tracks/${trackId}/practice/${topic.id}`)
                 } else if (onSelect) {
                     onSelect(topic)
                 }
@@ -66,7 +66,7 @@ export default function TopicCard({
             {/* Header with Category and Difficulty */}
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-2">
-                    <span className={`px-3 py-1 ${COLORS.neutral.slate[100]} ${COLORS.neutral.slate.textLight} text-sm font-medium rounded-full`}>
+                    <span className="px-3 py-1 bg-slate-100 text-slate-600 text-sm font-medium rounded-full">
                         {topic.category}
                     </span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1 ${difficultyColors.bg} ${difficultyColors.text}`}>
@@ -95,13 +95,13 @@ export default function TopicCard({
                         {topic.tags.slice(0, 3).map((tag, index) => (
                             <span
                                 key={index}
-                                className={`px-2 py-1 ${COLORS.primary.blue[50]} ${COLORS.primary.blue.text} text-xs rounded-full`}
+                                className="px-2 py-1 bg-sky-50 text-sky-700 text-xs rounded-full"
                             >
                                 {tag}
                             </span>
                         ))}
                         {topic.tags.length > 3 && (
-                            <span className={`px-2 py-1 ${COLORS.neutral.gray[50]} ${COLORS.neutral.gray.textLight} text-xs rounded-full`}>
+                            <span className="px-2 py-1 bg-gray-50 text-gray-500 text-xs rounded-full">
                                 +{topic.tags.length - 3} more
                             </span>
                         )}

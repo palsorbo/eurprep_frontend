@@ -1,28 +1,18 @@
 import { Link } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { DocumentHead } from '../lib/useDocumentHead'
 import { Target, Star, Zap, Heart, Users, TrendingUp, Award, Lightbulb, ArrowRight } from 'lucide-react'
 
 export default function AboutPage() {
     return (
         <>
-            <Helmet>
-                <title>About Eurprep - Empowering Careers Through Confident Communication</title>
-                <meta name="description"
-                    content="Learn about Eurprep's mission to democratize access to professional communication training. We help MBA aspirants, mass recruiters, government job seekers, and private job seekers master interview communication." />
-                <meta name="keywords"
-                    content="communication training, interview preparation, speech analysis, MBA interviews, technical interviews, government job preparation, career advancement" />
-
-                {/* Open Graph */}
-                <meta property="og:title" content="About Eurprep - Empowering Careers Through Confident Communication" />
-                <meta property="og:description"
-                    content="Learn about Eurprep's mission to democratize access to professional communication training." />
-                <meta property="og:type" content="website" />
-                <meta property="og:url" content="https://eurprep.com/about" />
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="About Eurprep - Empowering Careers Through Confident Communication" />
-                <meta name="twitter:description"
-                    content="Learn about Eurprep's mission to democratize access to professional communication training." />
-            </Helmet>
+            <DocumentHead
+                title="About Eurprep - Empowering Careers Through Confident Communication"
+                description="Learn about Eurprep's mission to democratize access to professional communication training. We help MBA aspirants, mass recruiters, government job seekers, and private job seekers master interview communication."
+                keywords="communication training, interview preparation, speech analysis, MBA interviews, technical interviews, government job preparation, career advancement"
+                ogTitle="About Eurprep - Empowering Careers Through Confident Communication"
+                ogDescription="Learn about Eurprep's mission to democratize access to professional communication training."
+                ogUrl="https://eurprep.com/about"
+            />
 
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
                 {/* Header */}

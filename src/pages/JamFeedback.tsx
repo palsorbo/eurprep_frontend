@@ -1,6 +1,7 @@
 
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Star,
   TrendingUp,
@@ -23,41 +24,43 @@ import DetailedExamples from '../components/feedback/DetailedExamples'
 import SkillProgress from '../components/feedback/SkillProgress'
 
 // Import types
-import type { FeedbackResponse } from '../lib/types/api'
+import type { FeedbackResponse } from '../lib/config'
 
 export default function JamFeedbackPage() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('overview')
   const [feedbackData, setFeedbackData] = useState<FeedbackResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const hasLoadedData = useRef(false)
 
   // Get feedback data from sessionStorage
   useEffect(() => {
+    // Prevent duplicate loading
+    if (hasLoadedData.current) {
+      return
+    }
+
     const loadFeedbackData = () => {
-      try {
-        console.log('Checking sessionStorage for jamFeedbackData...')
+          try {
         const storedData = sessionStorage.getItem('jamFeedbackData')
-        console.log('Stored data found:', !!storedData)
 
         if (storedData) {
-          console.log('Raw stored data:', storedData)
           const parsedResponse = JSON.parse(storedData)
-          console.log('Parsed response:', parsedResponse)
 
-          // Try to extract the data from the response
+          // Extract the data from the API response structure
           let parsedData: FeedbackResponse
 
-          if (parsedResponse.data) {
-            // If the response has a data field, use that
+          if (parsedResponse.success && parsedResponse.data) {
+          // API response format: { success: true, data: { ... } }
             parsedData = parsedResponse.data as FeedbackResponse
-            console.log('Extracted feedback data from response.data:', parsedData)
-          } else if (parsedResponse.analysis) {
-            // If the response is directly the feedback data
+          } else if (parsedResponse.analysis && parsedResponse.summary) {
+            // Direct feedback data format (fallback)
             parsedData = parsedResponse as FeedbackResponse
-            console.log('Using response directly as feedback data:', parsedData)
           } else {
-            console.error('Unexpected response structure:', parsedResponse)
             setError('Unexpected response structure. Please try recording again.')
+            setLoading(false)
+            hasLoadedData.current = true
             return
           }
 
@@ -66,40 +69,25 @@ export default function JamFeedbackPage() {
             setFeedbackData(parsedData)
             // Clear the stored data after retrieving it
             sessionStorage.removeItem('jamFeedbackData')
-            console.log('Cleared sessionStorage data')
-            return true // Indicate success
+            hasLoadedData.current = true
           } else {
-            console.error('Invalid feedback data structure:', parsedData)
             setError('Invalid feedback data structure. Please try recording again.')
-            return false
+            hasLoadedData.current = true
           }
         } else {
-          console.log('No stored data found, redirecting to dashboard...')
           // If no stored data, redirect to dashboard
-          window.location.href = '/dashboard'
-          return false
+          hasLoadedData.current = true
+          navigate('/app')
         }
       } catch (error) {
-        console.error('Error parsing feedback data:', error)
         setError('Failed to load feedback data. Please try recording again.')
-        return false
+        hasLoadedData.current = true
       } finally {
         setLoading(false)
       }
     }
 
-    // Try to load data immediately
-    const success = loadFeedbackData()
-
-    // Only retry if the first attempt failed
-    if (!success) {
-      const timer = setTimeout(() => {
-        console.log('Retrying to load feedback data...')
-        loadFeedbackData()
-      }, 500)
-
-      return () => clearTimeout(timer)
-    }
+    loadFeedbackData()
   }, [])
 
   const tabs = [
@@ -128,16 +116,35 @@ export default function JamFeedbackPage() {
     )
   }
 
-  if (error || !feedbackData) {
+  if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+        <div className="text-center max-w-md mx-auto p-6">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-slate-900 mb-2">Error Loading Feedback</h2>
-          <p className="text-slate-600 mb-4">{error || 'No feedback data available'}</p>
+          <p className="text-slate-600 mb-4">{error}</p>
           <button
-            onClick={() => window.location.href = '/dashboard'}
-            className="bg-sky-600 text-white px-6 py-2 rounded-lg hover:bg-sky-700 transition-colors"
+            onClick={() => navigate('/app')}
+            className="bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition-colors"
+          >
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+
+  if (!feedbackData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">No Feedback Data</h2>
+          <p className="text-slate-600 mb-4">No feedback data found. Please record a speech first.</p>
+          <button
+            onClick={() => navigate('/app')}
+            className="bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition-colors"
           >
             Return to Dashboard
           </button>

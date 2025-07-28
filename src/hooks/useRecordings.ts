@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth-context'
 
 export interface Recording {
@@ -36,17 +35,12 @@ export function useRecordings(): UseRecordingsReturn {
             setLoading(true)
             setError(null)
 
-            const { data, error: fetchError } = await supabase
-                .from('recordings')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false })
+            // Use localStorage instead of Supabase
+            const storageKey = `recordings_${user.id}`
+            const storedRecordings = localStorage.getItem(storageKey)
+            const recordings = storedRecordings ? JSON.parse(storedRecordings) : []
 
-            if (fetchError) {
-                throw fetchError
-            }
-
-            setRecordings(data || [])
+            setRecordings(recordings)
         } catch (err) {
             console.error('Error fetching recordings:', err)
             setError(err instanceof Error ? err.message : 'Failed to fetch recordings')
@@ -59,20 +53,24 @@ export function useRecordings(): UseRecordingsReturn {
         if (!user) return
 
         try {
-            const { data, error: insertError } = await supabase
-                .from('recordings')
-                .insert({
-                    ...recording,
-                    user_id: user.id
-                })
-                .select()
-                .single()
-
-            if (insertError) {
-                throw insertError
+            const newRecording: Recording = {
+                id: `local-${Date.now()}`,
+                user_id: user.id,
+                track_id: recording.track_id,
+                topic_id: recording.topic_id,
+                duration_seconds: recording.duration_seconds,
+                audio_url: recording.audio_url,
+                feedback_data: recording.feedback_data,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
             }
 
-            setRecordings(prev => [data, ...prev])
+            const updatedRecordings = [newRecording, ...recordings]
+            setRecordings(updatedRecordings)
+
+            // Save to localStorage
+            const storageKey = `recordings_${user.id}`
+            localStorage.setItem(storageKey, JSON.stringify(updatedRecordings))
         } catch (err) {
             console.error('Error adding recording:', err)
             throw err
@@ -81,16 +79,14 @@ export function useRecordings(): UseRecordingsReturn {
 
     const deleteRecording = async (id: string) => {
         try {
-            const { error: deleteError } = await supabase
-                .from('recordings')
-                .delete()
-                .eq('id', id)
+            const updatedRecordings = recordings.filter(recording => recording.id !== id)
+            setRecordings(updatedRecordings)
 
-            if (deleteError) {
-                throw deleteError
+            // Save to localStorage
+            if (user) {
+                const storageKey = `recordings_${user.id}`
+                localStorage.setItem(storageKey, JSON.stringify(updatedRecordings))
             }
-
-            setRecordings(prev => prev.filter(recording => recording.id !== id))
         } catch (err) {
             console.error('Error deleting recording:', err)
             throw err

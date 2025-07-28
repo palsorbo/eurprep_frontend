@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { DocumentHead } from '../lib/useDocumentHead'
 import {
     Target,
     Star,
@@ -94,42 +94,15 @@ export default function LandingPage() {
 
     return (
         <>
-            <Helmet>
-                <title>Eurprep - Master Confident Communication with AI-Powered Speech Analysis</title>
-                <meta name="description" content="Master the art of confident communication with AI-powered speech analysis. Perfect for MBA interviews, technical rounds, and professional presentations." />
-                <meta name="keywords" content="speech analysis, interview preparation, communication skills, MBA interviews, technical interviews, AI feedback" />
-
-                {/* Open Graph */}
-                <meta property="og:title" content="Eurprep - Master Confident Communication" />
-                <meta property="og:description" content="AI-powered speech analysis for interview preparation and communication skills improvement." />
-                <meta property="og:type" content="website" />
-                <meta property="og:url" content="https://eurprep.com" />
-                <meta property="og:image" content="/og-image.jpg" />
-
-                {/* Twitter */}
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="Eurprep - Master Confident Communication" />
-                <meta name="twitter:description" content="AI-powered speech analysis for interview preparation." />
-                <meta name="twitter:image" content="/og-image.jpg" />
-
-                {/* Structured Data */}
-                <script type="application/ld+json">
-                    {JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": "SoftwareApplication",
-                        "name": "Eurprep",
-                        "description": "AI-powered speech analysis for interview preparation and communication skills improvement",
-                        "url": "https://eurprep.com",
-                        "applicationCategory": "EducationalApplication",
-                        "operatingSystem": "Web Browser",
-                        "offers": {
-                            "@type": "Offer",
-                            "price": "0",
-                            "priceCurrency": "USD"
-                        }
-                    })}
-                </script>
-            </Helmet>
+            <DocumentHead
+                title="Eurprep - Master Confident Communication with AI-Powered Speech Analysis"
+                description="Master the art of confident communication with AI-powered speech analysis. Perfect for MBA interviews, technical rounds, and professional presentations."
+                keywords="speech analysis, interview preparation, communication skills, MBA interviews, technical interviews, AI feedback"
+                ogTitle="Eurprep - Master Confident Communication"
+                ogDescription="AI-powered speech analysis for interview preparation and communication skills improvement."
+                ogUrl="https://eurprep.com"
+                ogImage="/og-image.jpg"
+            />
 
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
                 {/* Header */}

@@ -30,7 +30,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (!authLoading && !user) {
-            navigate('/login')
+            navigate('/app/login')
         }
     }, [user, authLoading, navigate])
 
@@ -45,7 +45,7 @@ export default function Dashboard() {
             )
 
         if (lastPracticedTrack.length > 0) {
-            navigate(`/tracks/${lastPracticedTrack[0][0]}/practice`)
+            navigate(`/app/tracks/${lastPracticedTrack[0][0]}/practice`)
         }
     }
 
@@ -175,9 +175,9 @@ export default function Dashboard() {
                         <div className="flex items-center justify-between p-4 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
                             <div>
                                 <p className="text-sm font-medium text-gray-600">Average Score</p>
-                                <p className="text-2xl font-bold text-slate-900">
+                                <div className="text-2xl font-bold text-slate-900">
                                     {stats.averageScore > 0 ? `${stats.averageScore.toFixed(1)}/10` : <NotRatedYet />}
-                                </p>
+                                </div>
                             </div>
                             <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
                                 <BarChart3 className="w-6 h-6 text-purple-600" />

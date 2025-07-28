@@ -83,14 +83,14 @@ export default function AuthenticatedHeader({
                 <div className="flex items-center justify-between h-16">
                     {/* Left side - Logo and Navigation */}
                     <div className="flex items-center space-x-6">
-                        <Link to="/dashboard" className="hover:opacity-80 transition-opacity">
+                        <Link to="/app" className="hover:opacity-80 transition-opacity">
                             <Logo size="md" />
                         </Link>
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center space-x-6">
                             <Link
-                                to="/dashboard"
+                                to="/app"
                                 className="text-slate-700 hover:text-slate-900 transition-colors font-medium flex items-center space-x-2"
                             >
                                 <Home className="w-4 h-4" />
@@ -268,7 +268,7 @@ export default function AuthenticatedHeader({
 
                         <nav className="space-y-2">
                             <Link
-                                to="/dashboard"
+                                to="/app"
                                 className="flex items-center space-x-2 px-4 py-2 text-slate-700 hover:bg-slate-50 transition-colors rounded-lg"
                                 onClick={closeMenus}
                             >

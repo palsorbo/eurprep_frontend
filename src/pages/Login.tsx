@@ -14,12 +14,12 @@ export default function Login() {
 
         try {
             console.log('Starting Google OAuth...')
-            console.log('Redirect URL:', `${window.location.origin}/app/dashboard`)
+            console.log('Redirect URL:', `${window.location.origin}/app`)
 
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}/app/dashboard`,
+                    redirectTo: `${window.location.origin}/app`,
                     queryParams: {
                         access_type: 'offline',
                         prompt: 'consent'

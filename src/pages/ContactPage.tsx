@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
+import { DocumentHead } from '../lib/useDocumentHead'
 import { Target, Mail, MessageSquare, Star, ArrowRight } from 'lucide-react'
 
 export default function ContactPage() {
@@ -56,21 +56,14 @@ export default function ContactPage() {
 
     return (
         <>
-            <Helmet>
-                <title>Contact Us - Eurprep</title>
-                <meta name="description"
-                    content="Get in touch with Eurprep for support, feedback, or partnership opportunities. We're here to help with your communication training needs." />
-                <meta name="keywords" content="contact, support, feedback, communication training, interview preparation" />
-                <meta property="og:title" content="Contact Us - Eurprep" />
-                <meta property="og:description"
-                    content="Get in touch with Eurprep for support, feedback, or partnership opportunities." />
-                <meta property="og:type" content="website" />
-                <meta property="og:url" content="https://eurprep.com/contact" />
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="Contact Us - Eurprep" />
-                <meta name="twitter:description"
-                    content="Get in touch with Eurprep for support, feedback, or partnership opportunities." />
-            </Helmet>
+            <DocumentHead
+                title="Contact Us - Eurprep"
+                description="Get in touch with Eurprep for support, feedback, or partnership opportunities. We're here to help with your communication training needs."
+                keywords="contact, support, feedback, communication training, interview preparation"
+                ogTitle="Contact Us - Eurprep"
+                ogDescription="Get in touch with Eurprep for support, feedback, or partnership opportunities."
+                ogUrl="https://eurprep.com/contact"
+            />
 
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
                 {/* Header */}

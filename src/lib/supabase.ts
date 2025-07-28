@@ -46,7 +46,7 @@ export interface Feedback {
 }
 
 // Utility function to clear session and force fresh login
-export const clearSessionAndRedirect = async (redirectUrl: string = '/login') => {
+export const clearSessionAndRedirect = async (redirectUrl: string = '/app/login') => {
     await supabase.auth.signOut()
     // Clear any stored session data
     if (typeof window !== 'undefined') {

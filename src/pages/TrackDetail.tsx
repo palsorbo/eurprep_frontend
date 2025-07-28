@@ -42,12 +42,12 @@ export default function TrackOverview() {
         const currentTrack = getTrackById(trackId)
 
         if (!currentTrack) {
-            navigate('/dashboard')
+            navigate('/app')
             return
         }
 
         if (currentTrack.status === 'coming-soon') {
-            navigate('/dashboard')
+            navigate('/app')
             return
         }
 
@@ -63,7 +63,7 @@ export default function TrackOverview() {
     const checkUser = useCallback(async () => {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) {
-            navigate('/login')
+            navigate('/app/login')
             return
         }
         setUser(user as unknown as Record<string, unknown>)
@@ -132,7 +132,7 @@ export default function TrackOverview() {
 
     const getBreadcrumbItems = (): BreadcrumbItem[] => {
         const items: BreadcrumbItem[] = [
-            { label: 'Dashboard', href: '/dashboard', icon: Home }
+            { label: 'Dashboard', href: '/app', icon: Home }
         ]
 
         if (track) {

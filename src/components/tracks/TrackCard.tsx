@@ -34,7 +34,7 @@ export default function TrackCard({
 
     const handleTrackSelect = () => {
         if (isActive) {
-            navigate(`/tracks/${track.id}/practice`)
+            navigate(`/app/tracks/${track.id}/practice`)
         }
     }
 

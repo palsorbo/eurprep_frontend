@@ -44,11 +44,6 @@ function App() {
                 <Dashboard />
               </ProtectedRoute>
             } />
-            <Route path="/app/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
             <Route path="/app/tracks/:trackId" element={
               <ProtectedRoute>
                 <TrackDetail />

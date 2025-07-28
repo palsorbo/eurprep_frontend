@@ -22,7 +22,6 @@ export default defineConfig({
           router: ['react-router-dom'],
           supabase: ['@supabase/supabase-js'],
           ui: ['lucide-react', 'framer-motion'],
-          helmet: ['react-helmet-async'],
         },
         assetFileNames: (assetInfo) => {
           // Handle font files properly

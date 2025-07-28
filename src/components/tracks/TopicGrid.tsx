@@ -122,6 +122,7 @@ export default function TopicGrid({ topics, trackId, loading = false }: TopicGri
                         key={topic.id}
                         topic={topic}
                         trackId={trackId}
+                        navigateToTopic={true}
                     />
                 ))}
             </div>
