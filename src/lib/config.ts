@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-    BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090',
+    BASE_URL: import.meta.env.VITE_API_BASE_URL || process.env.VITE_API_BASE_URL,
     ENDPOINTS: {
         HEALTH: '/health',
         TRANSCRIBE: '/api/v1/transcribe',
