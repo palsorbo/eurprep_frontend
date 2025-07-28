@@ -1,8 +1,0 @@
-# Static assets - keep these at the top for performance
-/favicon.svg  /favicon.svg  200
-/site.webmanifest  /site.webmanifest  200
-/icon-192.png  /icon-192.png  200
-/assets/*  /assets/:splat  200
-
-# Single-page app fallback – rewrite all non-static routes to index.html
-/*  /index.html  200 
