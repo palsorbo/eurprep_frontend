@@ -6,6 +6,12 @@ import './index.css'
 // Lazy load components for better performance
 import { lazy, Suspense } from 'react'
 
+// Landing page components
+const LandingPage = lazy(() => import('./pages/LandingPage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const ContactPage = lazy(() => import('./pages/ContactPage'))
+
+// App components
 const Login = lazy(() => import('./pages/Login'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const TrackDetail = lazy(() => import('./pages/TrackDetail'))
@@ -23,44 +29,42 @@ const LoadingSpinner = () => (
 function App() {
   return (
     <AuthProvider>
-      <Router basename="/app">
+      <Router>
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
+            {/* Public landing pages */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
 
-            {/* Protected routes */}
-            <Route path="/" element={
+            {/* App routes */}
+            <Route path="/app/login" element={<Login />} />
+            <Route path="/app" element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
             } />
-
-            <Route path="/dashboard" element={
+            <Route path="/app/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
             } />
-
-            <Route path="/tracks/:trackId" element={
+            <Route path="/app/tracks/:trackId" element={
               <ProtectedRoute>
                 <TrackDetail />
               </ProtectedRoute>
             } />
-
-            <Route path="/tracks/:trackId/practice" element={
+            <Route path="/app/tracks/:trackId/practice" element={
               <ProtectedRoute>
                 <Practice />
               </ProtectedRoute>
             } />
-
-            <Route path="/tracks/:trackId/practice/:topicId" element={
+            <Route path="/app/tracks/:trackId/practice/:topicId" element={
               <ProtectedRoute>
                 <TopicPractice />
               </ProtectedRoute>
             } />
-
-            <Route path="/jam-feedback" element={
+            <Route path="/app/jam-feedback" element={
               <ProtectedRoute>
                 <JamFeedback />
               </ProtectedRoute>

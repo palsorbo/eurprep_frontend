@@ -1,0 +1,8 @@
+# Handle client-side routing
+/*    /index.html   200
+
+# Exclude static assets from redirects
+/assets/*  /assets/:splat  200
+/favicon.svg  /favicon.svg  200
+/site.webmanifest  /site.webmanifest  200
+/icon-192.png  /icon-192.png  200 

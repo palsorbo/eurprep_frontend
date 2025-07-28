@@ -5,7 +5,7 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/app/',
+  base: '/',
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
@@ -13,14 +13,16 @@ export default defineConfig({
   },
   build: {
     target: 'es2015',
-    outDir: 'dist/app',
+    outDir: 'dist',
     rollupOptions: {
       output: {
+        entryFileNames: 'assets/[name]-[hash].js',
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
           supabase: ['@supabase/supabase-js'],
           ui: ['lucide-react', 'framer-motion'],
+          helmet: ['react-helmet-async'],
         },
         assetFileNames: (assetInfo) => {
           // Handle font files properly

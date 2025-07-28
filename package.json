@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && npm run copy-static",
-    "copy-static": "cp -r public/*.html dist/ && cp -r public/_routes.json dist/ && cp -r public/favicon.svg dist/ && cp -r public/site.webmanifest dist/ && cp -r public/icon-192.png dist/ && rm -f dist/login.html && rm -f dist/app/about.html dist/app/contact.html dist/app/_routes.json dist/app/README.md dist/app/*.svg dist/app/*.png dist/app/*.webmanifest",
+    "build": "vite build && npm run copy-seo-files",
+    "copy-seo-files": "cp public/sitemap.xml public/robots.txt public/_routes.json public/_redirects dist/",
     "lint": "eslint .",
     "preview": "vite preview",
     "serve": "npx serve dist -p 3005"
@@ -20,6 +20,7 @@
     "lucide-react": "^0.526.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.7.1",
     "tailwind-merge": "^3.3.1"
   },
