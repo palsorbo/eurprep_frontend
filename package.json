@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && npm run copy-static",
-    "copy-static": "cp -r public/*.html dist/ && cp -r public/_routes.json dist/ && cp -r public/_redirects dist/ && cp -r public/favicon.svg dist/ && cp -r public/site.webmanifest dist/ && cp -r public/icon-192.png dist/ && rm -f dist/login.html && rm -f dist/app/about.html dist/app/contact.html dist/app/_routes.json dist/app/README.md dist/app/*.svg dist/app/*.png dist/app/*.webmanifest",
+    "copy-static": "cp -r public/*.html dist/ && cp -r public/_routes.json dist/ && cp -r public/favicon.svg dist/ && cp -r public/site.webmanifest dist/ && cp -r public/icon-192.png dist/ && rm -f dist/login.html && rm -f dist/app/about.html dist/app/contact.html dist/app/_routes.json dist/app/README.md dist/app/*.svg dist/app/*.png dist/app/*.webmanifest",
     "lint": "eslint .",
     "preview": "vite preview",
     "serve": "npx serve dist -p 3005"
