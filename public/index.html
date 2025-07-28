@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eurprep - Master Confident Communication with AI-Powered Speech Analysis</title>
+    <meta name="description"
+        content="Master the art of confident communication with AI-powered speech analysis. Perfect for MBA interviews, technical rounds, and professional presentations.">
+    <meta name="keywords"
+        content="speech analysis, interview preparation, communication skills, MBA interviews, technical interviews, AI feedback">
+    <meta property="og:title" content="Eurprep - Master Confident Communication">
+    <meta property="og:description"
+        content="AI-powered speech analysis for interview preparation and communication skills improvement.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://eurprep.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Eurprep - Master Confident Communication">
+    <meta name="twitter:description" content="AI-powered speech analysis for interview preparation.">
+
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom CSS Animations -->
+    <style>
+        /* Custom target ring animations */
+        .target-ring-expand {
+            animation: targetExpand 2s ease-out infinite;
+        }
+
+        .target-ring-pulse {
+            animation: targetPulse 1.5s ease-in-out infinite;
+        }
+
+        .target-ring-rotate {
+            animation: targetRotate 3s linear infinite;
+        }
+
+        .loading-target {
+            animation: loadingTarget 2s ease-in-out infinite;
+        }
+
+        @keyframes targetExpand {
+            0% {
+                transform: scale(0.3);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        @keyframes targetPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.75;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes targetRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes loadingTarget {
+
+            0%,
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            25% {
+                transform: scale(1.05) rotate(5deg);
+            }
+
+            50% {
+                transform: scale(1.1) rotate(0deg);
+            }
+
+            75% {
+                transform: scale(1.05) rotate(-5deg);
+            }
+        }
+
+        /* Hover effects */
+        .group:hover .group-hover\:translate-x-2 {
+            transform: translateX(0.5rem);
+        }
+
+        .group:hover .group-hover\:scale-110 {
+            transform: scale(1.1);
+        }
+
+        .group:hover .group-hover\:rotate-12 {
+            transform: rotate(12deg);
+        }
+
+        .group:hover .group-hover\:scale-105 {
+            transform: scale(1.05);
+        }
+
+        .group:hover .group-hover\:shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .group:hover .group-hover\:from-sky-600 {
+            background: linear-gradient(to bottom right, #0284c7, #0369a1);
+        }
+
+        .group:hover .group-hover\:to-sky-700 {
+            background: linear-gradient(to bottom right, #0284c7, #0369a1);
+        }
+
+        .group:hover .group-hover\:text-sky-600 {
+            color: #0284c7;
+        }
+
+        .group:hover .group-hover\:border-slate-300 {
+            border-color: #cbd5e1;
+        }
+
+        .group:hover .group-hover\:shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Transition classes */
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+
+        .transition-transform {
+            transition: transform 0.3s ease;
+        }
+
+        .transition-colors {
+            transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .duration-200 {
+            transition-duration: 200ms;
+        }
+
+        .duration-300 {
+            transition-duration: 300ms;
+        }
+
+        .duration-500 {
+            transition-duration: 500ms;
+        }
+
+        .ease-out {
+            transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        .ease-in-out {
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Transform utilities */
+        .transform {
+            transform: translateZ(0);
+        }
+
+        .hover\:-translate-y-1:hover {
+            transform: translateY(-0.25rem);
+        }
+
+        .hover\:scale-105:hover {
+            transform: scale(1.05);
+        }
+
+        .hover\:-translate-y-0\.5:hover {
+            transform: translateY(-0.125rem);
+        }
+
+        /* Shadow utilities */
+        .shadow-2xl {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .hover\:shadow-3xl:hover {
+            box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.3);
+        }
+
+        .hover\:shadow-xl:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+    <!-- Header -->
+    <nav class="w-full py-4 px-6 bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <a href="index.html" class="hover:opacity-80 transition-opacity">
+                <div class="flex items-center space-x-2 group">
+                    <div
+                        class="w-8 h-8 bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg flex items-center justify-center shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 group-hover:from-sky-600 group-hover:to-sky-700">
+                        <i data-lucide="target"
+                            class="w-5 h-5 text-white transition-transform duration-300 group-hover:rotate-12"></i>
+                    </div>
+                    <span
+                        class="text-xl font-bold tracking-tight text-slate-800 transition-colors duration-300 group-hover:text-sky-600">
+                        Eurprep
+                    </span>
+                </div>
+            </a>
+
+            <div class="flex items-center space-x-4">
+                <a href="/app/login" class="text-slate-700 hover:text-slate-900 transition-colors font-medium">
+                    Sign In
+                </a>
+                <a href="/app/login"
+                    class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-xl hover:from-orange-600 hover:to-red-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    Get Started
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative px-6 py-20 lg:py-32">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="mb-8">
+                <span
+                    class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-sky-100 text-sky-800 mb-6">
+                    <i data-lucide="star" class="w-4 h-4 mr-2"></i>
+                    Used by 100+ freshers to crack TCS, Infosys & MBA interviews
+                </span>
+            </div>
+
+            <h1 class="text-4xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+                Speak for 1 Minute.
+                <br>
+                <span class="text-sky-600">Get Job-Winning Feedback!</span>
+            </h1>
+
+            <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+                Master the art of confident communication with AI-powered speech analysis.
+                Perfect for MBA interviews, technical rounds, and professional presentations.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                <a href="/app/login"
+                    class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-slate-900 px-10 py-5 rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 font-bold text-xl flex items-center group shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 hover:scale-105">
+                    Start Practicing for Free
+                    <i data-lucide="arrow-right"
+                        class="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform duration-300"></i>
+                </a>
+                <button
+                    class="flex items-center space-x-2 text-slate-700 hover:text-slate-900 transition-colors bg-white px-6 py-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-lg">
+                    <i data-lucide="play" class="w-5 h-5"></i>
+                    <span class="font-medium">Watch Demo</span>
+                </button>
+            </div>
+
+            <div class="flex items-center justify-center space-x-8 text-sm text-gray-500">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="users" class="w-4 h-4 text-green-500"></i>
+                    <span>1000+ Users</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="target" class="w-4 h-4 text-green-500"></i>
+                    <span class="text-green-600 font-semibold">95% Success Rate</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="trending-up" class="w-4 h-4 text-green-500"></i>
+                    <span>Instant Feedback</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="px-6 py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                    Everything You Need to Ace Your Interviews
+                </h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    From MBA group discussions to technical interviews, we've got you covered with comprehensive speech
+                    analysis.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div
+                    class="p-6 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:shadow-lg group">
+                    <div class="mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <!-- AnimatedTarget Component -->
+                        <div class="relative w-24 h-24">
+                            <div
+                                class="absolute inset-0 rounded-full border-2 border-sky-500 target-ring-expand opacity-75">
+                            </div>
+                            <div class="absolute inset-2 rounded-full border-2 border-sky-400 target-ring-expand opacity-50"
+                                style="animation-delay: 0.3s;"></div>
+                            <div class="absolute inset-4 rounded-full border-2 border-sky-300 target-ring-expand opacity-25"
+                                style="animation-delay: 0.6s;"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div
+                                    class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg p-2 shadow-lg loading-target">
+                                    <i data-lucide="target" class="w-8 h-8 text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 mb-2">One-Minute Practice</h3>
+                    <p class="text-gray-600">
+                        Practice speaking for exactly one minute on various topics. Perfect for interview preparation
+                        and public speaking.
+                    </p>
+                </div>
+
+                <div
+                    class="p-6 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:shadow-lg">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="target" class="w-6 h-6 text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 mb-2">AI-Powered Feedback</h3>
+                    <p class="text-gray-600">
+                        Get instant feedback on grammar, vocabulary, fluency, and filler words. Improve with every
+                        practice session.
+                    </p>
+                </div>
+
+                <div
+                    class="p-6 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:shadow-lg">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="trending-up" class="w-6 h-6 text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 mb-2">Progress Tracking</h3>
+                    <p class="text-gray-600">
+                        Track your improvement over time with detailed analytics and performance insights.
+                    </p>
+                </div>
+
+                <div
+                    class="p-6 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:shadow-lg">
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="users" class="w-6 h-6 text-orange-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 mb-2">Interview Topics</h3>
+                    <p class="text-gray-600">
+                        Practice with industry-specific topics for MBA, technical, and government job interviews.
+                    </p>
+                </div>
+
+                <div
+                    class="p-6 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:shadow-lg">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="star" class="w-6 h-6 text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 mb-2">Confidence Building</h3>
+                    <p class="text-gray-600">
+                        Build confidence through regular practice and positive reinforcement from detailed feedback.
+                    </p>
+                </div>
+
+                <div
+                    class="p-6 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:shadow-lg">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                        <i data-lucide="play" class="w-6 h-6 text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-slate-900 mb-2">Mobile Ready</h3>
+                    <p class="text-gray-600">
+                        Practice anywhere, anytime with our mobile-optimized platform. Perfect for on-the-go
+                        preparation.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="px-6 py-20 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                    What Our Users Say
+                </h2>
+                <p class="text-xl text-gray-600">
+                    Join thousands of successful candidates who transformed their communication skills.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-yellow-400">
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        "This platform was a game-changer for my MBA interviews. The instant feedback helped me identify
+                        and fix my filler words."
+                    </p>
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-slate-200 rounded-full mr-3"></div>
+                        <div>
+                            <p class="font-semibold text-slate-900">Anjali Sharma</p>
+                            <p class="text-sm text-gray-500">IIM-A Aspirant</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-yellow-400">
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        "The technical vocabulary feedback helped me ace my TCS interview. Highly recommended for
+                        freshers!"
+                    </p>
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-slate-200 rounded-full mr-3"></div>
+                        <div>
+                            <p class="font-semibold text-slate-900">Rahul Kumar</p>
+                            <p class="text-sm text-gray-500">TCS Employee</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-yellow-400">
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        "Perfect for UPSC preparation. The current affairs topics and formal language feedback are
+                        excellent."
+                    </p>
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-slate-200 rounded-full mr-3"></div>
+                        <div>
+                            <p class="font-semibold text-slate-900">Priya Patel</p>
+                            <p class="text-sm text-gray-500">UPSC Aspirant</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="px-6 py-20 bg-gradient-to-r from-slate-800 to-slate-900">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6 text-white">
+                Ready to Transform Your Communication Skills?
+            </h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto text-slate-200">
+                Join thousands of successful candidates and start your journey to confident communication today.
+            </p>
+            <a href="/app/login"
+                class="inline-flex items-center px-10 py-5 rounded-xl transition-all duration-300 font-bold text-xl group shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 hover:scale-105 bg-gradient-to-r from-yellow-400 to-yellow-500 text-slate-900 hover:from-yellow-500 hover:to-yellow-600">
+                Start Practicing for Free
+                <i data-lucide="arrow-right"
+                    class="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform duration-300"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="px-6 py-12 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="md:col-span-1">
+                    <div class="mb-4">
+                        <div class="flex items-center space-x-2">
+                            <div
+                                class="w-8 h-8 bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg flex items-center justify-center shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 group-hover:from-sky-600 group-hover:to-sky-700">
+                                <i data-lucide="target"
+                                    class="w-5 h-5 text-white transition-transform duration-300 group-hover:rotate-12"></i>
+                            </div>
+                            <span
+                                class="text-xl font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-sky-600">
+                                Eurprep
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-slate-300">
+                        Master the art of confident communication with AI-powered speech analysis.
+                    </p>
+                </div>
+
+                <div class="md:col-span-1">
+                    <h3 class="font-semibold mb-4 text-white">Product</h3>
+                    <ul class="space-y-2 text-slate-300">
+                        <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
+                    </ul>
+                </div>
+
+                <div class="md:col-span-1">
+                    <h3 class="font-semibold mb-4 text-white">Company</h3>
+                    <ul class="space-y-2 text-slate-300">
+                        <li><a href="about.html" class="hover:text-white transition-colors">About</a></li>
+                    </ul>
+                </div>
+
+                <div class="md:col-span-1">
+                    <h3 class="font-semibold mb-4 text-white">Support</h3>
+                    <ul class="space-y-2 text-slate-300">
+                        <li><a href="contact.html" class="hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400">
+                <p>&copy; 2024 Eurprep. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

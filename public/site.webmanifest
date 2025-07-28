@@ -1,0 +1,17 @@
+{
+    "name": "Eurprep - Master Interview Communication",
+    "short_name": "Eurprep",
+    "description": "Master the art of confident communication with AI-powered speech analysis",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f8fafc",
+    "theme_color": "#0ea5e9",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}

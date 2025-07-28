@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Eurprep</title>
+    <meta name="description"
+        content="Get in touch with Eurprep for support, feedback, or partnership opportunities. We're here to help with your communication training needs.">
+    <meta name="keywords" content="contact, support, feedback, communication training, interview preparation">
+    <meta property="og:title" content="Contact Us - Eurprep">
+    <meta property="og:description"
+        content="Get in touch with Eurprep for support, feedback, or partnership opportunities.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://eurprep.com/contact">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Contact Us - Eurprep">
+    <meta name="twitter:description"
+        content="Get in touch with Eurprep for support, feedback, or partnership opportunities.">
+
+    <!-- Favicon -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom CSS Animations -->
+    <style>
+        /* Custom target ring animations */
+        .target-ring-expand {
+            animation: targetExpand 2s ease-out infinite;
+        }
+
+        .target-ring-pulse {
+            animation: targetPulse 1.5s ease-in-out infinite;
+        }
+
+        .target-ring-rotate {
+            animation: targetRotate 3s linear infinite;
+        }
+
+        .loading-target {
+            animation: loadingTarget 2s ease-in-out infinite;
+        }
+
+        @keyframes targetExpand {
+            0% {
+                transform: scale(0.3);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        @keyframes targetPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.75;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes targetRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes loadingTarget {
+
+            0%,
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            25% {
+                transform: scale(1.05) rotate(5deg);
+            }
+
+            50% {
+                transform: scale(1.1) rotate(0deg);
+            }
+
+            75% {
+                transform: scale(1.05) rotate(-5deg);
+            }
+        }
+
+        /* Hover effects */
+        .group:hover .group-hover\:translate-x-2 {
+            transform: translateX(0.5rem);
+        }
+
+        .group:hover .group-hover\:scale-110 {
+            transform: scale(1.1);
+        }
+
+        .group:hover .group-hover\:rotate-12 {
+            transform: rotate(12deg);
+        }
+
+        .group:hover .group-hover\:scale-105 {
+            transform: scale(1.05);
+        }
+
+        .group:hover .group-hover\:shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .group:hover .group-hover\:from-sky-600 {
+            background: linear-gradient(to bottom right, #0284c7, #0369a1);
+        }
+
+        .group:hover .group-hover\:to-sky-700 {
+            background: linear-gradient(to bottom right, #0284c7, #0369a1);
+        }
+
+        .group:hover .group-hover\:text-sky-600 {
+            color: #0284c7;
+        }
+
+        .group:hover .group-hover\:border-slate-300 {
+            border-color: #cbd5e1;
+        }
+
+        .group:hover .group-hover\:shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Transition classes */
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+
+        .transition-transform {
+            transition: transform 0.3s ease;
+        }
+
+        .transition-colors {
+            transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .duration-200 {
+            transition-duration: 200ms;
+        }
+
+        .duration-300 {
+            transition-duration: 300ms;
+        }
+
+        .duration-500 {
+            transition-duration: 500ms;
+        }
+
+        .ease-out {
+            transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        .ease-in-out {
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Transform utilities */
+        .transform {
+            transform: translateZ(0);
+        }
+
+        .hover\:-translate-y-1:hover {
+            transform: translateY(-0.25rem);
+        }
+
+        .hover\:scale-105:hover {
+            transform: scale(1.05);
+        }
+
+        .hover\:-translate-y-0\.5:hover {
+            transform: translateY(-0.125rem);
+        }
+
+        /* Shadow utilities */
+        .shadow-2xl {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .hover\:shadow-3xl:hover {
+            box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.3);
+        }
+
+        .hover\:shadow-xl:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Email obfuscation */
+        .email-obfuscated {
+            font-family: monospace;
+            letter-spacing: 0.1em;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-white">
+    <!-- Header -->
+    <nav class="w-full py-4 px-6 bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <a href="index.html" class="hover:opacity-80 transition-opacity">
+                <div class="flex items-center space-x-2 group">
+                    <div
+                        class="w-8 h-8 bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg flex items-center justify-center shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 group-hover:from-sky-600 group-hover:to-sky-700">
+                        <i data-lucide="target"
+                            class="w-5 h-5 text-white transition-transform duration-300 group-hover:rotate-12"></i>
+                    </div>
+                    <span
+                        class="text-xl font-bold tracking-tight text-slate-800 transition-colors duration-300 group-hover:text-sky-600">
+                        Eurprep
+                    </span>
+                </div>
+            </a>
+
+            <div class="flex items-center space-x-4">
+                <a href="/app/login" class="text-slate-700 hover:text-slate-900 transition-colors font-medium">
+                    Sign In
+                </a>
+                <a href="/app/login"
+                    class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-xl hover:from-orange-600 hover:to-red-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    Get Started
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative px-6 py-20 lg:py-32">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="mb-8">
+                <span
+                    class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-sky-100 text-sky-800 mb-6">
+                    <i data-lucide="message-circle" class="w-4 h-4 mr-2"></i>
+                    We'd love to hear from you!
+                </span>
+            </div>
+
+            <h1 class="text-4xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+                Get in Touch
+                <br>
+                <span class="text-sky-600">We're Here to Help!</span>
+            </h1>
+
+            <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
+                Have questions about our platform? Need support with your practice sessions?
+                Want to share feedback or discuss partnership opportunities? We'd love to hear from you.
+            </p>
+
+            <!-- Email Display with Bot Protection -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 max-w-md mx-auto mb-12">
+                <div class="flex items-center justify-center mb-4">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-r from-sky-500 to-sky-600 rounded-full flex items-center justify-center">
+                        <i data-lucide="mail" class="w-8 h-8 text-white"></i>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">
+                    Email Us
+                </h3>
+
+                <p class="text-sm text-gray-600 mb-6">
+                    For support, feedback, or general inquiries
+                </p>
+
+                <!-- Bot-Protected Email Display -->
+                <div class="relative">
+                    <div class="text-2xl font-bold text-sky-600 cursor-pointer hover:text-sky-700 transition-colors duration-200 select-none"
+                        id="email-display" data-email="hello@eurprep.com" onclick="copyToClipboard()"
+                        title="Click to copy email address">
+                        <!-- Email displayed with CSS protection -->
+                        <span class="email-obfuscated">
+                            h<span style="opacity: 0;">x</span>ello@eurprep.com
+                        </span>
+                    </div>
+
+                    <div class="text-xs text-gray-500 mt-2">
+                        Click to copy • Protected from bots
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto mb-12">
+                <div
+                    class="text-center p-6 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:shadow-lg">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                        <i data-lucide="message-circle" class="w-6 h-6 text-green-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">Support</h3>
+                    <p class="text-gray-600">
+                        Technical issues, account problems, or platform questions
+                    </p>
+                </div>
+
+                <div
+                    class="text-center p-6 rounded-xl border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:shadow-lg">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                        <i data-lucide="star" class="w-6 h-6 text-purple-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">Feedback</h3>
+                    <p class="text-gray-600">
+                        Suggestions, feature requests, or general feedback
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="px-6 py-20 bg-gradient-to-r from-slate-800 to-slate-900">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6 text-white">
+                Ready to Start Practicing?
+            </h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto text-slate-200">
+                While you wait for our response, why not start improving your communication skills today?
+            </p>
+            <a href="/app/login"
+                class="inline-flex items-center px-10 py-5 rounded-xl transition-all duration-300 font-bold text-xl group shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 hover:scale-105 bg-gradient-to-r from-yellow-400 to-yellow-500 text-slate-900 hover:from-yellow-500 hover:to-yellow-600">
+                Start Practicing Now
+                <i data-lucide="arrow-right"
+                    class="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform duration-300"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="px-6 py-12 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="md:col-span-1">
+                    <div class="mb-4">
+                        <div class="flex items-center space-x-2">
+                            <div
+                                class="w-8 h-8 bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg flex items-center justify-center shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 group-hover:from-sky-600 group-hover:to-sky-700">
+                                <i data-lucide="target"
+                                    class="w-5 h-5 text-white transition-transform duration-300 group-hover:rotate-12"></i>
+                            </div>
+                            <span
+                                class="text-xl font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-sky-600">
+                                Eurprep
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-slate-300">
+                        Master the art of confident communication with AI-powered speech analysis.
+                    </p>
+                </div>
+
+                <div class="md:col-span-1">
+                    <h3 class="font-semibold mb-4 text-white">Product</h3>
+                    <ul class="space-y-2 text-slate-300">
+                        <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
+                    </ul>
+                </div>
+
+                <div class="md:col-span-1">
+                    <h3 class="font-semibold mb-4 text-white">Company</h3>
+                    <ul class="space-y-2 text-slate-300">
+                        <li><a href="about.html" class="hover:text-white transition-colors">About</a></li>
+                    </ul>
+                </div>
+
+                <div class="md:col-span-1">
+                    <h3 class="font-semibold mb-4 text-white">Support</h3>
+                    <ul class="space-y-2 text-slate-300">
+                        <li><a href="contact.html" class="hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400">
+                <p>&copy; 2024 Eurprep. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+
+        // Email copying functionality
+        function copyToClipboard() {
+            const email = 'hello@eurprep.com';
+
+            // Try to use the modern clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(email).then(() => {
+                    showCopyFeedback();
+                }).catch(() => {
+                    // Fallback for older browsers
+                    fallbackCopyTextToClipboard(email);
+                });
+            } else {
+                // Fallback for older browsers
+                fallbackCopyTextToClipboard(email);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            textArea.style.opacity = "0";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showCopyFeedback();
+                }
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        function showCopyFeedback() {
+            const element = document.getElementById('email-display');
+            if (element) {
+                const originalText = element.innerHTML;
+                const originalClass = element.className;
+
+                element.innerHTML = '<span class="email-obfuscated">Copied!</span>';
+                element.className = 'text-2xl font-bold text-green-600 cursor-pointer transition-colors duration-200 select-none';
+
+                setTimeout(() => {
+                    element.innerHTML = originalText;
+                    element.className = originalClass;
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+
+</html>

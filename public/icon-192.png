@@ -1,0 +1,6 @@
+# This is a placeholder for icon-192.png
+# You'll need to convert the favicon.svg to PNG format at 192x192 pixels
+# You can use online tools like:
+# - https://convertio.co/svg-png/
+# - https://favicon.io/favicon-converter/
+# - Or use a tool like ImageMagick: convert -resize 192x192 favicon.svg icon-192.png 
