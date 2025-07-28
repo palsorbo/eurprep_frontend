@@ -61,4 +61,8 @@ export const clearSessionAndRedirect = async (redirectUrl: string = '/app/login'
         sessionStorage.clear()
     }
     window.location.href = redirectUrl
-} 
+}
+
+// Debug: Log environment variables to check if they're loaded at runtime
+console.log("Runtime VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
+console.log("Runtime VITE_SUPABASE_ANON_KEY:", import.meta.env.VITE_SUPABASE_ANON_KEY);
