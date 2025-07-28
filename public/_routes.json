@@ -15,7 +15,52 @@
             "dest": "/assets/*"
         },
         {
-            "src": "/*",
+            "src": "/app/*",
+            "dest": "/index.html",
+            "status": 200
+        },
+        {
+            "src": "/dashboard/*",
+            "dest": "/index.html",
+            "status": 200
+        },
+        {
+            "src": "/practice/*",
+            "dest": "/index.html",
+            "status": 200
+        },
+        {
+            "src": "/tracks/*",
+            "dest": "/index.html",
+            "status": 200
+        },
+        {
+            "src": "/topics/*",
+            "dest": "/index.html",
+            "status": 200
+        },
+        {
+            "src": "/login",
+            "dest": "/index.html",
+            "status": 200
+        },
+        {
+            "src": "/about",
+            "dest": "/index.html",
+            "status": 200
+        },
+        {
+            "src": "/contact",
+            "dest": "/index.html",
+            "status": 200
+        },
+        {
+            "src": "/profile",
+            "dest": "/index.html",
+            "status": 200
+        },
+        {
+            "src": "/settings",
             "dest": "/index.html",
             "status": 200
         }
