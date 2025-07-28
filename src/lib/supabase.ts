@@ -1,5 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
+// Debug: Log environment variables to check if they're loaded
+console.log('Environment variables check:', {
+    VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+    VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ? '***PRESENT***' : 'MISSING',
+    allEnv: import.meta.env
+})
+
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
