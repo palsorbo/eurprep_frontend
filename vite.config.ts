@@ -4,6 +4,7 @@ import { resolve } from 'path'
 
 console.log("Build-time VITE_SUPABASE_URL:", process.env.VITE_SUPABASE_URL);
 console.log("Build-time VITE_SUPABASE_ANON_KEY:", process.env.VITE_SUPABASE_ANON_KEY);
+console.log("Build-time :", process.env);
 
 // https://vitejs.dev/config/
 export default defineConfig({
