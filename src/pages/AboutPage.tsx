@@ -1,8 +1,15 @@
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { DocumentHead } from '../lib/useDocumentHead'
+import { useAuth } from '../lib/auth-context'
 import { Target, Star, Zap, Heart, Users, TrendingUp, Award, Lightbulb, ArrowRight } from 'lucide-react'
 
 export default function AboutPage() {
+    const { user, loading } = useAuth()
+
+    // Redirect authenticated users to the app
+    if (!loading && user) {
+        return <Navigate to="/app" replace />
+    }
     return (
         <>
             <DocumentHead

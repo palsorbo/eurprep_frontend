@@ -1,10 +1,17 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { DocumentHead } from '../lib/useDocumentHead'
+import { useAuth } from '../lib/auth-context'
 import { Target, Mail, MessageSquare, Star, ArrowRight } from 'lucide-react'
 
 export default function ContactPage() {
+    const { user, loading } = useAuth()
     const [emailCopied, setEmailCopied] = useState(false)
+
+    // Redirect authenticated users to the app
+    if (!loading && user) {
+        return <Navigate to="/app" replace />
+    }
 
     const copyToClipboard = async () => {
         const email = 'hello@eurprep.com'

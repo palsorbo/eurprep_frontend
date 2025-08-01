@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { DocumentHead } from '../lib/useDocumentHead'
+import { useAuth } from '../lib/auth-context'
 import {
     Target,
     Star,
@@ -74,14 +75,16 @@ const Testimonial = ({ name, role, content }: TestimonialProps) => (
 )
 
 export default function LandingPage() {
+    const { user, loading } = useAuth()
+
     useEffect(() => {
         // Initialize any third-party scripts if needed
         const script = document.createElement('script')
         script.src = 'https://unpkg.com/lucide@latest'
         script.onload = () => {
-            // @ts-ignore
+            // @ts-expect-error - lucide is loaded dynamically
             if (window.lucide) {
-                // @ts-ignore
+                // @ts-expect-error - lucide methods are available after loading
                 window.lucide.createIcons()
             }
         }
@@ -91,6 +94,11 @@ export default function LandingPage() {
             document.head.removeChild(script)
         }
     }, [])
+
+    // Redirect authenticated users to the app
+    if (!loading && user) {
+        return <Navigate to="/app" replace />
+    }
 
     return (
         <>

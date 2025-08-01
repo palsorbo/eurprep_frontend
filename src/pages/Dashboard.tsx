@@ -104,14 +104,14 @@ export default function Dashboard() {
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Link
-                                to="/tracks/jam/practice"
+                                to="/app/tracks/jam/practice"
                                 className={`${COLORS.primary.yellow.gradient} ${COLORS.primary.yellow.textDark} px-6 py-3 rounded-lg ${COLORS.primary.yellow.gradientHover} transition-all duration-300 font-bold flex items-center justify-center space-x-2 hover:shadow-lg transform hover:-translate-y-1 hover:scale-105`}
                             >
                                 <Play className="w-5 h-5" />
                                 <span>Start JAM Practice</span>
                             </Link>
                             <Link
-                                to="/tracks/jam"
+                                to="/app/tracks/jam"
                                 className="px-6 py-3 border-2 border-yellow-400 text-yellow-700 rounded-lg font-bold hover:bg-yellow-50 transition-all duration-300 flex items-center justify-center"
                             >
                                 Learn More
@@ -135,7 +135,7 @@ export default function Dashboard() {
                         <h2 className="text-xl font-semibold text-slate-900">Your Progress</h2>
                         <div className="flex items-center space-x-4">
                             <Link
-                                to="/jam-feedback"
+                                to="/app/jam-feedback"
                                 className="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-sky-600 hover:to-blue-700 transition-all duration-200 font-medium text-sm shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                             >
                                 Get Feedback
@@ -229,7 +229,7 @@ export default function Dashboard() {
                                     Duration: {formatTime(stats.totalPracticeTime)}
                                 </p>
                                 <Link
-                                    to="/jam-feedback"
+                                    to="/app/jam-feedback"
                                     className="text-sky-600 hover:text-sky-700 text-sm font-medium"
                                 >
                                     View Feedback
