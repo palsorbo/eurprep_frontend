@@ -1,6 +1,6 @@
 
 
-import { CheckCircle, Circle, AlertCircle, Star, Zap, Target, TrendingUp } from 'lucide-react'
+import { Circle, Star, Zap, Target, TrendingUp } from 'lucide-react'
 
 interface SkillProgressProps {
     skill: string

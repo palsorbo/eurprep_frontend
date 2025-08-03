@@ -1,6 +1,6 @@
 
 
-import { Lightbulb, Target, AlertTriangle, CheckCircle, Sparkles, Zap, TrendingUp, Award } from 'lucide-react'
+import { Lightbulb, AlertTriangle, CheckCircle, Sparkles, Award } from 'lucide-react'
 
 interface InsightCardProps {
     type: 'insight' | 'tip' | 'warning' | 'success'
@@ -17,7 +17,6 @@ export default function InsightCard({
     type,
     title,
     description,
-    action,
     icon
 }: InsightCardProps) {
     const getTypeStyles = () => {

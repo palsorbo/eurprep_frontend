@@ -27,12 +27,6 @@ export default function TopicCard({
     const navigate = useNavigate()
 
     const difficultyColors = getDifficultyColors(topic.difficulty)
-    // Fallback colors if getDifficultyColors fails
-    const fallbackColors = {
-        text: 'text-slate-600',
-        bg: 'bg-slate-100',
-        border: 'border-slate-200'
-    }
 
     const getDifficultyIcon = (difficulty: string) => {
         switch (difficulty) {

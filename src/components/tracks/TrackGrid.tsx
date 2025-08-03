@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Filter, Grid, List, Search } from 'lucide-react'
+import { Filter, Grid, List } from 'lucide-react'
 import type { Track } from '../../lib/types/track'
 import TrackCard from './TrackCard'
 
@@ -29,23 +29,9 @@ export default function TrackGrid({
     const [selectedCategory, setSelectedCategory] = useState<string>('all')
     const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all')
     const [selectedStatus, setSelectedStatus] = useState<string>('all')
-    const [sortBy, setSortBy] = useState<SortOption>('status')
+    const [sortBy] = useState<SortOption>('status')
 
-    // Get unique categories and difficulties for filters
-    const categories = useMemo(() => {
-        const cats = [...new Set(tracks.map(track => track.category))]
-        return ['all', ...cats]
-    }, [tracks])
 
-    const difficulties = useMemo(() => {
-        const diffs = [...new Set(tracks.map(track => track.difficulty))]
-        return ['all', ...diffs]
-    }, [tracks])
-
-    const statuses = useMemo(() => {
-        const stats = [...new Set(tracks.map(track => track.status))]
-        return ['all', ...stats]
-    }, [tracks])
 
     // Filter and sort tracks
     const filteredAndSortedTracks = useMemo(() => {
@@ -70,16 +56,18 @@ export default function TrackGrid({
             switch (sortBy) {
                 case 'name':
                     return a.title.localeCompare(b.title)
-                case 'difficulty':
+                case 'difficulty': {
                     const difficultyOrder = { 'beginner': 1, 'intermediate': 2, 'advanced': 3 }
                     return difficultyOrder[a.difficulty as keyof typeof difficultyOrder] -
                         difficultyOrder[b.difficulty as keyof typeof difficultyOrder]
+                }
                 case 'category':
                     return a.category.localeCompare(b.category)
-                case 'status':
+                case 'status': {
                     const statusOrder = { 'active': 1, 'coming-soon': 2, 'locked': 3 }
                     return statusOrder[a.status as keyof typeof statusOrder] -
                         statusOrder[b.status as keyof typeof statusOrder]
+                }
                 default:
                     return 0
             }

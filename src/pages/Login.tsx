@@ -1,22 +1,17 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Target, Users, TrendingUp, Lock } from 'lucide-react'
 
 export default function Login() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
-    const navigate = useNavigate()
 
     const handleGoogleAuth = async () => {
         setLoading(true)
         setError('')
 
         try {
-            console.log('Starting Google OAuth...')
-            console.log('Redirect URL:', `${window.location.origin}/app`)
-
-            const { data, error } = await supabase.auth.signInWithOAuth({
+            const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
                     redirectTo: `${window.location.origin}/app`,
@@ -27,16 +22,10 @@ export default function Login() {
                 }
             })
 
-            console.log('OAuth response:', { data, error })
-
             if (error) {
-                console.error('OAuth error:', error)
                 setError(error.message)
-            } else {
-                console.log('OAuth successful, redirecting...')
             }
-        } catch (err) {
-            console.error('Unexpected error:', err)
+        } catch {
             setError('An unexpected error occurred. Please try again.')
         } finally {
             setLoading(false)

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useRecordings } from './useRecordings'
+import { useRecordings, type Recording } from './useRecordings'
 import { useUserProgress } from './useUserProgress'
 
 export interface UserStats {
@@ -45,9 +45,15 @@ export function useUserStats(): UseUserStatsReturn {
         const totalPracticeTime = recordings.reduce((acc, rec) => acc + (rec.duration_seconds || 0), 0)
 
         // Calculate average score from recordings with feedback
-        const recordingsWithScores = recordings.filter(rec => rec.feedback_data?.score)
+        const recordingsWithScores = recordings.filter(rec => {
+            const feedback = rec.feedback_data as { score?: number } | undefined
+            return feedback?.score !== undefined
+        })
         const averageScore = recordingsWithScores.length > 0
-            ? recordingsWithScores.reduce((acc, rec) => acc + (rec.feedback_data.score || 0), 0) / recordingsWithScores.length
+            ? recordingsWithScores.reduce((acc, rec) => {
+                const feedback = rec.feedback_data as { score?: number }
+                return acc + (feedback.score || 0)
+            }, 0) / recordingsWithScores.length
             : 0
 
         // Get last practice date
@@ -78,7 +84,7 @@ export function useUserStats(): UseUserStatsReturn {
         })
     }
 
-    const calculateWeeklyProgress = (recordings: any[]) => {
+    const calculateWeeklyProgress = (recordings: Recording[]) => {
         const now = new Date()
         const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 

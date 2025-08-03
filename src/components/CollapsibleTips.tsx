@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { COLORS } from '../lib/constants/colors'
 
 interface CollapsibleTipsProps {
     title?: string

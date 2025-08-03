@@ -8,7 +8,6 @@ import {
     Pause,
     StopCircle,
     Clock,
-    Target,
     Loader2,
     CheckCircle,
     AlertCircle,
@@ -25,7 +24,11 @@ import { getTopicsByTrack } from '../lib/data/topics'
 import type { Track, Topic } from '../lib/types/track'
 import { getDifficultyColors } from '../lib/constants/colors'
 import type { BreadcrumbItem } from '../components/navigation/Breadcrumb'
-import { getApiUrl, API_CONFIG, type ApiResponse, type TranscriptionResponse, type FeedbackResponse } from '../lib/config'
+import { createJamRecording, updateJamRecording } from '../lib/database'
+import { uploadToStorage, generateJamRecordingPath } from '../lib/storage'
+import { transcribeAudio, getFeedbackAnalysis, generateMockFeedback } from '../lib/api'
+// import { checkDatabaseConnection, checkUserPermissions, checkStorageBucket } from '../lib/database/debug'
+// import type { FeedbackResponse } from '../lib/types/api'
 
 export default function TopicPractice() {
     const [user, setUser] = useState<Record<string, unknown> | null>(null)
@@ -45,241 +48,83 @@ export default function TopicPractice() {
     const navigate = useNavigate()
     const params = useParams()
 
-    // Helper function to check if backend service is available
-    const checkBackendAvailability = async (): Promise<boolean> => {
+    // Load track and topic data
+    const loadTrackAndTopic = useCallback(async () => {
+        if (!params.trackId || !params.topicId) {
+            navigate('/app')
+            return
+        }
+
         try {
-            const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.HEALTH), {
-                method: 'GET',
-                signal: AbortSignal.timeout(5000) // 5 second timeout
-            })
-            return response.ok
-        } catch (error) {
-            return false
-        }
-    }
+            setLoading(true)
 
-    // Helper function to generate mock feedback data
-    const generateMockFeedback = (topicTitle: string, duration: number): ApiResponse<FeedbackResponse> => {
-        const overallScore = Math.floor(Math.random() * 3) + 6 // Random score between 6-8
-        const weightedScore = overallScore * 0.85 // Simulate weighted score
-
-        return {
-            success: true,
-            data: {
-                originalTranscript: "This is a mock transcript for demonstration purposes. The actual transcript would be generated from the audio recording.",
-                version: "1.0",
-                analysis: {
-                    fluency: {
-                        score: {
-                            raw_score: Math.floor(Math.random() * 3) + 5,
-                            weight: 0.30,
-                            weighted_score: Math.floor(Math.random() * 3) + 1.2
-                        },
-                        issues: [
-                            {
-                                type: "filler_words",
-                                description: "Some filler words detected",
-                                examples: [
-                                    {
-                                        original: "So um, I was thinking about",
-                                        improved: "I was thinking about",
-                                        explanation: "Remove filler words 'so' and 'um'"
-                                    }
-                                ]
-                            }
-                        ],
-                        suggestions: [
-                            "Practice speaking without filler words",
-                            "Take brief pauses instead of using 'um' or 'uh'"
-                        ],
-                        filler_words: {
-                            count: {
-                                um: Math.floor(Math.random() * 3),
-                                uh: Math.floor(Math.random() * 2),
-                                like: Math.floor(Math.random() * 2),
-                                you_know: Math.floor(Math.random() * 2),
-                                other: 0
-                            },
-                            total_fillers: Math.floor(Math.random() * 5) + 2,
-                            density_per_minute: Math.floor(Math.random() * 5) + 3
-                        },
-                        pause_analysis: {
-                            total_pauses: Math.floor(Math.random() * 4) + 2,
-                            average_pause_duration: Math.random() * 2 + 0.5,
-                            longest_pause: Math.random() * 3 + 1
-                        }
-                    },
-                    coherence: {
-                        score: {
-                            raw_score: Math.floor(Math.random() * 3) + 5,
-                            weight: 0.25,
-                            weighted_score: Math.floor(Math.random() * 3) + 1.0
-                        },
-                        issues: [
-                            {
-                                type: "structure",
-                                description: "Could improve logical flow",
-                                examples: []
-                            }
-                        ],
-                        suggestions: [
-                            "Organize thoughts before speaking",
-                            "Use transition words to connect ideas"
-                        ]
-                    },
-                    time_management: {
-                        score: {
-                            raw_score: Math.floor(Math.random() * 3) + 6,
-                            weight: 0.20,
-                            weighted_score: Math.floor(Math.random() * 3) + 1.1
-                        },
-                        issues: [
-                            {
-                                type: "pace",
-                                description: "Speaking pace could be more consistent",
-                                examples: []
-                            }
-                        ],
-                        suggestions: [
-                            "Practice maintaining steady speaking pace",
-                            "Use timing cues to stay on track"
-                        ]
-                    },
-                    vocabulary: {
-                        score: {
-                            raw_score: Math.floor(Math.random() * 3) + 5,
-                            weight: 0.15,
-                            weighted_score: Math.floor(Math.random() * 3) + 0.7
-                        },
-                        issues: [
-                            {
-                                type: "repetition",
-                                description: "Some words are overused",
-                                examples: []
-                            }
-                        ],
-                        suggestions: [
-                            "Expand vocabulary with synonyms",
-                            "Avoid repetitive phrases"
-                        ]
-                    },
-                    grammar: {
-                        score: {
-                            raw_score: Math.floor(Math.random() * 3) + 6,
-                            weight: 0.10,
-                            weighted_score: Math.floor(Math.random() * 3) + 0.5
-                        },
-                        issues: [
-                            {
-                                type: "minor_errors",
-                                description: "Minor grammatical issues",
-                                examples: []
-                            }
-                        ],
-                        suggestions: [
-                            "Review basic grammar rules",
-                            "Practice sentence structure"
-                        ]
-                    }
-                },
-                time_usage: {
-                    speaking_time_seconds: Math.floor(duration * 0.8),
-                    pauses_seconds: Math.floor(duration * 0.2),
-                    speech_rate_wpm: Math.floor(Math.random() * 50) + 130,
-                    time_efficiency_percentage: Math.floor(Math.random() * 20) + 70,
-                    pause_distribution: {
-                        start_pauses: Math.floor(Math.random() * 2) + 1,
-                        middle_pauses: Math.floor(Math.random() * 3) + 2,
-                        end_pauses: 0,
-                        nervousness_score: Math.floor(Math.random() * 4) + 4
-                    },
-                    wpm_analysis: {
-                        performance_rating: "good",
-                        target_range: "120-150 WPM",
-                        recommendation: "Maintain speech rate while reducing filler usage.",
-                        color: "text-yellow-600"
-                    }
-                },
-                summary: {
-                    overallScore,
-                    weightedOverallScore: weightedScore,
-                    strengths: [
-                        "Good overall message delivery",
-                        "Appropriate speaking pace"
-                    ],
-                    areasForImprovement: [
-                        "Reduce filler words",
-                        "Improve vocabulary variety"
-                    ],
-                    generalAdvice: "Focus on eliminating filler words and expanding your vocabulary to enhance your speaking effectiveness.",
-                    topPriorities: [
-                        "Practice speaking without 'um' and 'uh'",
-                        "Learn synonyms for common words"
-                    ]
-                },
-                metadata: {
-                    textLength: 150,
-                    wordCount: 25,
-                    analysisVersion: "2.0",
-                    modelUsed: "gpt-4o-mini",
-                    analysisTimestamp: new Date().toISOString()
-                },
-                recommendations: {
-                    immediate: [
-                        "Record yourself speaking and identify filler words",
-                        "Practice the improved versions of your sentences"
-                    ],
-                    shortTerm: [
-                        "Join a speaking club or take public speaking classes",
-                        "Read more to expand vocabulary"
-                    ],
-                    longTerm: [
-                        "Develop a consistent speaking practice routine",
-                        "Consider working with a speech coach"
-                    ]
-                }
-            },
-            meta: {
-                version: "1.0",
-                timestamp: new Date().toISOString(),
-                hasTimingData: true
+            // Load track data
+            const trackData = getTrackById(params.trackId)
+            if (!trackData) {
+                navigate('/app')
+                return
             }
-        }
-    }
+            setTrack(trackData)
 
-    useEffect(() => {
-        const trackId = params.trackId as string
-        const topicId = params.topicId as string
-
-        const currentTrack = getTrackById(trackId)
-
-        if (!currentTrack) {
+            // Load topic data
+            const topics = await getTopicsByTrack(params.trackId)
+            const topic = topics.find(t => t.id === params.topicId)
+            if (!topic) {
+                navigate('/app')
+                return
+            }
+            setSelectedTopic(topic)
+        } catch (error) {
+            console.error('Error loading track and topic:', error)
             navigate('/app')
-            return
+        } finally {
+            setLoading(false)
         }
-
-        if (currentTrack.status === 'coming-soon') {
-            navigate('/app')
-            return
-        }
-
-        setTrack(currentTrack)
-
-        // Get topics for this track and find the specific topic
-        const trackTopics = getTopicsByTrack(trackId)
-        const topic = trackTopics.find(t => t.id === topicId)
-
-        if (!topic) {
-            navigate(`/app/tracks/${trackId}/practice`)
-            return
-        }
-
-        setSelectedTopic(topic)
-        setLoading(false)
     }, [params.trackId, params.topicId, navigate])
 
+    // Load user data and track/topic on mount
     useEffect(() => {
-        if (isRecording && timeLeft > 0) {
+        const loadUserAndData = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser()
+                setUser(user as unknown as Record<string, unknown>)
+
+                if (user) {
+                    await loadTrackAndTopic()
+                } else {
+                    navigate('/app/login')
+                }
+            } catch (error) {
+                console.error('Error loading user:', error)
+                navigate('/app/login')
+            }
+        }
+
+        loadUserAndData()
+    }, [loadTrackAndTopic, navigate])
+
+    // Start recording
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            const mediaRecorder = new MediaRecorder(stream)
+            mediaRecorderRef.current = mediaRecorder
+            audioChunksRef.current = []
+
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunksRef.current.push(event.data)
+            }
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
+                setAudioBlob(audioBlob)
+            }
+
+            mediaRecorder.start()
+            setIsRecording(true)
+            setIsPaused(false)
+
+            // Start timer
             timerRef.current = setInterval(() => {
                 setTimeLeft((prev) => {
                     if (prev <= 1) {
@@ -289,75 +134,41 @@ export default function TopicPractice() {
                     return prev - 1
                 })
             }, 1000)
-        }
-
-        return () => {
-            if (timerRef.current) {
-                clearInterval(timerRef.current)
-            }
-        }
-    }, [isRecording, timeLeft]) // eslint-disable-line react-hooks/exhaustive-deps
-
-    const checkUser = useCallback(async () => {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) {
-            navigate('/app/login')
-            return
-        }
-        setUser(user as unknown as Record<string, unknown>)
-    }, [navigate])
-
-    useEffect(() => {
-        checkUser()
-    }, [checkUser])
-
-    const startRecording = async () => {
-        try {
-            setError(null)
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-
-            mediaRecorderRef.current = new MediaRecorder(stream)
-            audioChunksRef.current = []
-
-            mediaRecorderRef.current.ondataavailable = (event) => {
-                audioChunksRef.current.push(event.data)
-            }
-
-            mediaRecorderRef.current.onstop = () => {
-                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
-                setAudioBlob(audioBlob)
-                stream.getTracks().forEach(track => track.stop())
-            }
-
-            mediaRecorderRef.current.start()
-            setIsRecording(true)
-            setTimeLeft(60)
-        } catch {
-            setError('Unable to access microphone. Please check your permissions.')
+        } catch (error) {
+            console.error('Error starting recording:', error)
+            setError('Failed to start recording. Please check microphone permissions.')
         }
     }
 
+    // Stop recording
     const stopRecording = () => {
         if (mediaRecorderRef.current && isRecording) {
             mediaRecorderRef.current.stop()
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
             setIsRecording(false)
             setIsPaused(false)
+
             if (timerRef.current) {
                 clearInterval(timerRef.current)
+                timerRef.current = null
             }
         }
     }
 
+    // Pause recording
     const pauseRecording = () => {
-        if (mediaRecorderRef.current && isRecording) {
+        if (mediaRecorderRef.current && isRecording && !isPaused) {
             mediaRecorderRef.current.pause()
             setIsPaused(true)
+
             if (timerRef.current) {
                 clearInterval(timerRef.current)
+                timerRef.current = null
             }
         }
     }
 
+    // Resume recording
     const resumeRecording = () => {
         if (mediaRecorderRef.current && isPaused) {
             mediaRecorderRef.current.resume()
@@ -374,95 +185,119 @@ export default function TopicPractice() {
         }
     }
 
+    // Handle submit with parallel processing
     const handleSubmit = async () => {
-        if (!audioBlob || !selectedTopic) return
+        if (!audioBlob || !selectedTopic || !user) return
 
         setIsProcessing(true)
         setError(null)
+        let recordingId: string | null = null
 
         try {
-            // Check if backend service is available
-            const backendAvailable = await checkBackendAvailability()
+            // Step 1: Create database record
+            console.log('User ID:', user.id)
+            console.log('Topic ID:', selectedTopic.id)
 
-            if (!backendAvailable) {
-                const mockFeedbackData = generateMockFeedback(selectedTopic.title, 60 - timeLeft)
-                sessionStorage.setItem('jamFeedbackData', JSON.stringify(mockFeedbackData))
-                navigate('/app/jam-feedback')
-                return
-            }
+            // Calculate actual duration - ensure it's at least 1 second
+            const actualDuration = Math.max(1, 60 - timeLeft)
+            console.log('Duration:', actualDuration)
 
-            // Step 1: Transcribe the audio
-            const formData = new FormData()
-            formData.append('audio', audioBlob, 'recording.wav')
-            formData.append('recordingId', `recording-${Date.now()}`)
-
-            const transcriptionResponse = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.TRANSCRIBE), {
-                method: 'POST',
-                body: formData,
+            const recordingResult = await createJamRecording({
+                user_id: user.id as string,
+                topic_id: selectedTopic.id,
+                duration_seconds: actualDuration,
+                status: 'processing'
             })
 
-            if (!transcriptionResponse.ok) {
-                throw new Error(`Transcription failed: ${transcriptionResponse.status} ${transcriptionResponse.statusText}`)
+            if (recordingResult.error || !recordingResult.data) {
+                throw new Error(recordingResult.error || 'Failed to create recording record')
             }
 
-            const transcriptionData: ApiResponse<TranscriptionResponse> = await transcriptionResponse.json()
+            recordingId = recordingResult.data.id
 
-            if (!transcriptionData.success || !transcriptionData.data) {
-                throw new Error(transcriptionData.error || 'Transcription failed')
+            // Step 2: Parallel operations - Upload to Storage and Transcribe
+            const storagePath = generateJamRecordingPath(user.id as string, recordingId)
+
+            const [uploadResult, transcriptionResult] = await Promise.all([
+                // Upload to Supabase Storage
+                uploadToStorage(storagePath, audioBlob),
+                // Call transcription API
+                transcribeAudio(audioBlob)
+            ])
+
+            // Check for upload errors
+            if (uploadResult.error) {
+                throw new Error(`Upload failed: ${uploadResult.error}`)
             }
 
-            const transcript = transcriptionData.data.text
+            // Check for transcription errors
+            if (transcriptionResult.error) {
+                throw new Error(`Transcription failed: ${transcriptionResult.error}`)
+            }
 
-            // Step 2: Get feedback analysis
-            const feedbackResponse = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.FEEDBACK), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    text: transcript,
-                    topic: selectedTopic.title,
-                    duration: 60 - timeLeft, // Duration in seconds
-                }),
+            // Step 3: Update database with storage path and transcript
+            await updateJamRecording(recordingId, {
+                storage_path: uploadResult.path,
+                transcript: transcriptionResult.text,
+                status: 'analyzing'
             })
 
-            if (!feedbackResponse.ok) {
-                throw new Error(`Feedback analysis failed: ${feedbackResponse.status} ${feedbackResponse.statusText}`)
+            // Step 4: Get feedback analysis
+            const feedbackResult = await getFeedbackAnalysis({
+                text: transcriptionResult.text,
+                topic: selectedTopic.title,
+                duration: actualDuration
+            })
+
+            if (feedbackResult.error) {
+                throw new Error(`Feedback analysis failed: ${feedbackResult.error}`)
             }
 
-            const feedbackData: ApiResponse<FeedbackResponse> = await feedbackResponse.json()
+            // Step 5: Store complete analysis
+            await updateJamRecording(recordingId, {
+                feedback_data: feedbackResult.data as unknown as Record<string, unknown>,
+                overall_score: feedbackResult.data?.summary.overallScore,
+                status: 'completed'
+            })
 
-            if (!feedbackData.success || !feedbackData.data) {
-                throw new Error(feedbackData.error || 'Feedback analysis failed')
-            }
+            // Step 6: Navigate to feedback page with recording ID
+            navigate(`/app/jam-feedback/${recordingId}`)
 
-            // Store the feedback data in sessionStorage for the feedback page
-            sessionStorage.setItem('jamFeedbackData', JSON.stringify(feedbackData))
-
-            // Redirect to JAM feedback page
-            navigate('/app/jam-feedback')
         } catch (err) {
             console.error('Error submitting recording:', err)
 
-            // If API calls fail, fall back to mock data
-            if (err instanceof Error && (err.message.includes('fetch') || err.message.includes('Failed to fetch'))) {
-                const mockFeedbackData = generateMockFeedback(selectedTopic.title, 60 - timeLeft)
-                sessionStorage.setItem('jamFeedbackData', JSON.stringify(mockFeedbackData))
-                navigate('/app/jam-feedback')
-            } else {
-                setError(err instanceof Error ? err.message : 'Failed to submit recording. Please try again.')
+            // Update database with error if we have a recording ID
+            if (recordingId) {
+                await updateJamRecording(recordingId, {
+                    status: 'failed',
+                    error_message: err instanceof Error ? err.message : 'Unknown error'
+                })
             }
+
+            // Fall back to mock data for better UX
+            const actualDuration = Math.max(1, 60 - timeLeft)
+            const mockFeedbackData = generateMockFeedback(selectedTopic.title, actualDuration)
+            sessionStorage.setItem('jamFeedbackData', JSON.stringify(mockFeedbackData))
+            // Navigate with recording ID if available, otherwise to base feedback page
+            if (recordingId) {
+                navigate(`/app/jam-feedback/${recordingId}`)
+            } else {
+                navigate('/app/jam-feedback')
+            }
+
         } finally {
             setIsProcessing(false)
         }
     }
 
+    // Format time display
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60)
         const secs = seconds % 60
         return `${mins}:${secs.toString().padStart(2, '0')}`
     }
 
+    // Handle back to topics
     const handleBackToTopics = () => {
         navigate(`/app/tracks/${params.trackId}/practice`)
     }
@@ -474,215 +309,190 @@ export default function TopicPractice() {
         ]
 
         if (track) {
-            items.push({
-                label: track.title,
-                href: `/app/tracks/${track.id}/practice`
-            })
+            items.push({ label: track.title, href: `/app/tracks/${track.id}/practice` })
         }
 
         if (selectedTopic) {
-            items.push({
-                label: selectedTopic.title
-            })
+            items.push({ label: selectedTopic.title, href: '#' })
         }
 
         return items
     }
 
-    if (loading || !user || !track || !selectedTopic) {
+    // Loading state
+    if (loading) {
+        return <LoadingScreen />
+    }
+
+    // Error state
+    if (error) {
         return (
-            <LoadingScreen
-                message="Loading..."
-                size="md"
-            />
+            <div className="min-h-screen bg-gray-50">
+                <AuthenticatedHeader />
+                <div className="max-w-4xl mx-auto px-4 py-8">
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        <div className="flex items-center space-x-3 text-red-600 mb-4">
+                            <AlertCircle className="h-6 w-6" />
+                            <h2 className="text-xl font-semibold">Error</h2>
+                        </div>
+                        <p className="text-gray-700 mb-4">{error}</p>
+                        <button
+                            onClick={() => setError(null)}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
         )
     }
 
+    // Main content
     return (
-        <div className="min-h-screen bg-slate-50">
-            <AuthenticatedHeader
-                pageTitle={track.title}
-                showBreadcrumbs={true}
-                breadcrumbItems={getBreadcrumbItems()}
-                trackIcon={track.icon}
-                trackColor={track.color}
-                trackBgColor={track.bgColor}
-            />
+        <div className="min-h-screen bg-gray-50">
+            <AuthenticatedHeader />
+            <div className="max-w-4xl mx-auto px-4 py-8">
+                {/* Breadcrumb */}
+                <nav className="mb-6">
+                    <ol className="flex items-center space-x-2 text-sm text-gray-600">
+                        {getBreadcrumbItems().map((item, index) => (
+                            <li key={index} className="flex items-center">
+                                {index > 0 && <span className="mx-2">/</span>}
+                                {item.icon && <item.icon className="h-4 w-4 mr-1" />}
+                                <a
+                                    href={item.href}
+                                    className="hover:text-blue-600 transition-colors"
+                                >
+                                    {item.label}
+                                </a>
+                            </li>
+                        ))}
+                    </ol>
+                </nav>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Back Button */}
-                <div className="mb-6">
-                    <button
-                        onClick={handleBackToTopics}
-                        className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>Back to Topics</span>
-                    </button>
-                </div>
-
-                {/* Topic Details */}
-                <div className="text-center mb-8">
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 max-w-4xl mx-auto">
-                        <div className="flex items-center justify-center space-x-2 mb-4">
-                            <span className="px-3 py-1 bg-slate-100 text-slate-600 text-sm font-medium rounded-full">
-                                {selectedTopic.category}
-                            </span>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColors(selectedTopic.difficulty).bg} ${getDifficultyColors(selectedTopic.difficulty).text}`}>
-                                <span className="capitalize">{selectedTopic.difficulty}</span>
-                            </span>
-                        </div>
-                        <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                            {selectedTopic.title}
-                        </h2>
-                        <p className="text-gray-600">
-                            {selectedTopic.description}
-                        </p>
-                    </div>
-                </div>
-
-                {error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg max-w-4xl mx-auto">
-                        <div className="flex items-center space-x-2">
-                            <AlertCircle className="w-5 h-5 text-red-600" />
-                            <p className="text-red-700">{error}</p>
+                {/* Topic Info */}
+                {selectedTopic && (
+                    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                        <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                                    {selectedTopic.title}
+                                </h1>
+                                <p className="text-gray-600 mb-4">{selectedTopic.description}</p>
+                                <div className="flex items-center space-x-4">
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColors(selectedTopic.difficulty)}`}>
+                                        {selectedTopic.difficulty}
+                                    </span>
+                                    <span className="flex items-center text-gray-500">
+                                        <Clock className="h-4 w-4 mr-1" />
+                                        {Math.floor(selectedTopic.estimatedTime / 60)} min
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleBackToTopics}
+                                className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+                            >
+                                <ArrowLeft className="h-4 w-4 mr-1" />
+                                Back to Topics
+                            </button>
                         </div>
                     </div>
                 )}
 
-                {/* Timer and Recording Controls */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center max-w-4xl mx-auto">
-                    <div className="mb-8">
-                        {/* Timer Display with Integrated Recording Indicator */}
-                        <div className="flex items-center justify-center mb-4">
-                            <div className="text-6xl font-bold text-slate-900">
-                                {formatTime(timeLeft)}
-                            </div>
-                            {isRecording && (
-                                <div className="flex items-center ml-4">
-                                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-2"></div>
-                                    <span className="text-lg font-semibold text-red-600">
-                                        Recording...
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Progress Bar */}
-                        <div className="mb-4">
-                            <LinearProgressBar
-                                progress={((60 - timeLeft) / 60) * 100}
-                                color="bg-emerald-500"
-                                height="md"
-                                className="max-w-md mx-auto"
-                            />
-                        </div>
-
-                        <div className="flex items-center justify-center space-x-2 text-slate-600">
-                            <Clock className="w-5 h-5" />
-                            <span>Time remaining</span>
-                        </div>
+                {/* Recording Interface */}
+                <div className="bg-white rounded-lg shadow-md p-8">
+                    <div className="text-center mb-8">
+                        <AnimatedTarget variant={isRecording ? 'loading' : 'success'} />
+                        <h2 className="text-xl font-semibold text-gray-900 mt-4 mb-2">
+                            {isRecording ? 'Recording...' : 'Ready to Record'}
+                        </h2>
+                        <p className="text-gray-600">
+                            {isRecording
+                                ? 'Speak clearly and naturally about the topic'
+                                : 'Click the record button to start your JAM session'
+                            }
+                        </p>
                     </div>
 
-                    {!isRecording && !audioBlob && (
-                        <button
-                            onClick={startRecording}
-                            className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-slate-900 px-8 py-4 rounded-full hover:from-yellow-500 hover:to-yellow-600 transition-all duration-300 font-bold flex items-center space-x-3 mx-auto hover:shadow-lg transform hover:-translate-y-1 hover:scale-105 cursor-pointer"
-                        >
-                            <Target className="w-6 h-6" />
-                            <span className="text-lg font-semibold">Start Recording</span>
-                        </button>
-                    )}
+                    {/* Timer */}
+                    <div className="text-center mb-6">
+                        <div className="text-4xl font-bold text-gray-900 mb-2">
+                            {formatTime(timeLeft)}
+                        </div>
+                        <LinearProgressBar
+                            progress={((60 - timeLeft) / 60) * 100}
+                            className="w-full max-w-md mx-auto"
+                        />
+                    </div>
 
-                    {isRecording && (
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-center space-x-4">
-                                {!isPaused ? (
+                    {/* Recording Controls */}
+                    <div className="flex justify-center space-x-4 mb-6">
+                        {!isRecording ? (
+                            <button
+                                onClick={startRecording}
+                                disabled={timeLeft === 0}
+                                className="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
+                            >
+                                <Play className="h-5 w-5 mr-2" />
+                                Start Recording
+                            </button>
+                        ) : (
+                            <>
+                                {isPaused ? (
                                     <button
-                                        onClick={pauseRecording}
-                                        className="bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-yellow-700 transition-colors flex items-center space-x-2 cursor-pointer"
+                                            onClick={resumeRecording}
+                                            className="bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition-colors flex items-center"
                                     >
-                                        <Pause className="w-5 h-5" />
-                                        <span>Pause</span>
+                                            <Play className="h-5 w-5 mr-2" />
+                                            Resume
                                     </button>
                                 ) : (
                                     <button
-                                        onClick={resumeRecording}
-                                        className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 cursor-pointer"
+                                                onClick={pauseRecording}
+                                                className="bg-yellow-600 text-white px-6 py-3 rounded-full hover:bg-yellow-700 transition-colors flex items-center"
                                     >
-                                        <Play className="w-5 h-5" />
-                                        <span>Resume</span>
+                                                <Pause className="h-5 w-5 mr-2" />
+                                                Pause
                                     </button>
-                                )}
-
+                                    )}
                                 <button
                                     onClick={stopRecording}
-                                    className="bg-slate-700 text-white px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors flex items-center space-x-2 cursor-pointer"
+                                        className="bg-gray-600 text-white px-6 py-3 rounded-full hover:bg-gray-700 transition-colors flex items-center"
                                 >
-                                    <StopCircle className="w-5 h-5" />
-                                    <span>Stop</span>
+                                        <StopCircle className="h-5 w-5 mr-2" />
+                                        Stop
                                 </button>
-                            </div>
-                        </div>
-                    )}
+                            </>
+                        )}
+                    </div>
 
+                    {/* Submit Button */}
                     {audioBlob && !isRecording && (
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-center space-x-4">
-                                <AnimatedTarget size="md" variant="success" />
-                                <div className="flex items-center space-x-2 text-green-600">
-                                    <CheckCircle className="w-6 h-6" />
-                                    <span className="font-semibold">Recording Complete!</span>
-                                </div>
-                            </div>
-
-                            {/* Secondary Actions */}
-                            <div className="flex items-center justify-center space-x-4">
-                                <button
-                                    onClick={handleBackToTopics}
-                                    className="border border-slate-200 text-slate-700 px-6 py-3 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-                                >
-                                    Choose Different Topic
-                                </button>
-
-                                <button
-                                    onClick={() => {
-                                        setAudioBlob(null)
-                                        setTimeLeft(60)
-                                    }}
-                                    className="border border-slate-200 text-slate-700 px-6 py-3 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
-                                >
-                                    Record Again
-                                </button>
-                            </div>
-
-                            {/* Primary Action */}
-                            <div className="flex items-center justify-center">
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={isProcessing}
-                                    className="bg-sky-600 text-white px-8 py-4 rounded-lg hover:bg-sky-700 transition-colors flex items-center space-x-2 disabled:opacity-50 font-semibold cursor-pointer"
-                                >
-                                    {isProcessing ? (
-                                        <>
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                            <span>Processing...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CheckCircle className="w-5 h-5" />
-                                            <span>Get Feedback</span>
-                                        </>
-                                    )}
-                                </button>
-                            </div>
+                        <div className="text-center">
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isProcessing}
+                                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center mx-auto"
+                            >
+                                {isProcessing ? (
+                                    <>
+                                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle className="h-5 w-5 mr-2" />
+                                        Submit Recording
+                                    </>
+                                )}
+                            </button>
                         </div>
                     )}
-                </div>
 
-                {/* Tips Section */}
-                <div className="mt-8 max-w-4xl mx-auto">
-                    <CollapsibleTips
+                    {/* Tips */}
+                    <CollapsibleTips 
                         tips={[
                             "Speak clearly and at a moderate pace",
                             "Structure your thoughts with an introduction, main points, and conclusion",
@@ -690,8 +500,10 @@ export default function TopicPractice() {
                             "Stay focused on the topic and avoid going off-tangent",
                             "Practice maintaining eye contact (even though you're recording)"
                         ]}
-                        defaultExpanded={false}
                     />
+
+
+
                 </div>
             </div>
         </div>

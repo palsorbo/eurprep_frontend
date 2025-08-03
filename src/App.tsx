@@ -18,6 +18,7 @@ const TrackDetail = lazy(() => import('./pages/TrackDetail'))
 const Practice = lazy(() => import('./pages/Practice'))
 const TopicPractice = lazy(() => import('./pages/TopicPractice'))
 const JamFeedback = lazy(() => import('./pages/JamFeedback'))
+const RecordingsPage = lazy(() => import('./pages/RecordingsPage'))
 
 // Loading component
 const LoadingSpinner = () => (
@@ -59,9 +60,14 @@ function App() {
                 <TopicPractice />
               </ProtectedRoute>
             } />
-            <Route path="/app/jam-feedback" element={
+            <Route path="/app/jam-feedback/:recordingId?" element={
               <ProtectedRoute>
                 <JamFeedback />
+              </ProtectedRoute>
+            } />
+            <Route path="/app/recordings" element={
+              <ProtectedRoute>
+                <RecordingsPage />
               </ProtectedRoute>
             } />
 

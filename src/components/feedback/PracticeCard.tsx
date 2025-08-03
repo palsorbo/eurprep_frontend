@@ -1,8 +1,7 @@
 
 
 import { useState } from 'react'
-import { Mic, Play, Check, X, RotateCcw } from 'lucide-react'
-import { COLORS } from '../lib/constants/colors'
+import { Mic, Play, Check, RotateCcw } from 'lucide-react'
 
 interface PracticeCardProps {
     title: string

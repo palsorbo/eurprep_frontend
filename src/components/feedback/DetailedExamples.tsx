@@ -1,7 +1,7 @@
 
 
 import { useState } from 'react'
-import { ArrowRight, Copy, Check, BookOpen, Lightbulb, Zap } from 'lucide-react'
+import { ArrowRight, Copy, Check, BookOpen, Lightbulb } from 'lucide-react'
 
 interface Example {
     original: string
@@ -18,7 +18,7 @@ interface DetailedExamplesProps {
     }>
 }
 
-export default function DetailedExamples({ category, issues }: DetailedExamplesProps) {
+export default function DetailedExamples({ issues }: DetailedExamplesProps) {
     const [selectedIssue, setSelectedIssue] = useState(0)
     const [copiedText, setCopiedText] = useState<string | null>(null)
 
@@ -32,9 +32,7 @@ export default function DetailedExamples({ category, issues }: DetailedExamplesP
         }
     }
 
-    const formatCategoryName = (name: string) => {
-        return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-    }
+
 
     return (
         <div className="space-y-6">

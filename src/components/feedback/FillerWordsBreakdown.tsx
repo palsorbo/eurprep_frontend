@@ -24,47 +24,11 @@ export default function FillerWordsBreakdown({ data, duration }: FillerWordsBrea
     const targetDensity = 15 // target filler words per minute
     const isHighDensity = data.density_per_minute > targetDensity
 
-    const getFillerWordColor = (count: number) => {
-        if (count === 0) return 'text-emerald-600'
-        if (count <= 2) return 'text-amber-600'
-        return 'text-red-600'
-    }
 
-    const getFillerWordBg = (count: number) => {
-        if (count === 0) return 'bg-gradient-to-br from-emerald-50 to-emerald-100'
-        if (count <= 2) return 'bg-gradient-to-br from-amber-50 to-amber-100'
-        return 'bg-gradient-to-br from-red-50 to-red-100'
-    }
 
-    const getFillerWordBorder = (count: number) => {
-        if (count === 0) return 'border-emerald-200'
-        if (count <= 2) return 'border-amber-200'
-        return 'border-red-200'
-    }
 
-    const getDensityStatus = () => {
-        if (data.density_per_minute <= targetDensity) {
-            return {
-                icon: <TrendingDown className="w-5 h-5 text-emerald-600" />,
-                text: 'Good control',
-                color: 'text-emerald-700',
-                bg: 'bg-gradient-to-r from-emerald-50 to-teal-50',
-                border: 'border-emerald-200',
-                iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600'
-            }
-        } else {
-            return {
-                icon: <TrendingUp className="w-5 h-5 text-red-600" />,
-                text: 'Needs improvement',
-                color: 'text-red-700',
-                bg: 'bg-gradient-to-r from-red-50 to-pink-50',
-                border: 'border-red-200',
-                iconBg: 'bg-gradient-to-br from-red-500 to-pink-600'
-            }
-        }
-    }
 
-    const densityStatus = getDensityStatus()
+
 
     const fillerWords = [
         { key: 'um', label: 'Um', count: data.count.um, icon: <MessageSquare className="w-4 h-4" /> },
@@ -136,7 +100,7 @@ export default function FillerWordsBreakdown({ data, duration }: FillerWordsBrea
                     <span>Breakdown by Type</span>
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    {fillerWords.map((word, index) => (
+                    {fillerWords.map((word) => (
                         <div
                             key={word.key}
                             className="bg-white rounded-xl p-4 text-center border border-slate-200 hover:border-slate-300 transition-all duration-200 hover:shadow-lg"

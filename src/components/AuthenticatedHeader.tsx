@@ -8,7 +8,8 @@ import {
     Menu,
     X,
     Home,
-    ChevronDown
+    ChevronDown,
+    Mic
 } from 'lucide-react'
 import Logo from './Logo'
 
@@ -96,7 +97,13 @@ export default function AuthenticatedHeader({
                                 <Home className="w-4 h-4" />
                                 <span>Dashboard</span>
                             </Link>
-
+                            <Link
+                                to="/app/recordings"
+                                className="text-slate-700 hover:text-slate-900 transition-colors font-medium flex items-center space-x-2"
+                            >
+                                <Mic className="w-4 h-4" />
+                                <span>Recordings</span>
+                            </Link>
                         </nav>
                     </div>
 

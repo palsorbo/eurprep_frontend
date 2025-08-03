@@ -1,7 +1,6 @@
 
 
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { COLORS } from '../lib/constants/colors'
 
 interface ProgressComparisonProps {
     currentScore: number
@@ -19,7 +18,6 @@ export default function ProgressComparison({
     const scoreDifference = previousScore ? currentScore - previousScore : 0
     const hasImproved = scoreDifference > 0
     const hasDeclined = scoreDifference < 0
-    const isStable = scoreDifference === 0
 
     const getTrendIcon = () => {
         if (hasImproved) return <TrendingUp className="w-4 h-4 text-green-600" />

@@ -8,7 +8,7 @@ export interface Recording {
     topic_id?: string
     duration_seconds: number
     audio_url?: string
-    feedback_data?: any
+    feedback_data?: unknown
     created_at: string
     updated_at: string
 }

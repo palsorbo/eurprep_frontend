@@ -6,12 +6,12 @@ export interface UseRealtimeOptions {
     table: string
     event?: 'INSERT' | 'UPDATE' | 'DELETE' | '*'
     filter?: string
-    callback?: (payload: any) => void
+    callback?: (payload: unknown) => void
 }
 
 export function useRealtime(options: UseRealtimeOptions) {
     const { user } = useAuth()
-    const channelRef = useRef<any>(null)
+    const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
     useEffect(() => {
         if (!user) return
@@ -29,7 +29,7 @@ export function useRealtime(options: UseRealtimeOptions) {
                     table,
                     filter: filter ? `user_id=eq.${user.id}` : undefined
                 },
-                (payload: any) => {
+                (payload: unknown) => {
                     console.log(`Realtime ${event} on ${table}:`, payload)
                     callback?.(payload)
                 }
@@ -52,7 +52,7 @@ export function useRealtime(options: UseRealtimeOptions) {
 }
 
 // Specific hooks for common use cases
-export function useRecordingsRealtime(callback?: (payload: any) => void) {
+export function useRecordingsRealtime(callback?: (payload: unknown) => void) {
     return useRealtime({
         table: 'recordings',
         event: '*',
@@ -60,7 +60,7 @@ export function useRecordingsRealtime(callback?: (payload: any) => void) {
     })
 }
 
-export function useProgressRealtime(callback?: (payload: any) => void) {
+export function useProgressRealtime(callback?: (payload: unknown) => void) {
     return useRealtime({
         table: 'user_track_progress',
         event: '*',

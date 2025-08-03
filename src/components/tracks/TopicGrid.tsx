@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Filter, Grid, List } from 'lucide-react'
 import TopicCard from './TopicCard'
 import type { Topic } from '../../lib/types/track'
@@ -20,6 +19,8 @@ export default function TopicGrid({ topics, trackId, loading = false }: TopicGri
 
 
     const filteredAndSortedTopics = useMemo(() => {
+        if (!topics) return []
+
         let filtered = topics
 
         // Apply search filter
@@ -51,7 +52,7 @@ export default function TopicGrid({ topics, trackId, loading = false }: TopicGri
         )
     }
 
-    if (topics.length === 0) {
+    if (!topics || topics.length === 0) {
         return (
             <div className="text-center py-12">
                 <p className="text-slate-600">No topics available for this track.</p>
@@ -108,7 +109,7 @@ export default function TopicGrid({ topics, trackId, loading = false }: TopicGri
 
             {/* Results Count */}
             <div className="text-sm text-slate-600">
-                {filteredAndSortedTopics.length} of {topics.length} topics
+                {filteredAndSortedTopics.length} of {topics?.length || 0} topics
             </div>
 
             {/* Topics Grid/List */}

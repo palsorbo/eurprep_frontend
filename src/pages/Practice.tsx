@@ -22,26 +22,35 @@ export default function TrackPractice() {
     const params = useParams()
 
     useEffect(() => {
-        const trackId = params.trackId as string
-        const currentTrack = getTrackById(trackId)
+        const loadTrackAndTopics = async () => {
+            const trackId = params.trackId as string
+            const currentTrack = getTrackById(trackId)
 
-        if (!currentTrack) {
-            navigate('/app')
-            return
+            if (!currentTrack) {
+                navigate('/app')
+                return
+            }
+
+            if (currentTrack.status === 'coming-soon') {
+                navigate('/app')
+                return
+            }
+
+            setTrack(currentTrack)
+
+            try {
+                // Get topics for this track (now async)
+                const trackTopics = await getTopicsByTrack(trackId)
+                setTopics(trackTopics)
+            } catch (error) {
+                console.error('Error loading topics:', error)
+                setTopics([])
+            }
+
+            setLoading(false)
         }
 
-        if (currentTrack.status === 'coming-soon') {
-            navigate('/app')
-            return
-        }
-
-        setTrack(currentTrack)
-
-        // Get topics for this track
-        const trackTopics = getTopicsByTrack(trackId)
-        setTopics(trackTopics)
-
-        setLoading(false)
+        loadTrackAndTopics()
     }, [params.trackId, navigate])
 
     const checkUser = useCallback(async () => {
@@ -104,7 +113,6 @@ export default function TrackPractice() {
                     <TopicGrid
                         topics={topics}
                         trackId={params.trackId as string}
-
                     />
                 </div>
             </div>
