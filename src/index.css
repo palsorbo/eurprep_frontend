@@ -167,3 +167,131 @@
     transform: scale(1.05) rotate(-5deg);
   }
 }
+
+/* Grammarly-style Transcript Highlights and Tooltips */
+.transcript-content {
+  position: relative;
+}
+
+/* Enhanced Grammarly-style tooltips */
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  color: #374151;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 0.85em;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
+  min-width: 200px;
+  max-width: 300px;
+  pointer-events: none;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: white;
+}
+
+.tooltip-header {
+  background: #f3f4f6;
+  padding: 8px 12px;
+  border-radius: 8px 8px 0 0;
+  font-weight: 600;
+  color: #111827;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tooltip-content {
+  padding: 10px 12px;
+}
+
+.tooltip-suggestion {
+  color: #6b7280;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.tooltip-alternatives {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.suggestion-word {
+  background: #16a34a;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.suggestion-word:hover {
+  background: #15803d;
+  transform: scale(1.05);
+}
+
+.tooltip-type-filler .tooltip-header {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.tooltip-type-weak .tooltip-header {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.tooltip-type-good .tooltip-header {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.tooltip-type-formal .tooltip-header {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+/* Show tooltips on hover */
+.filler-word:hover .tooltip,
+.weak-phrase:hover .tooltip,
+.formal-term:hover .tooltip,
+.natural-phrase:hover .tooltip,
+.pronunciation-issue:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Highlight hover effects */
+.filler-word:hover,
+.weak-phrase:hover,
+.formal-term:hover,
+.natural-phrase:hover,
+.pronunciation-issue:hover {
+  background-opacity: 0.8 !important;
+  transform: translateY(-1px);
+}
+
+/* Audio sync highlighting (when audio is playing) */
+.transcript-content .audio-active {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+}

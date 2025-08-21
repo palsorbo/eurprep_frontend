@@ -41,12 +41,12 @@ export default function CTA({
     const isPrimary = variant === 'primary'
 
     return (
-        <section className={`px-6 py-20 ${isPrimary ? 'bg-gradient-to-r from-sky-600 to-sky-700' : 'bg-gradient-to-r from-slate-800 to-slate-900'} ${className}`}>
+        <section className={`px-6 py-16 md:py-20 ${isPrimary ? 'bg-gradient-to-r from-sky-600 to-sky-700' : 'bg-gradient-to-r from-slate-800 to-slate-900'} ${className}`}>
             <div className="max-w-4xl mx-auto text-center">
-                <h2 className={`text-3xl md:text-4xl font-bold mb-6 ${isPrimary ? 'text-white' : 'text-white'}`}>
+                <h2 className={`text-3xl md:text-4xl font-bold mb-4 md:mb-6 ${isPrimary ? 'text-white' : 'text-white'}`}>
                     {title}
                 </h2>
-                <p className={`text-xl mb-8 max-w-2xl mx-auto ${isPrimary ? 'text-sky-100' : 'text-slate-200'}`}>
+                <p className={`text-lg md:text-xl mb-6 md:mb-8 max-w-2xl mx-auto ${isPrimary ? 'text-sky-100' : 'text-slate-200'}`}>
                     {description}
                 </p>
                 <Link

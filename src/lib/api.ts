@@ -1,46 +1,21 @@
 // API utilities for Courage App
 // This file contains functions for handling external API calls
 
-import type { ApiResponse, TranscriptionResponse, FeedbackResponse, FeedbackRequest } from './types/api'
+import type { ApiResponse, FeedbackResponse, FeedbackRequest } from './types/api'
+import {
+    transcribeAudio as flyioTranscribeAudio,
+    getFeedbackAnalysis as flyioGetFeedbackAnalysis,
+    checkBackendAvailability as flyioCheckBackendAvailability
+} from './flyio-api'
 
-// API configuration
-const API_CONFIG = {
-    BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://api.eurprep.com',
-    ENDPOINTS: {
-        TRANSCRIBE: '/api/v1/transcribe',
-        FEEDBACK: '/api/v1/speech/jam'
-    }
-}
-
-/**
- * Get API URL for a specific endpoint
- * @param endpoint - API endpoint
- * @returns Full API URL
- */
-function getApiUrl(endpoint: string): string {
-    return `${API_CONFIG.BASE_URL}${endpoint}`
-}
+// (removed unused API_CONFIG/getApiUrl; routes are handled in flyio-api)
 
 /**
  * Check if backend service is available
  * @returns Promise<boolean>
  */
 export async function checkBackendAvailability(): Promise<boolean> {
-    try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000)
-
-        const response = await fetch(getApiUrl('/health'), {
-            method: 'GET',
-            signal: controller.signal
-        })
-
-        clearTimeout(timeoutId)
-        return response.ok
-    } catch (error) {
-        console.warn('Backend service not available:', error)
-        return false
-    }
+    return flyioCheckBackendAvailability()
 }
 
 /**
@@ -49,32 +24,7 @@ export async function checkBackendAvailability(): Promise<boolean> {
  * @returns Promise with transcription result
  */
 export async function transcribeAudio(audioBlob: Blob): Promise<{ text: string; error?: string }> {
-    try {
-        const formData = new FormData()
-        formData.append('audio', audioBlob, 'recording.wav')
-
-        const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.TRANSCRIBE), {
-            method: 'POST',
-            body: formData
-        })
-
-        if (!response.ok) {
-            throw new Error(`Transcription failed: ${response.status} ${response.statusText}`)
-        }
-
-        const data: ApiResponse<TranscriptionResponse> = await response.json()
-
-        if (!data.success || !data.data) {
-            throw new Error(data.error || 'Transcription failed')
-        }
-
-        return { text: data.data.text }
-    } catch (error) {
-        return {
-            text: '',
-            error: error instanceof Error ? error.message : 'Transcription failed'
-        }
-    }
+    return flyioTranscribeAudio(audioBlob)
 }
 
 /**
@@ -83,31 +33,37 @@ export async function transcribeAudio(audioBlob: Blob): Promise<{ text: string; 
  * @returns Promise with feedback result
  */
 export async function getFeedbackAnalysis(request: FeedbackRequest): Promise<{ data?: FeedbackResponse; error?: string }> {
-    try {
-        const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.FEEDBACK), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(request)
-        })
+    return flyioGetFeedbackAnalysis(request)
+}
 
-        if (!response.ok) {
-            throw new Error(`Feedback analysis failed: ${response.status} ${response.statusText}`)
-        }
-
-        const data: ApiResponse<FeedbackResponse> = await response.json()
-
-        if (!data.success || !data.data) {
-            throw new Error(data.error || 'Feedback analysis failed')
-        }
-
-        return { data: data.data }
-    } catch (error) {
-        return {
-            error: error instanceof Error ? error.message : 'Feedback analysis failed'
-        }
+/**
+ * Complete analysis workflow: transcribe, consume credits, get feedback
+ * @param audioBlob - Audio blob to analyze
+ * @param topic - Topic for analysis
+ * @param duration - Recording duration in seconds
+ * @param recordingId - Unique recording identifier
+ * @returns Promise with complete analysis result
+ */
+export async function performCompleteAnalysis(
+    audioBlob: Blob,
+    topic: string,
+    duration: number,
+    recordingId: string
+): Promise<{
+    transcription?: { text: string }
+    feedback?: FeedbackResponse
+    error?: string
+}> {
+    // P0-Lite: Keep transcribe on backend, but send recordingId with feedback request so backend persists & consumes credits
+    const transcription = await flyioTranscribeAudio(audioBlob)
+    if (transcription.error) {
+        return { error: transcription.error }
     }
+    const feedback = await flyioGetFeedbackAnalysis({ text: transcription.text, topic, duration, recordingId })
+    if (feedback.error) {
+        return { error: feedback.error }
+    }
+    return { transcription: { text: transcription.text }, feedback: feedback.data }
 }
 
 /**

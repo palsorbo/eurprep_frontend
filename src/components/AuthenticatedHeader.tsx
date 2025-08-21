@@ -9,9 +9,11 @@ import {
     X,
     Home,
     ChevronDown,
-    Mic
+    Mic,
+    Coins
 } from 'lucide-react'
 import Logo from './Logo'
+import { HeaderCreditDisplay } from './CreditDisplay'
 
 interface AuthenticatedHeaderProps {
     showBreadcrumbs?: boolean
@@ -104,6 +106,13 @@ export default function AuthenticatedHeader({
                                 <Mic className="w-4 h-4" />
                                 <span>Recordings</span>
                             </Link>
+                            <Link
+                                to="/app/buy-credits"
+                                className="text-slate-700 hover:text-slate-900 transition-colors font-medium flex items-center space-x-2"
+                            >
+                                <Coins className="w-4 h-4" />
+                                <span>Buy Credits</span>
+                            </Link>
                         </nav>
                     </div>
 
@@ -154,8 +163,11 @@ export default function AuthenticatedHeader({
                         )}
                     </div>
 
-                    {/* Right side - User Menu */}
+                    {/* Right side - Credits and User Menu */}
                     <div className="flex items-center space-x-4">
+                        {/* Credit Display */}
+                        <HeaderCreditDisplay />
+
                         {/* User Menu */}
                         <div className="relative" ref={userMenuRef}>
                             <button

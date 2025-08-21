@@ -1,10 +1,24 @@
-// API Configuration
+// Log Vite environment variables for debugging
+console.log('🔍 VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+console.log('🔍 VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+
+// API Configuration for FlyIO Speech Analysis API
 export const API_CONFIG = {
-    BASE_URL: "https://api.eurprep.com",
+    BASE_URL: import.meta.env.VITE_API_BASE_URL || "http://localhost:9090",
     ENDPOINTS: {
         HEALTH: '/health',
         TRANSCRIBE: '/api/v1/transcribe',
-        FEEDBACK: '/api/v1/speech/jam'
+        FEEDBACK: '/api/v1/speech/jam',
+        CREDITS_BALANCE: '/api/v1/credits/balance',
+        CREDITS_CONSUME: '/api/v1/credits/consume',
+        CREDITS_REFUND: '/api/v1/credits/refund',
+        CREDITS_BONUS: '/api/v1/credits/bonus',
+        CREDITS_PACKS: '/api/v1/credits/packs',
+        CREDITS_TRANSACTIONS: '/api/v1/credits/transactions',
+        WEBHOOK_RAZORPAY: '/api/v1/webhooks/razorpay',
+        RAZORPAY_CREATE_ORDER: '/api/v1/razorpay/create-order',
+        RAZORPAY_PAYMENT_STATUS: '/api/v1/razorpay/payment-status',
+        RAZORPAY_PAYMENT_DETAILS: '/api/v1/razorpay/payment'
     }
 } as const
 
@@ -12,6 +26,17 @@ export const API_CONFIG = {
 export const getApiUrl = (endpoint: string): string => {
     return `${API_CONFIG.BASE_URL}${endpoint}`
 }
+
+// Helper function to get authentication headers
+export const getAuthHeaders = (token: string) => ({
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+})
+
+// Helper function to get multipart headers (for file uploads)
+export const getMultipartHeaders = (token: string) => ({
+    'Authorization': `Bearer ${token}`
+})
 
 // TypeScript interfaces for API responses
 export interface ApiResponse<T> {
@@ -29,9 +54,21 @@ export interface TranscriptionResponse {
     text: string
 }
 
+export interface GrammarlyHighlight {
+    text: string
+    start_position: number
+    end_position: number
+    type: 'filler_word' | 'weak_phrase' | 'formal_term' | 'natural_phrase' | 'pronunciation_issue'
+    severity: 'low' | 'medium' | 'high'
+    message: string
+    suggestions: string[]
+    category: 'fluency' | 'vocabulary' | 'grammar' | 'coherence' | 'time_management'
+}
+
 export interface FeedbackResponse {
     originalTranscript: string
     version: string
+    grammarly_highlights: GrammarlyHighlight[]
     analysis: {
         fluency: {
             score: {

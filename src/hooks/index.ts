@@ -5,4 +5,7 @@ export { useUserStats, type UserStats, type UseUserStatsReturn } from './useUser
 export { useRecentRecordings } from './useRecentRecordings'
 
 // Realtime hooks
-export { useRealtime, useRecordingsRealtime, useProgressRealtime, type UseRealtimeOptions } from './useRealtime' 
+export { useRealtime, useRecordingsRealtime, useProgressRealtime, type UseRealtimeOptions } from './useRealtime'
+
+// Credit system hooks
+export { useCredits, useCanPerformAnalysis } from './useCredits' 

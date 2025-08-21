@@ -1,24 +1,25 @@
 
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import {
     Play,
     Pause,
     StopCircle,
     Clock,
-    Loader2,
     CheckCircle,
     AlertCircle,
-    Home,
-    ArrowLeft
+    Home
 } from 'lucide-react'
 import LoadingScreen from '../components/LoadingScreen'
 import AnimatedTarget from '../components/AnimatedTarget'
 import AuthenticatedHeader from '../components/AuthenticatedHeader'
 import LinearProgressBar from '../components/LinearProgressBar'
 import CollapsibleTips from '../components/CollapsibleTips'
+import PreflightSheet from '../components/PreflightSheet'
+import CountdownOverlay from '../components/CountdownOverlay'
+import StatusChips from '../components/StatusChips'
 import { getTrackById } from '../lib/data/tracks'
 import { getTopicsByTrack } from '../lib/data/topics'
 import type { Track, Topic } from '../lib/types/track'
@@ -27,8 +28,8 @@ import type { BreadcrumbItem } from '../components/navigation/Breadcrumb'
 import { createJamRecording, updateJamRecording } from '../lib/database'
 import { uploadToStorage, generateJamRecordingPath } from '../lib/storage'
 import { transcribeAudio, getFeedbackAnalysis, generateMockFeedback } from '../lib/api'
-// import { checkDatabaseConnection, checkUserPermissions, checkStorageBucket } from '../lib/database/debug'
-// import type { FeedbackResponse } from '../lib/types/api'
+import ProcessingStepper, { type ProcessingStep } from '../components/ProcessingStepper'
+import { useCredits } from '../hooks/useCredits'
 
 export default function TopicPractice() {
     const [user, setUser] = useState<Record<string, unknown> | null>(null)
@@ -41,12 +42,69 @@ export default function TopicPractice() {
     const [error, setError] = useState<string | null>(null)
     const [track, setTrack] = useState<Track | null>(null)
     const [loading, setLoading] = useState(true)
+    // Processing stepper state
+    const [steps, setSteps] = useState<ProcessingStep[]>([
+        { key: 'upload', label: 'Upload', state: 'pending' },
+        { key: 'transcribe', label: 'Transcribe', state: 'pending' },
+        { key: 'analyze', label: 'Analyze', state: 'pending' },
+        { key: 'finalize', label: 'Finalize', state: 'pending' }
+    ])
+    // Track current step start time to drive ETA/adaptive messaging
+    const [activeStepStartedAt, setActiveStepStartedAt] = useState<number | null>(null)
+    const [processingSubtitle, setProcessingSubtitle] = useState<string>('~25–45s expected.')
+
+    // Audio visualization state
+    const audioContextRef = useRef<AudioContext | null>(null)
+    const analyserRef = useRef<AnalyserNode | null>(null)
+    const rafIdRef = useRef<number | null>(null)
+    const [micLevel, setMicLevel] = useState<number>(0)
+    const [isClipping, setIsClipping] = useState<boolean>(false)
+    const JAM_CREDIT_COST = 1
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+    // Maintain object URL for preview and clean up
+    useEffect(() => {
+        if (audioBlob) {
+            const url = URL.createObjectURL(audioBlob)
+            setPreviewUrl(url)
+            return () => {
+                URL.revokeObjectURL(url)
+                setPreviewUrl(null)
+            }
+        } else {
+            setPreviewUrl(null)
+        }
+    }, [audioBlob])
+
+    // Preflight state
+    const [showPreflight, setShowPreflight] = useState(false)
+    const [showCountdown, setShowCountdown] = useState(false)
+
+    // Credit system
+    const { balance, loading: creditsLoading } = useCredits()
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
     const audioChunksRef = useRef<Blob[]>([])
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    const hasStoppedRef = useRef(false)
     const navigate = useNavigate()
     const params = useParams()
+
+    // Check if user can perform analysis
+    const canPerformAnalysis = balance > 0 && !creditsLoading
+
+    // Check if we should show preflight
+    const shouldShowPreflight = () => {
+        const stored = localStorage.getItem('jamPreflightAckV1')
+        if (!stored) return true
+
+        try {
+            const data = JSON.parse(stored)
+            return Date.now() > data.expiresAt
+        } catch {
+            return true
+        }
+    }
 
     // Load track and topic data
     const loadTrackAndTopic = useCallback(async () => {
@@ -103,9 +161,21 @@ export default function TopicPractice() {
         loadUserAndData()
     }, [loadTrackAndTopic, navigate])
 
-    // Start recording
+    // Handle start recording flow
+    const handleStartRecording = () => {
+        if (shouldShowPreflight()) {
+            setShowPreflight(true)
+        } else {
+            setShowCountdown(true)
+        }
+    }
+
+    // Start recording (called after countdown)
     const startRecording = async () => {
         try {
+            hasStoppedRef.current = false
+            // Reset timer for a fresh 60s session
+            setTimeLeft(60)
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
             const mediaRecorder = new MediaRecorder(stream)
             mediaRecorderRef.current = mediaRecorder
@@ -124,34 +194,98 @@ export default function TopicPractice() {
             setIsRecording(true)
             setIsPaused(false)
 
-            // Start timer
+            // Start timer using a stable closure
             timerRef.current = setInterval(() => {
                 setTimeLeft((prev) => {
-                    if (prev <= 1) {
+                    const next = prev - 1
+                    if (next <= 0) {
+                        // Force to zero and stop cleanly
+                        clearInterval(timerRef.current as unknown as number)
+                        timerRef.current = null
+                    // Call stopRecording synchronously to avoid race with state
                         stopRecording()
                         return 0
                     }
-                    return prev - 1
+                    return next
                 })
             }, 1000)
+
+            // Initialize audio context & mic level meter
+            try {
+                const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext
+                const audioCtx: AudioContext = audioContextRef.current ?? new AudioCtx()
+                audioContextRef.current = audioCtx
+                const source = audioCtx.createMediaStreamSource(stream)
+                const analyser = audioCtx.createAnalyser()
+                analyser.fftSize = 2048
+                analyserRef.current = analyser
+                source.connect(analyser)
+
+                const dataArray = new Uint8Array(analyser.frequencyBinCount)
+                const tick = () => {
+                    if (!analyserRef.current) return
+                    analyserRef.current.getByteTimeDomainData(dataArray)
+                    let sumSquares = 0
+                    let clipped = false
+                    for (let i = 0; i < dataArray.length; i++) {
+                        const v = (dataArray[i] - 128) / 128
+                        sumSquares += v * v
+                        if (Math.abs(v) > 0.95) clipped = true
+                    }
+                    const rms = Math.sqrt(sumSquares / dataArray.length)
+                    setMicLevel(rms)
+                    setIsClipping(clipped)
+                    rafIdRef.current = requestAnimationFrame(tick)
+                }
+                rafIdRef.current = requestAnimationFrame(tick)
+            } catch (e) {
+                console.warn('Audio level meter init failed:', e)
+            }
         } catch (error) {
             console.error('Error starting recording:', error)
             setError('Failed to start recording. Please check microphone permissions.')
         }
     }
 
+    // Handle preflight start
+    const handlePreflightStart = () => {
+        setShowPreflight(false)
+        setShowCountdown(true)
+    }
+
     // Stop recording
     const stopRecording = () => {
-        if (mediaRecorderRef.current && isRecording) {
-            mediaRecorderRef.current.stop()
-            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
-            setIsRecording(false)
-            setIsPaused(false)
+        if (hasStoppedRef.current) return
+        hasStoppedRef.current = true
 
-            if (timerRef.current) {
-                clearInterval(timerRef.current)
-                timerRef.current = null
+        // Always clear countdown timer
+        if (timerRef.current) {
+            clearInterval(timerRef.current)
+            timerRef.current = null
+        }
+
+        // Stop media recorder and tracks if present
+        try {
+            if (mediaRecorderRef.current) {
+                const state = (mediaRecorderRef.current as any).state
+                if (state !== 'inactive') {
+                    mediaRecorderRef.current.stop()
+                }
+                mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
             }
+        } catch { }
+
+        setIsRecording(false)
+        setIsPaused(false)
+
+        // Stop mic level meter
+        if (rafIdRef.current) {
+            cancelAnimationFrame(rafIdRef.current)
+            rafIdRef.current = null
+        }
+        if (audioContextRef.current) {
+            try { audioContextRef.current.close() } catch { }
+            audioContextRef.current = null
         }
     }
 
@@ -175,21 +309,39 @@ export default function TopicPractice() {
             setIsPaused(false)
             timerRef.current = setInterval(() => {
                 setTimeLeft((prev) => {
-                    if (prev <= 1) {
+                    const next = prev - 1
+                    if (next <= 0) {
+                        clearInterval(timerRef.current as unknown as number)
+                        timerRef.current = null
                         stopRecording()
                         return 0
                     }
-                    return prev - 1
+                    return next
                 })
             }, 1000)
         }
     }
 
-    // Handle submit with parallel processing
+    // Handle submit with new complete analysis workflow
     const handleSubmit = async () => {
         if (!audioBlob || !selectedTopic || !user) return
 
+        // Check if user has sufficient credits
+        if (!canPerformAnalysis) {
+            setError('Insufficient credits. Please purchase credits to continue.')
+            return
+        }
+
         setIsProcessing(true)
+        // reset steps
+        setSteps([
+            { key: 'upload', label: 'Upload', state: 'active' },
+            { key: 'transcribe', label: 'Transcribe', state: 'pending' },
+            { key: 'analyze', label: 'Analyze', state: 'pending' },
+            { key: 'finalize', label: 'Finalize', state: 'pending' }
+        ])
+        setActiveStepStartedAt(Date.now())
+        setProcessingSubtitle('~25–45s expected.')
         setError(null)
         let recordingId: string | null = null
 
@@ -215,69 +367,70 @@ export default function TopicPractice() {
 
             recordingId = recordingResult.data.id
 
-            // Step 2: Parallel operations - Upload to Storage and Transcribe
+            // Step 2: Upload to Storage
             const storagePath = generateJamRecordingPath(user.id as string, recordingId)
+            const uploadResult = await uploadToStorage(storagePath, audioBlob)
 
-            const [uploadResult, transcriptionResult] = await Promise.all([
-                // Upload to Supabase Storage
-                uploadToStorage(storagePath, audioBlob),
-                // Call transcription API
-                transcribeAudio(audioBlob)
-            ])
-
-            // Check for upload errors
             if (uploadResult.error) {
+                // mark upload error
+                setSteps(prev => prev.map(s => s.key === 'upload' ? { ...s, state: 'error' } : s))
                 throw new Error(`Upload failed: ${uploadResult.error}`)
             }
+            // upload done -> transcribe active
+            setSteps(prev => prev.map(s =>
+                s.key === 'upload' ? { ...s, state: 'done' } :
+                    s.key === 'transcribe' ? { ...s, state: 'active' } : s
+            ))
+            setActiveStepStartedAt(Date.now())
+            setProcessingSubtitle('~25–45s expected.')
 
-            // Check for transcription errors
-            if (transcriptionResult.error) {
-                throw new Error(`Transcription failed: ${transcriptionResult.error}`)
+            // Step 3a: Transcribe
+            const transcription = await transcribeAudio(audioBlob)
+            if (transcription.error || !transcription.text) {
+                setSteps(prev => prev.map(s => s.key === 'transcribe' ? { ...s, state: 'error' } : s))
+                throw new Error(`Transcription failed: ${transcription.error || 'Unknown error'}`)
             }
+            setSteps(prev => prev.map(s =>
+                s.key === 'transcribe' ? { ...s, state: 'done' } :
+                    s.key === 'analyze' ? { ...s, state: 'active' } : s
+            ))
 
-            // Step 3: Update database with storage path and transcript
-            await updateJamRecording(recordingId, {
-                storage_path: uploadResult.path,
-                transcript: transcriptionResult.text,
-                status: 'analyzing'
-            })
-
-            // Step 4: Get feedback analysis
+            // Step 3b: Analyze (feedback)
             const feedbackResult = await getFeedbackAnalysis({
-                text: transcriptionResult.text,
+                text: transcription.text,
                 topic: selectedTopic.title,
-                duration: actualDuration
+                duration: actualDuration,
+                recordingId
             })
 
-            if (feedbackResult.error) {
-                throw new Error(`Feedback analysis failed: ${feedbackResult.error}`)
+            if (feedbackResult.error || !feedbackResult.data) {
+                setSteps(prev => prev.map(s => s.key === 'analyze' ? { ...s, state: 'error' } : s))
+                throw new Error(`Feedback analysis failed: ${feedbackResult.error || 'Unknown error'}`)
             }
+            setSteps(prev => prev.map(s => s.key === 'analyze' ? { ...s, state: 'done' } : s))
 
-            // Step 5: Store complete analysis
+            // Step 4: Update database with storage path only (server updates transcript/feedback/status)
+            setSteps(prev => prev.map(s => s.key === 'finalize' ? { ...s, state: 'active' } : s))
+            setActiveStepStartedAt(Date.now())
+            setProcessingSubtitle('~25–45s expected.')
             await updateJamRecording(recordingId, {
-                feedback_data: feedbackResult.data as unknown as Record<string, unknown>,
-                overall_score: feedbackResult.data?.summary.overallScore,
-                status: 'completed'
+                storage_path: uploadResult.path
             })
+            setSteps(prev => prev.map(s => s.key === 'finalize' ? { ...s, state: 'done' } : s))
 
-            // Step 6: Navigate to feedback page with recording ID
+            // Step 5: Navigate to feedback page with recording ID
+            // Small delay so the finalize ✓ is perceptible
+            await new Promise(resolve => setTimeout(resolve, 400))
             navigate(`/app/jam-feedback/${recordingId}`)
 
         } catch (err) {
             console.error('Error submitting recording:', err)
 
-            // Update database with error if we have a recording ID
-            if (recordingId) {
-                await updateJamRecording(recordingId, {
-                    status: 'failed',
-                    error_message: err instanceof Error ? err.message : 'Unknown error'
-                })
-            }
-
             // Fall back to mock data for better UX
             const actualDuration = Math.max(1, 60 - timeLeft)
             const mockFeedbackData = generateMockFeedback(selectedTopic.title, actualDuration)
             sessionStorage.setItem('jamFeedbackData', JSON.stringify(mockFeedbackData))
+
             // Navigate with recording ID if available, otherwise to base feedback page
             if (recordingId) {
                 navigate(`/app/jam-feedback/${recordingId}`)
@@ -290,6 +443,20 @@ export default function TopicPractice() {
         }
     }
 
+    // Adaptive ETA / messaging timer per active step
+    useEffect(() => {
+        if (!isProcessing || !activeStepStartedAt) return
+        const interval = setInterval(() => {
+            const elapsedSeconds = Math.floor((Date.now() - activeStepStartedAt) / 1000)
+            if (elapsedSeconds > 60) {
+                setProcessingSubtitle('This is taking longer than usual, still working.')
+            } else {
+                setProcessingSubtitle('~25–45s expected.')
+            }
+        }, 1000)
+        return () => clearInterval(interval)
+    }, [isProcessing, activeStepStartedAt])
+
     // Format time display
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60)
@@ -297,10 +464,23 @@ export default function TopicPractice() {
         return `${mins}:${secs.toString().padStart(2, '0')}`
     }
 
-    // Handle back to topics
-    const handleBackToTopics = () => {
-        navigate(`/app/tracks/${params.trackId}/practice`)
-    }
+    // Removed explicit back-to-topics button; breadcrumb and browser back suffice.
+
+    // Cleanup on unmount
+    useEffect(() => {
+        const beforeUnload = (e: BeforeUnloadEvent) => {
+            if (isRecording || isProcessing) {
+                e.preventDefault()
+                e.returnValue = ''
+            }
+        }
+        window.addEventListener('beforeunload', beforeUnload)
+        return () => {
+            window.removeEventListener('beforeunload', beforeUnload)
+            try { mediaRecorderRef.current?.stream.getTracks().forEach(t => t.stop()) } catch { }
+            if (timerRef.current) clearInterval(timerRef.current)
+        }
+    }, [isRecording, isProcessing])
 
     // Breadcrumb items
     const getBreadcrumbItems = (): BreadcrumbItem[] => {
@@ -360,12 +540,16 @@ export default function TopicPractice() {
                             <li key={index} className="flex items-center">
                                 {index > 0 && <span className="mx-2">/</span>}
                                 {item.icon && <item.icon className="h-4 w-4 mr-1" />}
-                                <a
-                                    href={item.href}
-                                    className="hover:text-blue-600 transition-colors"
-                                >
-                                    {item.label}
-                                </a>
+                                {item.href && item.href !== '#' ? (
+                                    <Link
+                                        to={item.href}
+                                        className="hover:text-blue-600 transition-colors"
+                                    >
+                                        {item.label}
+                                    </Link>
+                                ) : (
+                                    <span className="text-gray-500">{item.label}</span>
+                                )}
                             </li>
                         ))}
                     </ol>
@@ -373,13 +557,13 @@ export default function TopicPractice() {
 
                 {/* Topic Info */}
                 {selectedTopic && (
-                    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div className="bg-white rounded-xl shadow p-6 lg:p-5 mb-6">
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
                                 <h1 className="text-2xl font-bold text-gray-900 mb-2">
                                     {selectedTopic.title}
                                 </h1>
-                                <p className="text-gray-600 mb-4">{selectedTopic.description}</p>
+                                <p className="text-slate-500 mb-4">{selectedTopic.description}</p>
                                 <div className="flex items-center space-x-4">
                                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColors(selectedTopic.difficulty)}`}>
                                         {selectedTopic.difficulty}
@@ -389,61 +573,126 @@ export default function TopicPractice() {
                                         {Math.floor(selectedTopic.estimatedTime / 60)} min
                                     </span>
                                 </div>
+                                {/* Tags */}
+                                {selectedTopic.tags && selectedTopic.tags.length > 0 && (
+                                    <div className="mt-3">
+                                        <div className="flex flex-wrap gap-1">
+                                            {selectedTopic.tags.slice(0, 3).map((tag, index) => (
+                                                <span key={index} className="px-2 py-1 bg-sky-50 text-sky-700 text-xs rounded-full">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                            {selectedTopic.tags.length > 3 && (
+                                                <span className="px-2 py-1 bg-gray-50 text-gray-500 text-xs rounded-full">
+                                                    +{selectedTopic.tags.length - 3} more
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            <button
-                                onClick={handleBackToTopics}
-                                className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
-                            >
-                                <ArrowLeft className="h-4 w-4 mr-1" />
-                                Back to Topics
-                            </button>
+                            <div className="flex items-center gap-3 text-slate-500">
+                                <StatusChips />
+                            </div>
                         </div>
                     </div>
                 )}
 
                 {/* Recording Interface */}
-                <div className="bg-white rounded-lg shadow-md p-8">
+                <div className="bg-white rounded-xl shadow p-6 lg:p-5">
+                    {/* Header meta row aligned right (chips moved to topic card) */}
+
                     <div className="text-center mb-8">
                         <AnimatedTarget variant={isRecording ? 'loading' : 'success'} />
                         <h2 className="text-xl font-semibold text-gray-900 mt-4 mb-2">
-                            {isRecording ? 'Recording...' : 'Ready to Record'}
+                            {isRecording ? 'Recording…' : "You're ready. Hit Start."}
                         </h2>
                         <p className="text-gray-600">
                             {isRecording
                                 ? 'Speak clearly and naturally about the topic'
-                                : 'Click the record button to start your JAM session'
+                                : 'Aim for a clear intro, 2–3 points, and a strong finish.'
                             }
                         </p>
                     </div>
 
                     {/* Timer */}
                     <div className="text-center mb-6">
-                        <div className="text-4xl font-bold text-gray-900 mb-2">
+                        <div className={`text-4xl font-bold mb-2 ${timeLeft > 30 ? 'text-emerald-600' : timeLeft > 10 ? 'text-amber-600' : 'text-rose-600'} ${timeLeft <= 10 ? 'animate-pulse' : ''}`}>
                             {formatTime(timeLeft)}
                         </div>
                         <LinearProgressBar
                             progress={((60 - timeLeft) / 60) * 100}
                             className="w-full max-w-md mx-auto"
                         />
+                        {(isRecording || isPaused) && (
+                            <div className="max-w-md mx-auto mt-3">
+                                <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
+                                    <span>Mic level</span>
+                                    {isClipping && <span className="text-red-600 font-medium">Clipping</span>}
+                                </div>
+                                <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all duration-150 ${micLevel > 0.7 ? 'bg-red-500' : micLevel > 0.4 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                                        style={{ width: `${Math.min(100, Math.round(micLevel * 120))}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Recording Controls */}
                     <div className="flex justify-center space-x-4 mb-6">
                         {!isRecording ? (
-                            <button
-                                onClick={startRecording}
-                                disabled={timeLeft === 0}
-                                className="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
-                            >
-                                <Play className="h-5 w-5 mr-2" />
-                                Start Recording
-                            </button>
+                            <>
+                                {!audioBlob ? (
+                                    <button
+                                        onClick={handleStartRecording}
+                                        disabled={timeLeft === 0}
+                                        className="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
+                                    >
+                                        <Play className="h-5 w-5 mr-2" />
+                                        Start Recording
+                                    </button>
+                                ) : (
+                                    <div className="flex flex-col items-center space-y-4 w-full">
+                                        {/* Review & Submit state */}
+                                        {previewUrl && (
+                                            <audio className="w-full max-w-md" controls src={previewUrl} />
+                                        )}
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={handleSubmit}
+                                                disabled={isProcessing || !canPerformAnalysis || Math.max(1, 60 - timeLeft) < 10}
+                                                className="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center"
+                                            >
+                                                <CheckCircle className="h-5 w-5 mr-2" />
+                                                Submit for analysis
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    // Reset for retry
+                                                    setAudioBlob(null)
+                                                    setTimeLeft(60)
+                                                    setError(null)
+                                                    handleStartRecording()
+                                                }}
+                                                className="bg-gray-200 text-gray-900 px-6 py-3 rounded-full hover:bg-gray-300 transition-colors"
+                                            >
+                                                Record again
+                                            </button>
+                                        </div>
+                                        {Math.max(1, 60 - timeLeft) < 10 && (
+                                            <p className="text-sm text-red-600">Recording is too short. Please record again.</p>
+                                        )}
+                                    </div>
+                                )}
+                            </>
                         ) : (
                             <>
                                 {isPaused ? (
                                     <button
                                             onClick={resumeRecording}
-                                            className="bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 transition-colors flex items-center"
+                                            className="bg-gray-200 text-gray-900 px-6 py-3 rounded-full hover:bg-gray-300 transition-colors flex items-center"
                                     >
                                             <Play className="h-5 w-5 mr-2" />
                                             Resume
@@ -451,7 +700,7 @@ export default function TopicPractice() {
                                 ) : (
                                     <button
                                                 onClick={pauseRecording}
-                                                className="bg-yellow-600 text-white px-6 py-3 rounded-full hover:bg-yellow-700 transition-colors flex items-center"
+                                                className="bg-gray-200 text-gray-900 px-6 py-3 rounded-full hover:bg-gray-300 transition-colors flex items-center"
                                     >
                                                 <Pause className="h-5 w-5 mr-2" />
                                                 Pause
@@ -459,7 +708,7 @@ export default function TopicPractice() {
                                     )}
                                 <button
                                     onClick={stopRecording}
-                                        className="bg-gray-600 text-white px-6 py-3 rounded-full hover:bg-gray-700 transition-colors flex items-center"
+                                        className="bg-gray-200 text-gray-900 px-6 py-3 rounded-full hover:bg-gray-300 transition-colors flex items-center"
                                 >
                                         <StopCircle className="h-5 w-5 mr-2" />
                                         Stop
@@ -468,31 +717,44 @@ export default function TopicPractice() {
                         )}
                     </div>
 
-                    {/* Submit Button */}
+                    {/* Credit + CTA panel (visible when a take exists and not recording) */}
                     {audioBlob && !isRecording && (
-                        <div className="text-center">
-                            <button
-                                onClick={handleSubmit}
-                                disabled={isProcessing}
-                                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center mx-auto"
-                            >
-                                {isProcessing ? (
-                                    <>
-                                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                                        Processing...
-                                    </>
-                                ) : (
-                                    <>
-                                        <CheckCircle className="h-5 w-5 mr-2" />
-                                        Submit Recording
-                                    </>
-                                )}
-                            </button>
+                        <div className="text-center mb-6 md:mb-8">
+                            <div className="mb-4 p-3 rounded-xl bg-gray-50 border border-gray-200">
+                                <div className="flex flex-col items-center space-y-1">
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm text-gray-600">This analysis costs</span>
+                                        <span className="text-sm font-semibold text-slate-900">{JAM_CREDIT_COST} credit</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm text-gray-600">Your balance:</span>
+                                        {canPerformAnalysis ? (
+                                            <span className="flex items-center text-green-600 font-medium">
+                                                <CheckCircle className="h-4 w-4 mr-1" />
+                                                {balance} credits available
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center text-red-600 font-medium">
+                                                <AlertCircle className="h-4 w-4 mr-1" />
+                                                Insufficient credits
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {!canPerformAnalysis && (
+                                <p className="text-sm text-red-600 mt-2">
+                                    Please purchase credits to analyze your recording
+                                </p>
+                            )}
                         </div>
                     )}
 
                     {/* Tips */}
+                    <div className="mt-4 md:mt-6">
                     <CollapsibleTips 
+                            defaultExpanded={false}
                         tips={[
                             "Speak clearly and at a moderate pace",
                             "Structure your thoughts with an introduction, main points, and conclusion",
@@ -501,11 +763,32 @@ export default function TopicPractice() {
                             "Practice maintaining eye contact (even though you're recording)"
                         ]}
                     />
-
-
-
+                    </div>
                 </div>
             </div>
+
+            {/* Processing Stepper Overlay */}
+            <ProcessingStepper
+                isOpen={isProcessing}
+                title="Processing your recording"
+                subtitle={processingSubtitle}
+                steps={steps}
+            />
+            {/* Preflight Sheet */}
+            <PreflightSheet
+                isOpen={showPreflight}
+                onClose={() => setShowPreflight(false)}
+                onStart={handlePreflightStart}
+            />
+
+            {/* Countdown Overlay */}
+            <CountdownOverlay
+                isVisible={showCountdown}
+                onComplete={() => {
+                    setShowCountdown(false)
+                    startRecording()
+                }}
+            />
         </div>
     )
 } 

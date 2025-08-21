@@ -33,9 +33,37 @@ CREATE TABLE IF NOT EXISTS jam_recordings (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Credit System Tables
+
+-- User credits table - stores current credit balance for each user
+CREATE TABLE IF NOT EXISTS user_credits (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
+    balance INTEGER NOT NULL DEFAULT 0 CHECK (balance >= 0),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+-- Credit transactions table - audit trail for all credit operations
+CREATE TABLE IF NOT EXISTS credit_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    transaction_type TEXT NOT NULL CHECK (transaction_type IN ('purchase', 'consumption', 'refund', 'bonus')),
+    amount INTEGER NOT NULL,
+    balance_before INTEGER NOT NULL,
+    balance_after INTEGER NOT NULL,
+    description TEXT,
+    metadata JSONB,
+    recording_id UUID REFERENCES jam_recordings(id) ON DELETE SET NULL,
+    payment_id TEXT, -- Razorpay payment ID for purchases
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
 -- Enable RLS on tables for production security
 ALTER TABLE topics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE jam_recordings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_credits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE credit_transactions ENABLE ROW LEVEL SECURITY;
 
 -- Create indexes for better performance
 -- Topics indexes
@@ -51,6 +79,13 @@ CREATE INDEX IF NOT EXISTS idx_jam_recordings_topic_id ON jam_recordings(topic_i
 CREATE INDEX IF NOT EXISTS idx_jam_recordings_status ON jam_recordings(status);
 CREATE INDEX IF NOT EXISTS idx_jam_recordings_created_at ON jam_recordings(created_at);
 CREATE INDEX IF NOT EXISTS idx_jam_recordings_overall_score ON jam_recordings(overall_score);
+
+-- Credit system indexes
+CREATE INDEX IF NOT EXISTS idx_user_credits_user_id ON user_credits(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_user_id ON credit_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_type ON credit_transactions(transaction_type);
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_created_at ON credit_transactions(created_at);
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_payment_id ON credit_transactions(payment_id);
 
 -- RLS Policies for topics table
 -- Topics are public read-only, only admins can modify
@@ -79,6 +114,25 @@ CREATE POLICY "Users can update their own recordings" ON jam_recordings
 
 CREATE POLICY "Users can delete their own recordings" ON jam_recordings
     FOR DELETE USING (auth.uid() = user_id);
+
+-- RLS Policies for user_credits table
+-- Users can only view their own credit balance
+CREATE POLICY "Users can view their own credits" ON user_credits
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create their own credit record" ON user_credits
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own credit record" ON user_credits
+    FOR UPDATE USING (auth.uid() = user_id);
+
+-- RLS Policies for credit_transactions table
+-- Users can only view their own transactions
+CREATE POLICY "Users can view their own transactions" ON credit_transactions
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create their own transactions" ON credit_transactions
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Storage Policies for jam-recordings bucket
 -- Enable RLS on storage.objects (if not already enabled)
@@ -112,34 +166,6 @@ CREATE POLICY "Users can delete their own files" ON storage.objects
         AND (storage.foldername(name))[1] = auth.uid()::text
     );
 
-
-
--- Insert some sample data (optional)
--- You can uncomment and modify this section if you want to insert initial data
-/*
-INSERT INTO topics (title, category, description, track_id, difficulty, estimated_time, tags, is_active) VALUES
-(
-    'Digital Transformation in Business',
-    'Technology',
-    'Discuss how digital transformation is reshaping traditional business models and what it means for future leaders.',
-    'jam',
-    'intermediate',
-    60,
-    ARRAY['technology', 'business', 'digital'],
-    true
-),
-(
-    'Remote Work Culture',
-    'Workplace',
-    'Share your thoughts on the future of remote work and its impact on team collaboration and productivity.',
-    'jam',
-    'beginner',
-    60,
-    ARRAY['workplace', 'remote-work', 'collaboration'],
-    true
-);
-*/
-
 -- Comments for documentation
 COMMENT ON TABLE topics IS 'Stores all practice topics that can be assigned to different tracks';
 COMMENT ON COLUMN topics.id IS 'Primary key, auto-generated UUID';
@@ -168,6 +194,26 @@ COMMENT ON COLUMN jam_recordings.error_message IS 'Error message if processing f
 COMMENT ON COLUMN jam_recordings.created_at IS 'Record creation timestamp';
 COMMENT ON COLUMN jam_recordings.updated_at IS 'Last update timestamp';
 
+COMMENT ON TABLE user_credits IS 'Stores current credit balance for each user';
+COMMENT ON COLUMN user_credits.id IS 'Primary key, auto-generated UUID';
+COMMENT ON COLUMN user_credits.user_id IS 'Foreign key to auth.users with CASCADE delete, unique per user';
+COMMENT ON COLUMN user_credits.balance IS 'Current credit balance, must be >= 0';
+COMMENT ON COLUMN user_credits.created_at IS 'Record creation timestamp';
+COMMENT ON COLUMN user_credits.updated_at IS 'Last update timestamp';
+
+COMMENT ON TABLE credit_transactions IS 'Audit trail for all credit operations';
+COMMENT ON COLUMN credit_transactions.id IS 'Primary key, auto-generated UUID';
+COMMENT ON COLUMN credit_transactions.user_id IS 'Foreign key to auth.users with CASCADE delete';
+COMMENT ON COLUMN credit_transactions.transaction_type IS 'Type of transaction: purchase, consumption, refund, bonus';
+COMMENT ON COLUMN credit_transactions.amount IS 'Number of credits added/subtracted';
+COMMENT ON COLUMN credit_transactions.balance_before IS 'Credit balance before transaction';
+COMMENT ON COLUMN credit_transactions.balance_after IS 'Credit balance after transaction';
+COMMENT ON COLUMN credit_transactions.description IS 'Human-readable description of transaction';
+COMMENT ON COLUMN credit_transactions.metadata IS 'Additional transaction data (JSONB)';
+COMMENT ON COLUMN credit_transactions.recording_id IS 'Associated recording for consumption/refund transactions';
+COMMENT ON COLUMN credit_transactions.payment_id IS 'Razorpay payment ID for purchase transactions';
+COMMENT ON COLUMN credit_transactions.created_at IS 'Transaction timestamp';
+
 -- Security and RLS Policy Comments
 COMMENT ON POLICY "Topics are viewable by everyone" ON topics IS 'Allows public read access to topics';
 COMMENT ON POLICY "Topics can only be created by authenticated users" ON topics IS 'Restricts topic creation to authenticated users';
@@ -178,6 +224,13 @@ COMMENT ON POLICY "Users can view their own recordings" ON jam_recordings IS 'Us
 COMMENT ON POLICY "Users can create their own recordings" ON jam_recordings IS 'Users can only create recordings for themselves';
 COMMENT ON POLICY "Users can update their own recordings" ON jam_recordings IS 'Users can only update their own recordings';
 COMMENT ON POLICY "Users can delete their own recordings" ON jam_recordings IS 'Users can only delete their own recordings';
+
+COMMENT ON POLICY "Users can view their own credits" ON user_credits IS 'Users can only see their own credit balance';
+COMMENT ON POLICY "Users can create their own credit record" ON user_credits IS 'Users can only create credit records for themselves';
+COMMENT ON POLICY "Users can update their own credit record" ON user_credits IS 'Users can only update their own credit records';
+
+COMMENT ON POLICY "Users can view their own transactions" ON credit_transactions IS 'Users can only see their own credit transactions';
+COMMENT ON POLICY "Users can create their own transactions" ON credit_transactions IS 'Users can only create transactions for themselves';
 
 -- Storage Policy Comments
 COMMENT ON POLICY "Users can upload to their own folder" ON storage.objects IS 'Allows authenticated users to upload files to their own user folder';

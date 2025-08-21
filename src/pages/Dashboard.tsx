@@ -65,7 +65,7 @@ export default function Dashboard() {
                 {/* Welcome Section */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                        Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'there'}!
+                        Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'User'}!
                     </h1>
                     <p className="text-gray-600">
                         Choose a track to start practicing your speaking skills

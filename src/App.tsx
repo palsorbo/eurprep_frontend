@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './lib/auth-context'
 import ProtectedRoute from './components/ProtectedRoute'
+
 import './index.css'
 
 // Lazy load components for better performance
@@ -13,12 +14,15 @@ const ContactPage = lazy(() => import('./pages/ContactPage'))
 
 // App components
 const Login = lazy(() => import('./pages/Login'))
+const AuthCallback = lazy(() => import('./components/AuthCallback'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const TrackDetail = lazy(() => import('./pages/TrackDetail'))
 const Practice = lazy(() => import('./pages/Practice'))
 const TopicPractice = lazy(() => import('./pages/TopicPractice'))
 const JamFeedback = lazy(() => import('./pages/JamFeedback'))
 const RecordingsPage = lazy(() => import('./pages/RecordingsPage'))
+const BuyCredits = lazy(() => import('./pages/BuyCredits'))
+const TransactionHistory = lazy(() => import('./pages/TransactionHistory'))
 
 // Loading component
 const LoadingSpinner = () => (
@@ -40,6 +44,7 @@ function App() {
 
             {/* App routes */}
             <Route path="/app/login" element={<Login />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/app" element={
               <ProtectedRoute>
                 <Dashboard />
@@ -68,6 +73,16 @@ function App() {
             <Route path="/app/recordings" element={
               <ProtectedRoute>
                 <RecordingsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/app/buy-credits" element={
+              <ProtectedRoute>
+                <BuyCredits />
+              </ProtectedRoute>
+            } />
+            <Route path="/app/transactions" element={
+              <ProtectedRoute>
+                <TransactionHistory />
               </ProtectedRoute>
             } />
 
