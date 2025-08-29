@@ -1,27 +1,36 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Lazy-load environment variables to avoid issues in production builds
+const getSupabaseConfig = () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl) {
-    throw new Error('Missing environment variable: VITE_SUPABASE_URL')
-}
-
-if (!supabaseAnonKey) {
-    throw new Error('Missing environment variable: VITE_SUPABASE_ANON_KEY')
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-        storageKey: 'eurprep.auth.token',
-        storage: window.localStorage,
-        flowType: 'pkce',
-        debug: true
+    if (!supabaseUrl) {
+        throw new Error('Missing environment variable: VITE_SUPABASE_URL')
     }
-})
+
+    if (!supabaseAnonKey) {
+        throw new Error('Missing environment variable: VITE_SUPABASE_ANON_KEY')
+    }
+
+    return { supabaseUrl, supabaseAnonKey }
+}
+
+export const supabase = createClient(
+    getSupabaseConfig().supabaseUrl,
+    getSupabaseConfig().supabaseAnonKey,
+    {
+        auth: {
+            autoRefreshToken: true,
+            persistSession: true,
+            detectSessionInUrl: true,
+            storageKey: 'eurprep.auth.token',
+            storage: window.localStorage,
+            flowType: 'pkce',
+            debug: true
+        }
+    }
+)
 
 // Database types
 export interface Profile {
