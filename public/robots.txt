@@ -2,9 +2,8 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://eurprep.com/sitemap.xml
+Sitemap: https://app.eurprep.com/sitemap.xml
 
-# Disallow admin and private areas
-Disallow: /app/dashboard
-Disallow: /app/tracks/
-Disallow: /app/jam-feedback 
+# Allow all user-facing routes
+Allow: /dashboard
+Allow: /auth/callback 

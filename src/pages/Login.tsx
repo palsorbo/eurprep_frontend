@@ -14,7 +14,7 @@ export default function Login() {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}/app`,
+                    redirectTo: `${window.location.origin}/auth/callback`,
                     queryParams: {
                         access_type: 'offline',
                         prompt: 'consent'
@@ -34,20 +34,6 @@ export default function Login() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
-            {/* Header */}
-            <nav className="w-full py-4 px-6 bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center space-x-2 group">
-                        <div className="w-8 h-8 bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg flex items-center justify-center shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 group-hover:from-sky-600 group-hover:to-sky-700">
-                            <Target className="w-5 h-5 text-white transition-transform duration-300 group-hover:rotate-12" />
-                        </div>
-                        <span className="text-xl font-bold tracking-tight text-slate-800 transition-colors duration-300 group-hover:text-sky-600">
-                            Eurprep
-                        </span>
-                    </div>
-                </div>
-            </nav>
-
             {/* Hero Section */}
             <section className="relative px-6 py-20 lg:py-32">
                 <div className="max-w-4xl mx-auto text-center">
@@ -121,7 +107,7 @@ export default function Login() {
                             <span className="font-medium text-sm">Privacy First</span>
                         </div>
                         <p className="text-sm text-gray-600 text-center">
-                            We'll never share your speech data. Your practice sessions are completely private.
+                            We'll never share your data. Your practice sessions are completely private.
                         </p>
                     </div>
 
@@ -133,54 +119,6 @@ export default function Login() {
                     )}
                 </div>
             </section>
-
-            {/* Footer */}
-            <footer className="px-6 py-12 bg-slate-900 text-white">
-                <div className="max-w-7xl mx-auto">
-                    <div className="grid md:grid-cols-4 gap-8">
-                        <div className="md:col-span-1">
-                            <div className="mb-4">
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-8 h-8 bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg flex items-center justify-center shadow-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 group-hover:from-sky-600 group-hover:to-sky-700">
-                                        <Target className="w-5 h-5 text-white transition-transform duration-300 group-hover:rotate-12" />
-                                    </div>
-                                    <span className="text-xl font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-sky-600">
-                                        Eurprep
-                                    </span>
-                                </div>
-                            </div>
-                            <p className="text-slate-300">
-                                Master the art of confident communication with AI-powered speech analysis.
-                            </p>
-                        </div>
-
-                        <div className="md:col-span-1">
-                            <h3 className="font-semibold mb-4 text-white">Product</h3>
-                            <ul className="space-y-2 text-slate-300">
-                                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-                            </ul>
-                        </div>
-
-                        <div className="md:col-span-1">
-                            <h3 className="font-semibold mb-4 text-white">Company</h3>
-                            <ul className="space-y-2 text-slate-300">
-                                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                            </ul>
-                        </div>
-
-                        <div className="md:col-span-1">
-                            <h3 className="font-semibold mb-4 text-white">Support</h3>
-                            <ul className="space-y-2 text-slate-300">
-                                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400">
-                        <p>&copy; 2024 Eurprep. All rights reserved.</p>
-                    </div>
-                </div>
-            </footer>
         </div>
     )
 } 

@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
 
     if (!user) {
-        return <Navigate to="/app/login" replace />
+        return <Navigate to="/" replace state={{ from: 'protected_route' }} />
     }
 
     return <>{children}</>

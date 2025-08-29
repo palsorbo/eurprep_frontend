@@ -2,10 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
-console.log("Build-time VITE_SUPABASE_URL:", process.env.VITE_SUPABASE_URL);
-console.log("Build-time VITE_SUPABASE_ANON_KEY:", process.env.VITE_SUPABASE_ANON_KEY);
-console.log("Build-time :", process.env);
-
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -25,7 +21,7 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
           supabase: ['@supabase/supabase-js'],
-          ui: ['lucide-react', 'framer-motion'],
+          ui: ['lucide-react'],
         },
         assetFileNames: (assetInfo) => {
           // Handle font files properly

@@ -1,54 +1,39 @@
 
 
 import { useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
-import {
-    Clock,
-    Play,
-    Calendar,
-    Mic,
-    BarChart3
-} from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import LoadingScreen from '../components/LoadingScreen'
-import TrackGrid from '../components/tracks/TrackGrid'
-import NotRatedYet from '../components/NotRatedYet'
-import AuthenticatedHeader from '../components/AuthenticatedHeader'
-import { TRACKS } from '../lib/data/tracks'
-import { COLORS } from '../lib/constants/colors'
-import { formatTime } from '../lib/utils'
-import { useUserStats, useUserProgress } from '../hooks'
-import RecentRecordings from '../components/RecentRecordings'
-// import { checkDatabaseConnection, checkStorageBucket, checkTopics, checkUserPermissions } from '../lib/database/debug'
+import Logo from '../components/Logo'
 
 export default function Dashboard() {
-    const { user, loading: authLoading } = useAuth()
-    const { stats, loading: statsLoading } = useUserStats()
-    const { progress: userProgress, loading: progressLoading } = useUserProgress()
+    const { user, loading: authLoading, signOut } = useAuth()
     const navigate = useNavigate()
 
     useEffect(() => {
+        console.log('Dashboard useEffect - user:', user, 'authLoading:', authLoading)
         if (!authLoading && !user) {
-            navigate('/app/login')
+            console.log('User not authenticated, navigating to home...')
+            navigate('/', { replace: true, state: { from: 'dashboard' } })
         }
     }, [user, authLoading, navigate])
 
-    const loading = authLoading || statsLoading || progressLoading
-
-    const handleResumePractice = () => {
-        // Find the last practiced track
-        const lastPracticedTrack = Object.entries(userProgress)
-            .filter(([, progress]) => progress.lastPracticeDate)
-            .sort(([, a], [, b]) =>
-                new Date(b.lastPracticeDate!).getTime() - new Date(a.lastPracticeDate!).getTime()
-            )
-
-        if (lastPracticedTrack.length > 0) {
-            navigate(`/app/tracks/${lastPracticedTrack[0][0]}/practice`)
+    const handleLogout = async () => {
+        console.log('Logout button clicked')
+        try {
+            console.log('Calling signOut...')
+            await signOut()
+            console.log('signOut completed, navigating to home...')
+            navigate('/', { replace: true, state: { from: 'logout' } })
+            console.log('Navigation completed')
+        } catch (error) {
+            console.error('Logout error:', error)
+            navigate('/', { replace: true, state: { from: 'logout_error' } })
         }
     }
 
-    if (authLoading || loading) {
+    if (authLoading) {
         return (
             <LoadingScreen
                 message="Loading your dashboard..."
@@ -59,149 +44,39 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <AuthenticatedHeader pageTitle="Dashboard" />
+            {/* Header */}
+            <header className="bg-white shadow-sm border-b border-slate-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        <div className="flex items-center">
+                            <Logo size="lg" />
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <span className="text-slate-700">
+                                Welcome, {user?.user_metadata?.full_name?.split(' ')[0] || user?.email || 'User'}
+                            </span>
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center space-x-2 px-4 py-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
+            {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Welcome Section */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                        Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'User'}!
-                    </h1>
-                    <p className="text-gray-600">
-                        Choose a track to start practicing your speaking skills
+                <div className="text-center">
+                    <h2 className="text-3xl font-bold text-slate-900 mb-4">
+                        Welcome to Eurprep
+                    </h2>
+                    <p className="text-slate-600 text-lg">
+                        Your dashboard is ready. More features coming soon!
                     </p>
                 </div>
-
-                {/* Resume Practice Button */}
-                {Object.keys(userProgress).length > 0 && (
-                    <div className="mb-6">
-                        <button
-                            onClick={handleResumePractice}
-                            className={`${COLORS.primary.yellow.gradient} ${COLORS.primary.yellow.textDark} px-6 py-3 rounded-lg ${COLORS.primary.yellow.gradientHover} transition-all duration-300 font-bold flex items-center space-x-2 hover:shadow-lg transform hover:-translate-y-1 hover:scale-105`}
-                        >
-                            <Play className="w-5 h-5" />
-                            <span>Resume Practice</span>
-                        </button>
-                    </div>
-                )}
-
-                {/* Featured Track Section */}
-                <div className="mb-8">
-                    <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-xl p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
-                                <h2 className="text-2xl font-bold text-slate-900 mb-2">🎯 Start with JAM</h2>
-                                <p className="text-slate-700">
-                                    Perfect for beginners! Practice speaking on various topics for exactly one minute.
-                                </p>
-                            </div>
-                            <div className="hidden md:block">
-                                <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-                                    <Mic className="w-8 h-8 text-white" />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <Link
-                                to="/app/tracks/jam/practice"
-                                className={`${COLORS.primary.yellow.gradient} ${COLORS.primary.yellow.textDark} px-6 py-3 rounded-lg ${COLORS.primary.yellow.gradientHover} transition-all duration-300 font-bold flex items-center justify-center space-x-2 hover:shadow-lg transform hover:-translate-y-1 hover:scale-105`}
-                            >
-                                <Play className="w-5 h-5" />
-                                <span>Start JAM Practice</span>
-                            </Link>
-                            <Link
-                                to="/app/tracks/jam"
-                                className="px-6 py-3 border-2 border-yellow-400 text-yellow-700 rounded-lg font-bold hover:bg-yellow-50 transition-all duration-300 flex items-center justify-center"
-                            >
-                                Learn More
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Track Selection Grid */}
-                <div className="mb-12">
-                    <TrackGrid
-                        tracks={TRACKS}
-                        userProgress={userProgress}
-                        showProgress={true}
-                    />
-                </div>
-
-                {/* Quick Stats Section */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-semibold text-slate-900">Your Progress</h2>
-                        <div className="flex items-center space-x-4">
-                            <Link
-                                to="/app/jam-feedback"
-                                className="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-sky-600 hover:to-blue-700 transition-all duration-200 font-medium text-sm shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                            >
-                                View Recent Feedback
-                            </Link>
-                            <Link
-                                to="/analytics"
-                                className="text-slate-700 hover:text-slate-900 text-sm font-medium"
-                            >
-                                View Detailed Analytics
-                            </Link>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <Link to="/analytics/recordings" className="flex items-center justify-between p-4 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Total Recordings</p>
-                                <p className="text-2xl font-bold text-slate-900">{stats.totalRecordings}</p>
-                            </div>
-                            <div className="w-12 h-12 bg-sky-50 rounded-lg flex items-center justify-center">
-                                <Mic className="w-6 h-6 text-sky-600" />
-                            </div>
-                        </Link>
-
-                        <div className="flex items-center justify-between p-4 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Practice Time</p>
-                                <p className="text-2xl font-bold text-slate-900">
-                                    {formatTime(stats.totalPracticeTime)}
-                                </p>
-                            </div>
-                            <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-                                <Clock className="w-6 h-6 text-green-600" />
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Average Score</p>
-                                <div className="text-2xl font-bold text-slate-900">
-                                    {stats.averageScore > 0 ? `${stats.averageScore.toFixed(1)}/10` : <NotRatedYet />}
-                                </div>
-                            </div>
-                            <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-                                <BarChart3 className="w-6 h-6 text-purple-600" />
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-between p-4 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Last Practice</p>
-                                <p className="text-2xl font-bold text-slate-900">
-                                    {stats.lastPracticeDate ?
-                                        new Date(stats.lastPracticeDate).toLocaleDateString() :
-                                        'Never'
-                                    }
-                                </p>
-                            </div>
-                            <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center">
-                                <Calendar className="w-6 h-6 text-orange-600" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Recent Recordings Section */}
-                <RecentRecordings limit={5} />
             </div>
         </div>
     )

@@ -13,18 +13,22 @@ export default function AuthCallback() {
 
                 if (error) {
                     console.error('Auth callback error:', error)
-                    navigate('/app/login?error=auth_failed')
+                    navigate('/?error=auth_failed')
                     return
                 }
 
                 if (session) {
-                    navigate('/app', { replace: true })
+                    // Use replace and state to prevent hash
+                    navigate('/dashboard', {
+                        replace: true,
+                        state: { from: 'auth_callback' }
+                    })
                 } else {
-                    navigate('/app/login', { replace: true })
+                    navigate('/', { replace: true })
                 }
             } catch (error) {
                 console.error('Unexpected error in auth callback:', error)
-                navigate('/app/login?error=unexpected')
+                navigate('/?error=unexpected')
             }
         }
 

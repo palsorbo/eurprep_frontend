@@ -15,52 +15,17 @@
             "dest": "/assets/*"
         },
         {
-            "src": "/app/*",
+            "src": "/dashboard",
             "dest": "/index.html",
             "status": 200
         },
         {
-            "src": "/dashboard/*",
+            "src": "/auth/callback",
             "dest": "/index.html",
             "status": 200
         },
         {
-            "src": "/practice/*",
-            "dest": "/index.html",
-            "status": 200
-        },
-        {
-            "src": "/tracks/*",
-            "dest": "/index.html",
-            "status": 200
-        },
-        {
-            "src": "/topics/*",
-            "dest": "/index.html",
-            "status": 200
-        },
-        {
-            "src": "/login",
-            "dest": "/index.html",
-            "status": 200
-        },
-        {
-            "src": "/about",
-            "dest": "/index.html",
-            "status": 200
-        },
-        {
-            "src": "/contact",
-            "dest": "/index.html",
-            "status": 200
-        },
-        {
-            "src": "/profile",
-            "dest": "/index.html",
-            "status": 200
-        },
-        {
-            "src": "/settings",
+            "src": "/",
             "dest": "/index.html",
             "status": 200
         }

@@ -15,7 +15,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
         autoRefreshToken: true,
         persistSession: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: true,
+        storageKey: 'eurprep.auth.token',
+        storage: window.localStorage,
+        flowType: 'pkce',
+        debug: true
     }
 })
 
@@ -45,13 +49,3 @@ export interface Feedback {
     created_at: string
 }
 
-// Utility function to clear session and force fresh login
-export const clearSessionAndRedirect = async (redirectUrl: string = '/app/login') => {
-    await supabase.auth.signOut()
-    // Clear any stored session data
-    if (typeof window !== 'undefined') {
-        localStorage.removeItem('supabase.auth.token')
-        sessionStorage.clear()
-    }
-    window.location.href = redirectUrl
-}
