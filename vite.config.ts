@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
 // https://vitejs.dev/config/
+// Optimized for Cloudflare Pages deployment
 export default defineConfig({
   plugins: [react()],
   base: '/',
@@ -12,7 +13,7 @@ export default defineConfig({
     },
   },
   build: {
-    target: 'es2015',
+    target: 'es2020', // Updated for better modern browser support
     outDir: 'dist',
     rollupOptions: {
       output: {
