@@ -5,11 +5,14 @@ const getSupabaseConfig = () => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-    if (!supabaseUrl) {
+    // Check if variables are actually set (not empty strings)
+    if (!supabaseUrl || supabaseUrl === '') {
+        console.error('VITE_SUPABASE_URL is not set or is empty')
         throw new Error('Missing environment variable: VITE_SUPABASE_URL')
     }
 
-    if (!supabaseAnonKey) {
+    if (!supabaseAnonKey || supabaseAnonKey === '') {
+        console.error('VITE_SUPABASE_ANON_KEY is not set or is empty')
         throw new Error('Missing environment variable: VITE_SUPABASE_ANON_KEY')
     }
 

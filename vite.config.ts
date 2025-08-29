@@ -5,6 +5,7 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 // Optimized for Cloudflare Pages deployment
 export default defineConfig(({ mode }) => {
+  console.log("mode", mode)
   // Load env file based on `mode` in the current working directory.
   const env = loadEnv(mode, process.cwd(), '')
 
@@ -25,10 +26,17 @@ export default defineConfig(({ mode }) => {
       return process.env[`VITE_${key.replace('VITE_', '')}`] || ''
     }
 
+    // For production builds, throw an error if required variables are missing
+    if (mode === 'production' && (key === 'VITE_SUPABASE_URL' || key === 'VITE_SUPABASE_ANON_KEY')) {
+      console.warn(`Warning: ${key} is not set. Make sure to set this in Cloudflare Pages environment variables.`)
+    }
+
     // Return empty string if not found (will be replaced at build time)
     return ''
   }
 
+  // Check if we're in a Cloudflare Pages build
+  const isCloudflareBuild = process.env.CF_PAGES === '1'
 
   return {
     plugins: [react()],
