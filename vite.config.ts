@@ -8,6 +8,28 @@ export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   const env = loadEnv(mode, process.cwd(), '')
 
+  // Get environment variables from either .env file or Cloudflare build environment
+  const getEnvVar = (key: string): string => {
+    // First try to get from .env file (local development)
+    if (env[key]) {
+      return env[key]
+    }
+
+    // Then try to get from Cloudflare build environment
+    if (process.env[key]) {
+      return process.env[key] || ''
+    }
+
+    // For Cloudflare Pages, some variables might be available at build time
+    if (process.env[`VITE_${key.replace('VITE_', '')}`]) {
+      return process.env[`VITE_${key.replace('VITE_', '')}`] || ''
+    }
+
+    // Return empty string if not found (will be replaced at build time)
+    return ''
+  }
+
+
   return {
     plugins: [react()],
     base: '/',
@@ -17,12 +39,13 @@ export default defineConfig(({ mode }) => {
       },
     },
     // Add define plugin to replace environment variables at build time
+    // This ensures variables are embedded in the build for Cloudflare Pages
     define: {
-      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
-      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-      'import.meta.env.VITE_GOOGLE_CLIENT_ID': JSON.stringify(env.VITE_GOOGLE_CLIENT_ID),
-      'import.meta.env.VITE_RAZORPAY_KEY_ID': JSON.stringify(env.VITE_RAZORPAY_KEY_ID),
-      'import.meta.env.VITE_API_BASE_URL': JSON.stringify(env.VITE_API_BASE_URL),
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(getEnvVar('VITE_SUPABASE_URL')),
+      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(getEnvVar('VITE_SUPABASE_ANON_KEY')),
+      'import.meta.env.VITE_GOOGLE_CLIENT_ID': JSON.stringify(getEnvVar('VITE_GOOGLE_CLIENT_ID')),
+      'import.meta.env.VITE_RAZORPAY_KEY_ID': JSON.stringify(getEnvVar('VITE_RAZORPAY_KEY_ID')),
+      'import.meta.env.VITE_API_BASE_URL': JSON.stringify(getEnvVar('VITE_API_BASE_URL')),
     },
     build: {
       target: 'es2020', // Updated for better modern browser support
