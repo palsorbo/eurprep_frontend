@@ -243,7 +243,7 @@ export function StreamingInterviewProvider({ children }: StreamingInterviewProvi
     const socketRef = useRef<Socket | null>(null);
     const hasStartedInterview = useRef(false);
 
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:9090';
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090';
 
     useEffect(() => {
         // Initialize Socket.IO connection

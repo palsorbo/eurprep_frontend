@@ -17,7 +17,7 @@ type InterviewState =
     | 'COMPLETE';          // Interview complete
 
 const StreamingInterview: React.FC<StreamingInterviewProps> = ({
-    apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:9090'
+    apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090'
 }) => {
     // State
     const [interviewState, setInterviewState] = useState<InterviewState>('IDLE');
