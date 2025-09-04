@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './lib/auth-context'
+import { StreamingInterviewProvider } from './lib/streaming-interview-context'
 import ProtectedRoute from './components/ProtectedRoute'
 
 import './index.css'
@@ -8,9 +9,10 @@ import './index.css'
 import { lazy, Suspense } from 'react'
 
 // App components
-const Login = lazy(() => import('./pages/Login'))
+const AuthRedirect = lazy(() => import('./components/AuthRedirect'))
 const AuthCallback = lazy(() => import('./components/AuthCallback'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
+const StreamingInterview = lazy(() => import('./pages/StreamingInterview'))
 
 // Loading component
 const LoadingSpinner = () => (
@@ -22,27 +24,36 @@ const LoadingSpinner = () => (
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
-            {/* Default landing page - Login */}
-            <Route path="/" element={<Login />} />
-            
-            {/* Auth callback */}
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            
-            {/* Dashboard - protected route */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
+      <StreamingInterviewProvider>
+        <Router>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              {/* Default landing page - Auth redirect (shows login if not authenticated, redirects to dashboard if authenticated) */}
+              <Route path="/" element={<AuthRedirect />} />
 
-            {/* Fallback route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </Router>
+              {/* Auth callback */}
+              <Route path="/auth/callback" element={<AuthCallback />} />
+
+              {/* Dashboard - protected route */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+
+              {/* Streaming Interview - protected route */}
+              <Route path="/streaming-interview" element={
+                <ProtectedRoute>
+                  <StreamingInterview />
+                </ProtectedRoute>
+              } />
+
+              {/* Fallback route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </Router>
+      </StreamingInterviewProvider>
     </AuthProvider>
   )
 }

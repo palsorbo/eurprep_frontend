@@ -30,7 +30,7 @@ export const supabase = createClient(
             storageKey: 'eurprep.auth.token',
             storage: window.localStorage,
             flowType: 'pkce',
-            debug: true
+            debug: false 
         }
     }
 )
