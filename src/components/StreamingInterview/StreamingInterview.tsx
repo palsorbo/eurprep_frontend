@@ -4,6 +4,8 @@ import ResultsView from './ResultsView';
 
 interface StreamingInterviewProps {
     apiUrl?: string;
+    selectedSet?: string;
+    selectedContext?: string;
 }
 
 // Interview states
@@ -17,7 +19,9 @@ type InterviewState =
     | 'COMPLETE';          // Interview complete
 
 const StreamingInterview: React.FC<StreamingInterviewProps> = ({
-    apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090'
+    apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090',
+    selectedSet = 'Set1',
+    selectedContext = 'sbi-po'
 }) => {
     // State
     const [interviewState, setInterviewState] = useState<InterviewState>('IDLE');
@@ -166,7 +170,10 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             setError('Not connected to server');
             return;
         }
-        socketRef.current?.emit('startInterview');
+        socketRef.current?.emit('startInterview', {
+            set: selectedSet,
+            context: selectedContext
+        });
     };
 
     // Initialize recording
@@ -249,7 +256,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     };
 
     // Stop recording
-    const stopRecording = (preserveInterviewState = false) => {
+    const stopRecording = (preserveInterviewState: boolean = false) => {
         try {
             console.log('🛑 stopRecording called, current state:', {
                 isRecording: isRecordingRef.current,
@@ -348,7 +355,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                 {interviewState === 'RECORDING' && (
                     <>
                         <button
-                            onClick={stopRecording}
+                            onClick={() => stopRecording(false)}
                             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
                         >
                             Stop Recording

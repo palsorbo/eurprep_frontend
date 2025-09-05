@@ -80,22 +80,22 @@ export default function Dashboard() {
 
                 {/* Feature Cards */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    {/* Streaming Interview Card */}
+                    {/* SBI PO Card */}
                     <Link
-                        to="/streaming-interview"
+                        to="/sbi-po"
                         className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-slate-200 hover:border-green-300"
                     >
                         <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mb-4 group-hover:bg-green-200 transition-colors">
                             <Mic className="w-6 h-6 text-green-600" />
                         </div>
                         <h3 className="text-xl font-semibold text-slate-900 mb-2 group-hover:text-green-600 transition-colors">
-                            Streaming Interview
+                            SBI PO
                         </h3>
                         <p className="text-slate-600 text-sm">
-                            Real-time streaming interview with live transcription and analysis.
+                            SBI Probationary Officer preparation with interview sets and practice tests.
                         </p>
                         <div className="mt-4 flex items-center text-green-600 text-sm font-medium">
-                            <span>Start Interview</span>
+                            <span>Start Preparation</span>
                             <Play className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                         </div>
                     </Link>
@@ -103,13 +103,13 @@ export default function Dashboard() {
                     {/* Coming Soon Card */}
                     <div className="group bg-white rounded-lg shadow-md p-6 border border-slate-200 opacity-60">
                         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg mb-4">
-                            <div className="w-6 h-6 text-gray-400">📊</div>
+                            <div className="w-6 h-6 text-gray-400">🏦</div>
                         </div>
                         <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                            Analytics Dashboard
+                            IBPS PO
                         </h3>
                         <p className="text-slate-600 text-sm">
-                            Track your progress and performance over time with detailed analytics.
+                            IBPS Probationary Officer preparation with comprehensive interview sets and practice tests.
                         </p>
                         <div className="mt-4 text-gray-500 text-sm font-medium">
                             Coming Soon
@@ -119,13 +119,13 @@ export default function Dashboard() {
                     {/* Coming Soon Card */}
                     <div className="group bg-white rounded-lg shadow-md p-6 border border-slate-200 opacity-60">
                         <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mb-4">
-                            <div className="w-6 h-6 text-blue-400">🎯</div>
+                            <div className="w-6 h-6 text-blue-400">🎓</div>
                         </div>
                         <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                            Practice Tests
+                            MBA
                         </h3>
                         <p className="text-slate-600 text-sm">
-                            Take practice tests and get detailed feedback on your performance.
+                            MBA interview preparation with case studies, group discussions, and personal interviews.
                         </p>
                         <div className="mt-4 text-gray-500 text-sm font-medium">
                             Coming Soon
