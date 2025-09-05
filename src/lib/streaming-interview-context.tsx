@@ -7,8 +7,7 @@ export type InterviewFlowState =
     | 'IDLE'               // Initial state
     | 'QUESTION_LOADING'   // Loading next question
     | 'QUESTION_PLAYING'   // TTS is playing
-    | 'READY_TO_ANSWER'    // TTS finished, can start recording
-    | 'RECORDING'          // User is recording answer
+    | 'LISTENING'          // Mic active, listening for user input
     | 'PROCESSING_ANSWER'  // Processing answer and preparing next question
     | 'COMPLETE';          // Interview complete
 
@@ -446,8 +445,8 @@ export function StreamingInterviewProvider({ children }: StreamingInterviewProvi
                 console.log('TTS audio playback completed');
                 URL.revokeObjectURL(audioUrl);
                 currentAudio.current = null;
-                // Update flow state to READY_TO_ANSWER when TTS completes
-                dispatch({ type: 'SET_FLOW_STATE', payload: 'READY_TO_ANSWER' });
+                // Update flow state to IDLE when TTS completes (ready for user to speak)
+                dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
             };
 
             audio.onerror = (error) => {
