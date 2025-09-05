@@ -31,6 +31,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     const [error, setError] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [results, setResults] = useState<{ questions: string[]; answers: string[]; } | null>(null);
+    const [sessionId, setSessionId] = useState<string | null>(null);
 
     // Refs
     const socketRef = useRef<Socket | null>(null);
@@ -48,6 +49,8 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
 
         socket.on('connect', () => {
             console.log('Connected to interview server');
+            console.log('Socket ID:', socket.id);
+            setSessionId(socket.id || null);
             setIsConnected(true);
             setError(null);
         });
@@ -370,7 +373,12 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                 )}
 
                 {interviewState === 'COMPLETE' && results && (
-                    <ResultsView questions={results.questions} answers={results.answers} />
+                    <ResultsView
+                        questions={results.questions}
+                        answers={results.answers}
+                        sessionId={sessionId || undefined}
+                        apiUrl={apiUrl}
+                    />
                 )}
 
                 {/* Debug info */}
