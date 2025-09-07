@@ -1,23 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import ResultsView from './ResultsView';
+import InterviewerPanel from './InterviewerPanel';
 
 interface StreamingInterviewProps {
     apiUrl?: string;
+    selectedSet?: string;
+    selectedContext?: string;
+}
+
+// Interviewer interface
+interface Interviewer {
+    id: number;
+    name: string;
+    gender: string;
 }
 
 // Interview states
 type InterviewState =
-    | 'IDLE'               // Initial state
+    | 'IDLE'               // Initial state or waiting for user to speak
     | 'QUESTION_LOADING'   // Loading next question
     | 'QUESTION_PLAYING'   // TTS is playing
-    | 'READY_TO_ANSWER'    // TTS finished, can start recording
-    | 'RECORDING'          // User is recording answer
+    | 'LISTENING'          // Mic active, listening for user input
     | 'PROCESSING_ANSWER'  // Processing answer and preparing next question
     | 'COMPLETE';          // Interview complete
 
 const StreamingInterview: React.FC<StreamingInterviewProps> = ({
-    apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090'
+    apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090',
+    selectedSet = 'Set1',
+    selectedContext = 'sbi-po'
 }) => {
     // State
     const [interviewState, setInterviewState] = useState<InterviewState>('IDLE');
@@ -27,6 +38,12 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     const [error, setError] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [results, setResults] = useState<{ questions: string[]; answers: string[]; } | null>(null);
+    const [sessionId, setSessionId] = useState<string | null>(null);
+
+    // Interviewer panel state
+    const [interviewers, setInterviewers] = useState<Interviewer[]>([]);
+    const [activeInterviewerId, setActiveInterviewerId] = useState<number | null>(null);
+    const [isQuestionVisible, setIsQuestionVisible] = useState(false);
 
     // Refs
     const socketRef = useRef<Socket | null>(null);
@@ -44,8 +61,15 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
 
         socket.on('connect', () => {
             console.log('Connected to interview server');
+            console.log('Socket ID:', socket.id);
+            setSessionId(socket.id || null);
             setIsConnected(true);
             setError(null);
+        });
+
+        socket.on('interviewers', (data) => {
+            console.log('Received interviewers:', data);
+            setInterviewers(data.interviewers);
         });
 
         socket.on('disconnect', () => {
@@ -66,6 +90,10 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             });
             setTranscription('');
             setInterviewState('QUESTION_LOADING');
+
+            // Use interviewer ID from backend
+            setActiveInterviewerId(data.interviewerId);
+            setIsQuestionVisible(true);
         });
 
         socket.on('questionAudio', (data) => {
@@ -77,11 +105,12 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
 
         socket.on('transcription', (data) => {
             console.log('Received transcription:', data);
-            if (interviewState === 'RECORDING') {
+            if (interviewState === 'LISTENING') {
                 setTranscription(data.text);
                 if (data.isFinal) {
+                    console.log('Final transcription received, auto-stopping recording');
                     setInterviewState('PROCESSING_ANSWER');
-                    // Stop recording when we get final transcription
+                    // Auto-stop recording when we get final transcription
                     stopRecording();
                 }
             }
@@ -93,7 +122,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             // Stop recording and reset state on error
             stopRecording();
             setTranscription('');
-            setInterviewState('READY_TO_ANSWER');
+            setInterviewState('IDLE');
         });
 
         socket.on('answerComplete', (data) => {
@@ -143,20 +172,20 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
 
             audio.onended = () => {
                 URL.revokeObjectURL(audioUrl);
-                setInterviewState('READY_TO_ANSWER');
+                setInterviewState('IDLE');
             };
 
             audio.onerror = () => {
                 URL.revokeObjectURL(audioUrl);
                 setError('Failed to play question audio');
-                setInterviewState('READY_TO_ANSWER');
+                setInterviewState('IDLE');
             };
 
             await audio.play();
         } catch (error) {
             console.error('Error playing audio:', error);
             setError('Failed to play question audio');
-            setInterviewState('READY_TO_ANSWER');
+            setInterviewState('IDLE');
         }
     };
 
@@ -166,7 +195,10 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             setError('Not connected to server');
             return;
         }
-        socketRef.current?.emit('startInterview');
+        socketRef.current?.emit('startInterview', {
+            set: selectedSet,
+            context: selectedContext
+        });
     };
 
     // Initialize recording
@@ -241,15 +273,19 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             mediaRecorder.start(100); // Send chunks every 100ms
             mediaRecorderRef.current = mediaRecorder;
             isRecordingRef.current = true;
-            setInterviewState('RECORDING');
+            setInterviewState('LISTENING');
+
+            // Hide speech bubble when user starts speaking
+            setIsQuestionVisible(false);
         } catch (error) {
             console.error('Error starting recording:', error);
-            setError('Failed to access microphone');
+            setError('Mic error, please try again');
+            setInterviewState('IDLE');
         }
     };
 
     // Stop recording
-    const stopRecording = (preserveInterviewState = false) => {
+    const stopRecording = (preserveInterviewState: boolean = false) => {
         try {
             console.log('🛑 stopRecording called, current state:', {
                 isRecording: isRecordingRef.current,
@@ -277,7 +313,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             audioChunksRef.current = [];
             // Reset recording state (only if not preserving interview state)
             if (!preserveInterviewState) {
-                setInterviewState('READY_TO_ANSWER');
+                setInterviewState('IDLE');
             }
             setTranscription('');
             console.log('🛑 Recording stopped successfully');
@@ -288,7 +324,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             mediaRecorderRef.current = null;
             audioChunksRef.current = [];
             if (!preserveInterviewState) {
-                setInterviewState('READY_TO_ANSWER');
+                setInterviewState('IDLE');
             }
             setTranscription('');
         }
@@ -302,84 +338,135 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     });
 
     return (
-        <div className="max-w-2xl mx-auto p-4">
-            <div className="mb-4">
-                <h2 className="text-2xl font-bold mb-2">Interview Session</h2>
-                {progress.total > 0 && (
-                    <p className="text-gray-600">
-                        Question {progress.current} of {progress.total}
-                    </p>
-                )}
-            </div>
-
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    {error}
-                </div>
-            )}
-
-            <div className="bg-white shadow rounded-lg p-6 mb-4">
-                {interviewState === 'IDLE' && (
-                    <button
-                        onClick={startInterview}
-                        disabled={!isConnected}
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
-                    >
-                        Start Interview
-                    </button>
-                )}
-
-                {currentQuestion && (
-                    <div className="mb-4">
-                        <h3 className="font-semibold mb-2">Current Question:</h3>
-                        <p className="text-gray-700">{currentQuestion}</p>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8">
+            <div className="max-w-6xl mx-auto p-6">
+                {/* Single Card Design */}
+                <div className="bg-white shadow-2xl rounded-3xl p-12 relative overflow-hidden">
+                    {/* Subtle background pattern */}
+                    <div className="absolute inset-0 opacity-5">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400 rounded-full -translate-y-32 translate-x-32"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-400 rounded-full translate-y-24 -translate-x-24"></div>
                     </div>
-                )}
-
-                {interviewState === 'READY_TO_ANSWER' && (
-                    <button
-                        onClick={startRecording}
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                    >
-                        Start Recording
-                    </button>
-                )}
-
-                {interviewState === 'RECORDING' && (
-                    <>
-                        <button
-                            onClick={stopRecording}
-                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                        >
-                            Stop Recording
-                        </button>
-                        <div className="mt-4">
-                            <h3 className="font-semibold mb-2">Transcription:</h3>
-                            <p className="text-gray-700">
-                                {interviewState === 'RECORDING' ? (transcription || 'Listening...') : ''}
-                            </p>
-                        </div>
-                    </>
-                )}
-
-                {interviewState === 'COMPLETE' && results && (
-                    <ResultsView questions={results.questions} answers={results.answers} />
-                )}
-
-                {/* Debug info */}
-                {interviewState === 'COMPLETE' && (
-                    <div className="mt-4 p-4 bg-gray-100 rounded">
-                        <h3 className="font-semibold">Debug Info:</h3>
-                        <p>Interview State: {interviewState}</p>
-                        <p>Results: {results ? 'Present' : 'Null'}</p>
-                        {results && (
-                            <div>
-                                <p>Questions: {results.questions?.length || 0}</p>
-                                <p>Answers: {results.answers?.length || 0}</p>
+                    {/* Header */}
+                    <div className="text-center mb-20 relative z-10">
+                        <h2 className="text-5xl font-bold text-gray-900 mb-6">Interview Session</h2>
+                        {progress.total > 0 && (
+                            <div className="flex items-center justify-center space-x-8">
+                                <p className="text-2xl text-gray-600 font-medium">
+                                    Question {progress.current} of {progress.total}
+                                </p>
+                                <div className="w-48 bg-gray-200 rounded-full h-4 shadow-inner">
+                                    <div
+                                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full transition-all duration-700 shadow-lg"
+                                        style={{ width: `${(progress.current / progress.total) * 100}%` }}
+                                    ></div>
+                                </div>
                             </div>
                         )}
                     </div>
-                )}
+
+                    {/* Interviewer Panel */}
+                    <div className="mb-16 relative z-10">
+                        <InterviewerPanel
+                            interviewers={interviewers}
+                            activeInterviewerId={activeInterviewerId}
+                            currentQuestion={currentQuestion}
+                            isQuestionVisible={isQuestionVisible}
+                        />
+                    </div>
+
+                    {/* Error Display */}
+                    {error && (
+                        <div className="bg-red-50 border-2 border-red-200 text-red-800 px-6 py-4 rounded-xl mb-8 shadow-lg">
+                            <div className="flex items-center justify-center space-x-2">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                                <span className="font-semibold">{error}</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Main Content Area */}
+                    <div className="text-center relative z-10">
+                        {interviewState === 'IDLE' && !currentQuestion && (
+                            <div className="py-20">
+                                <button
+                                    onClick={startInterview}
+                                    disabled={!isConnected}
+                                    className="bg-blue-600 text-white px-16 py-8 rounded-2xl text-2xl font-bold hover:bg-blue-700 disabled:bg-gray-400 transition-all duration-300 transform hover:scale-105 shadow-2xl"
+                                >
+                                    Start Interview
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Microphone Button - appears after question is asked */}
+                        {currentQuestion && (interviewState === 'IDLE' || interviewState === 'LISTENING') && (
+                            <div className="flex flex-col items-center space-y-12 py-16">
+                                <button
+                                    onClick={interviewState === 'IDLE' ? startRecording : () => stopRecording(false)}
+                                    className={`
+                                    relative w-32 h-32 lg:w-36 lg:h-36 rounded-full flex items-center justify-center
+                                    transition-all duration-300 transform hover:scale-110
+                                    ${interviewState === 'IDLE'
+                                        ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                                        : 'bg-blue-600 hover:bg-blue-700 text-white animate-pulse'
+                                    }
+                                    ${interviewState === 'LISTENING' ? 'shadow-2xl shadow-blue-500/60' : 'shadow-xl'}
+                                `}
+                                    title={interviewState === 'IDLE' ? 'Click to speak' : 'Listening...'}
+                                >
+                                    <svg
+                                        className="w-16 h-16 lg:w-18 lg:h-18"
+                                        fill="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                                    </svg>
+                                </button>
+
+                                <p className="text-2xl text-gray-700 font-bold">
+                                    {interviewState === 'IDLE' ? 'Click to speak' : 'Listening...'}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Transcript Display */}
+                        {currentQuestion && transcription && (
+                            <div className="mt-12 p-8 bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl border border-gray-200">
+                                <h3 className="font-bold mb-4 text-gray-800 text-xl">Your Answer:</h3>
+                                <p className="text-gray-800 text-lg leading-relaxed font-medium">{transcription}</p>
+                            </div>
+                        )}
+
+                        {/* Results */}
+                        {interviewState === 'COMPLETE' && results && (
+                            <ResultsView
+                                questions={results.questions}
+                                answers={results.answers}
+                                sessionId={sessionId || undefined}
+                                apiUrl={apiUrl}
+                            />
+                        )}
+
+                        {/* Debug info */}
+                        {interviewState === 'COMPLETE' && (
+                            <div className="mt-6 p-4 bg-gray-100 rounded-lg">
+                                <h3 className="font-semibold">Debug Info:</h3>
+                                <p>Interview State: {interviewState}</p>
+                                <p>Results: {results ? 'Present' : 'Null'}</p>
+                                {results && (
+                                    <div>
+                                        <p>Questions: {results.questions?.length || 0}</p>
+                                        <p>Answers: {results.answers?.length || 0}</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );

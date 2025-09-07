@@ -12,6 +12,7 @@ import { lazy, Suspense } from 'react'
 const AuthRedirect = lazy(() => import('./components/AuthRedirect'))
 const AuthCallback = lazy(() => import('./components/AuthCallback'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
+const SBIPO = lazy(() => import('./pages/SBIPO'))
 const StreamingInterview = lazy(() => import('./pages/StreamingInterview'))
 
 // Loading component
@@ -41,7 +42,21 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              {/* Streaming Interview - protected route */}
+              {/* SBI PO - protected route */}
+              <Route path="/sbi-po" element={
+                <ProtectedRoute>
+                  <SBIPO />
+                </ProtectedRoute>
+              } />
+
+              {/* SBI PO Interview - protected route */}
+              <Route path="/sbi-po/interview/:setId" element={
+                <ProtectedRoute>
+                  <StreamingInterview />
+                </ProtectedRoute>
+              } />
+
+              {/* Legacy Streaming Interview - protected route (for backward compatibility) */}
               <Route path="/streaming-interview" element={
                 <ProtectedRoute>
                   <StreamingInterview />
