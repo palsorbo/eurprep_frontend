@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
-import ResultsView from './ResultsView';
 import InterviewerPanel from './InterviewerPanel';
 
 interface StreamingInterviewProps {
@@ -30,6 +30,8 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     selectedSet = 'Set1',
     selectedContext = 'sbi-po'
 }) => {
+    const navigate = useNavigate();
+
     // State
     const [interviewState, setInterviewState] = useState<InterviewState>('IDLE');
     const [currentQuestion, setCurrentQuestion] = useState<string>('');
@@ -139,6 +141,19 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             setResults(data);
             console.log('🎉 [COMPONENT] Calling stopRecording with preserveInterviewState=true...');
             stopRecording(true);
+
+            // Auto-redirect to results page after a short delay
+            setTimeout(() => {
+                const currentSessionId = sessionId || socket.id;
+                console.log('🎉 [COMPONENT] Redirect timeout - sessionId:', sessionId, 'socket.id:', socket.id, 'currentSessionId:', currentSessionId);
+                if (currentSessionId) {
+                    console.log('🎉 [COMPONENT] Redirecting to results page:', `/sbi-po/results/${currentSessionId}`);
+                    navigate(`/sbi-po/results/${currentSessionId}`);
+                } else {
+                    console.error('❌ [COMPONENT] No session ID available for redirect');
+                }
+            }, 2000); // 2 second delay to show completion message
+
             console.log('🎉 [COMPONENT] Interview complete handler finished');
         });
 
@@ -441,14 +456,21 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                             </div>
                         )}
 
-                        {/* Results */}
-                        {interviewState === 'COMPLETE' && results && (
-                            <ResultsView
-                                questions={results.questions}
-                                answers={results.answers}
-                                sessionId={sessionId || undefined}
-                                apiUrl={apiUrl}
-                            />
+                        {/* Interview Complete Message */}
+                        {interviewState === 'COMPLETE' && (
+                            <div className="mt-12 p-8 bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl border border-green-200 text-center">
+                                <div className="text-6xl mb-4">🎉</div>
+                                <h3 className="text-2xl font-bold text-green-800 mb-4">Interview Completed!</h3>
+                                <p className="text-green-700 text-lg mb-4">
+                                    Great job! Your interview has been completed successfully.
+                                </p>
+                                <p className="text-gray-600">
+                                    Redirecting to your results page...
+                                </p>
+                                <div className="mt-4">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                                </div>
+                            </div>
                         )}
 
                         {/* Debug info */}

@@ -15,6 +15,7 @@ const AuthCallback = lazy(() => import('./components/AuthCallback'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const SBIPO = lazy(() => import('./pages/SBIPO'))
 const StreamingInterview = lazy(() => import('./pages/StreamingInterview'))
+const InterviewResults = lazy(() => import('./pages/InterviewResults'))
 
 // Loading component
 const LoadingSpinner = () => (
@@ -59,6 +60,15 @@ function App() {
                 <ProtectedRoute>
                   <AppLayout>
                     <StreamingInterview />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* SBI PO Interview Results - protected route */}
+              <Route path="/sbi-po/results/:sessionId" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <InterviewResults />
                   </AppLayout>
                 </ProtectedRoute>
               } />
