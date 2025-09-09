@@ -44,7 +44,7 @@ export default function Login() {
                     </h1>
 
                     <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                        Get AI-powered feedback on your next practice session. Master confident communication for your upcoming interviews.
+                        Get the feedback you need to grow and shine in every interview with Eurprep.
                     </p>
 
                     {/* Main CTA */}

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './lib/auth-context'
 import { StreamingInterviewProvider } from './lib/streaming-interview-context'
 import ProtectedRoute from './components/ProtectedRoute'
+import AppLayout from './components/AppLayout'
 
 import './index.css'
 
@@ -14,6 +15,7 @@ const AuthCallback = lazy(() => import('./components/AuthCallback'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const SBIPO = lazy(() => import('./pages/SBIPO'))
 const StreamingInterview = lazy(() => import('./pages/StreamingInterview'))
+const InterviewResults = lazy(() => import('./pages/InterviewResults'))
 
 // Loading component
 const LoadingSpinner = () => (
@@ -38,28 +40,45 @@ function App() {
               {/* Dashboard - protected route */}
               <Route path="/dashboard" element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <AppLayout>
+                    <Dashboard />
+                  </AppLayout>
                 </ProtectedRoute>
               } />
 
               {/* SBI PO - protected route */}
               <Route path="/sbi-po" element={
                 <ProtectedRoute>
-                  <SBIPO />
+                  <AppLayout>
+                    <SBIPO />
+                  </AppLayout>
                 </ProtectedRoute>
               } />
 
               {/* SBI PO Interview - protected route */}
               <Route path="/sbi-po/interview/:setId" element={
                 <ProtectedRoute>
-                  <StreamingInterview />
+                  <AppLayout>
+                    <StreamingInterview />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* SBI PO Interview Results - protected route */}
+              <Route path="/sbi-po/results/:sessionId" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <InterviewResults />
+                  </AppLayout>
                 </ProtectedRoute>
               } />
 
               {/* Legacy Streaming Interview - protected route (for backward compatibility) */}
               <Route path="/streaming-interview" element={
                 <ProtectedRoute>
-                  <StreamingInterview />
+                  <AppLayout>
+                    <StreamingInterview />
+                  </AppLayout>
                 </ProtectedRoute>
               } />
 
