@@ -39,10 +39,9 @@ interface ResultsViewProps {
     questions: string[];
     answers: string[];
     sessionId?: string;
-    apiUrl?: string;
 }
 
-const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId, apiUrl }) => {
+const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId }) => {
     const [evaluation, setEvaluation] = useState<InterviewEvaluation | null>(null);
     const [isLoading, setIsLoading] = useState(true); // Start with loading true
     const [error, setError] = useState<string | null>(null);
@@ -105,7 +104,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
         setError(null);
 
         try {
-            const baseUrl = apiUrl || import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090';
+            const baseUrl = import.meta.env.VITE_API_BASE_URL;
             const response = await fetch(`${baseUrl}/api/v1/evaluate-interview`, {
                 method: 'POST',
                 headers: {
@@ -128,7 +127,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
             if (data.success) {
                 setEvaluation(data.evaluation);
                 // Auto-expand all questions for better UX
-                const allQuestionIndices = data.evaluation.qa_feedback.map((_, index) => index);
+                const allQuestionIndices = data.evaluation.qa_feedback.map((_: any, index: number) => index);
                 setExpandedQuestions(new Set(allQuestionIndices));
             } else {
                 setError(data.error || 'Failed to evaluate interview');
@@ -142,7 +141,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
     };
 
         evaluateInterview();
-    }, [sessionId, apiUrl]);
+    }, [sessionId]);
 
     return (
         <div className="bg-white shadow rounded-lg p-6">

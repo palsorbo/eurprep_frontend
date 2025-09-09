@@ -27,7 +27,7 @@ const InterviewResults: React.FC = () => {
         // Fetch interview results from backend
         const fetchResults = async () => {
             try {
-                const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090';
+                const baseUrl = import.meta.env.VITE_API_BASE_URL;
                 const response = await fetch(`${baseUrl}/api/v1/get-interview-results/${sessionId}`);
 
                 if (!response.ok) {
