@@ -1,7 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './lib/auth-context'
+import { PaymentProvider } from './lib/payment-context'
 import { StreamingInterviewProvider } from './lib/streaming-interview-context'
 import ProtectedRoute from './components/ProtectedRoute'
+import PremiumRoute from './components/PremiumRoute'
 import AppLayout from './components/AppLayout'
 
 import './index.css'
@@ -15,6 +17,7 @@ const AuthCallback = lazy(() => import('./components/AuthCallback'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const SBIPO = lazy(() => import('./pages/SBIPO'))
 const StreamingInterview = lazy(() => import('./pages/StreamingInterview'))
+const StreamingInterviewWrapper = lazy(() => import('./pages/StreamingInterviewWrapper'))
 const InterviewResults = lazy(() => import('./pages/InterviewResults'))
 
 // Loading component
@@ -27,8 +30,9 @@ const LoadingSpinner = () => (
 function App() {
   return (
     <AuthProvider>
-      <StreamingInterviewProvider>
-        <Router>
+      <PaymentProvider>
+        <StreamingInterviewProvider>
+          <Router>
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
               {/* Default landing page - Auth redirect (shows login if not authenticated, redirects to dashboard if authenticated) */}
@@ -59,7 +63,7 @@ function App() {
               <Route path="/sbi-po/interview/:setId" element={
                 <ProtectedRoute>
                   <AppLayout>
-                    <StreamingInterview />
+                      <StreamingInterviewWrapper />
                   </AppLayout>
                 </ProtectedRoute>
               } />
@@ -87,7 +91,8 @@ function App() {
             </Routes>
           </Suspense>
         </Router>
-      </StreamingInterviewProvider>
+        </StreamingInterviewProvider>
+      </PaymentProvider>
     </AuthProvider>
   )
 }

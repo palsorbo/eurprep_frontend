@@ -1,0 +1,133 @@
+{
+    "candidate_id": "CAND123",
+    "interview_set": "SBI_SET1",
+    "version": "2.0",
+    "qa_feedback": [
+        {
+            "question": "Could you please introduce yourself to the panel?",
+            "answer": "I am Ramesh, a commerce graduate from Delhi University. I enjoy working with numbers and have done an internship in a finance firm.",
+            "category": "Personal",
+            "score": 6,
+            "strengths": [
+                "Clear introduction with name and educational background",
+                "Mentioned relevant internship experience",
+                "Showed interest in numbers which is relevant for banking"
+            ],
+            "gaps": [
+                "Missing specific skills and strengths",
+                "No mention of career objectives or motivation",
+                "Could have included personal interests or achievements"
+            ],
+            "improvementTips": [
+                "Include specific skills like analytical thinking, communication, or leadership",
+                "Mention your career goals and why you want to join banking",
+                "Add 1-2 personal achievements or interests to make it more engaging"
+            ],
+            "coveredCorePoints": [
+                "Name and educational background",
+                "Relevant work experience or internships"
+            ],
+            "missedCorePoints": [
+                "Key skills and strengths",
+                "Career objectives and motivation",
+                "Personal interests or achievements"
+            ],
+            "reflectionPrompt": "How can you make your introduction more compelling while staying authentic?",
+            "context": "Personal introduction questions are crucial for making a good first impression. They set the tone for the entire interview.",
+            "modelAnswerReference": null,
+            "keywordsMatched": null,
+            "keywordsMissed": null
+        },
+        {
+            "question": "What motivated you to choose banking as a career?",
+            "answer": "I want job security and I like finance.",
+            "category": "Personal",
+            "score": 4,
+            "strengths": [
+                "Acknowledged interest in finance",
+                "Mentioned job security as a factor"
+            ],
+            "gaps": [
+                "Very brief and lacks depth",
+                "No mention of serving customers or society",
+                "Missing career growth prospects",
+                "No connection to personal skills or values"
+            ],
+            "improvementTips": [
+                "Elaborate on your interest in finance with specific examples",
+                "Discuss how banking allows you to serve customers and contribute to economic development",
+                "Mention career growth opportunities and specializations in banking",
+                "Connect your personal skills to banking requirements"
+            ],
+            "coveredCorePoints": [
+                "Interest in finance and economics"
+            ],
+            "missedCorePoints": [
+                "Job security and stability",
+                "Opportunity to serve customers and society",
+                "Career growth prospects",
+                "Alignment with personal skills and interests"
+            ],
+            "reflectionPrompt": "What specific aspects of banking excite you beyond job security?",
+            "context": "This question tests your understanding of the banking sector and your genuine interest in the field.",
+            "modelAnswerReference": null,
+            "keywordsMatched": null,
+            "keywordsMissed": null
+        },
+        {
+            "question": "Why is CASA considered important for banks?",
+            "answer": "CASA stands for Current Account and Savings Account. It provides low-cost deposits to banks and helps improve their profitability.",
+            "category": "Banking Knowledge",
+            "score": 7,
+            "strengths": [
+                "Correctly defined CASA acronym",
+                "Understood the low-cost nature of CASA deposits",
+                "Connected CASA to bank profitability"
+            ],
+            "gaps": [
+                "Missing Net Interest Margin (NIM) concept",
+                "No mention of CASA ratio as a health indicator",
+                "Could explain stability and liquidity benefits"
+            ],
+            "improvementTips": [
+                "Explain how CASA improves Net Interest Margin",
+                "Mention that high CASA ratio indicates strong financial health",
+                "Discuss how CASA provides stable and sustainable funding"
+            ],
+            "coveredCorePoints": [
+                "Definition: CASA = Current and Savings Accounts",
+                "Low-cost deposits",
+                "Improves Net Interest Margin (NIM)"
+            ],
+            "missedCorePoints": [
+                "High CASA ratio indicates strong financial health",
+                "Stable and sustainable funding base",
+                "Improves liquidity and lending capacity"
+            ],
+            "reflectionPrompt": "How would you explain CASA's importance to a non-banking person?",
+            "context": "CASA is a fundamental banking concept that directly impacts a bank's profitability and financial health.",
+            "modelAnswerReference": "CASA provides stable, low-cost funding that improves NIM and indicates strong financial health.",
+            "keywordsMatched": [
+                "CASA",
+                "Current Account",
+                "Savings Account",
+                "low-cost deposits",
+                "profitability"
+            ],
+            "keywordsMissed": [
+                "Net Interest Margin",
+                "NIM",
+                "CASA ratio",
+                "financial health",
+                "liquidity"
+            ]
+        }
+    ],
+    "overall_feedback": {
+        "summary": "The candidate shows basic understanding of banking concepts and personal motivation, but responses lack depth and comprehensive coverage. The introduction was adequate but could be more compelling. The banking knowledge question showed good foundational understanding of CASA but missed key technical details. Overall, the candidate needs to develop more detailed and structured responses.",
+        "recommendation": "Recommended with improvements",
+        "totalScore": 17,
+        "averageScore": 5.7,
+        "coveragePercentage": 50
+    }
+}

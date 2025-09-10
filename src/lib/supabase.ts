@@ -61,3 +61,15 @@ export interface Feedback {
     created_at: string
 }
 
+export interface Payment {
+    id: string
+    user_id: string
+    amount: number
+    currency: string
+    razorpay_order_id: string
+    razorpay_payment_id?: string
+    status: 'pending' | 'completed' | 'failed'
+    created_at: string
+    updated_at: string
+}
+
