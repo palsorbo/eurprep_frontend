@@ -55,9 +55,12 @@ export interface Recording {
 
 export interface Feedback {
     id: string
-    recording_id: string
+    session_id: string
     user_id: string
-    feedback_data: Record<string, unknown> // JSONB field for flexible feedback structure
+    interview_set: string
+    version: string
+    feedback_data: Record<string, unknown> // Complete InterviewEvaluation object
+    overall_feedback: Record<string, unknown> // OverallFeedback object
     created_at: string
 }
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useAuth } from '../../lib/auth-context';
 
 // Enhanced feedback structure for individual questions
 interface EnhancedQaFeedback {
@@ -39,9 +40,11 @@ interface ResultsViewProps {
     questions: string[];
     answers: string[];
     sessionId?: string;
+    evaluation?: InterviewEvaluation; // Optional evaluation data
 }
 
-const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId }) => {
+const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId, evaluation: propEvaluation }) => {
+    const { user } = useAuth();
     const [evaluation, setEvaluation] = useState<InterviewEvaluation | null>(null);
     const [isLoading, setIsLoading] = useState(true); // Start with loading true
     const [error, setError] = useState<string | null>(null);
@@ -95,9 +98,23 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
     // Auto-evaluate when component mounts
     useEffect(() => {
     const evaluateInterview = async () => {
+        // If evaluation is passed as prop, use it directly
+        if (propEvaluation) {
+            setEvaluation(propEvaluation);
+            const allQuestionIndices = propEvaluation.qa_feedback.map((_: any, index: number) => index);
+            setExpandedQuestions(new Set(allQuestionIndices));
+            setIsLoading(false);
+            return;
+        }
+
         if (!sessionId) {
             setError('Session ID not available for evaluation');
             setIsLoading(false);
+            return;
+        }
+
+        // Prevent duplicate calls
+        if (isLoading) {
             return;
         }
 
@@ -105,6 +122,29 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
 
         try {
             const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+            // First, try to get existing feedback from database
+            const feedbackResponse = await fetch(`${baseUrl}/api/v1/feedback/${sessionId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (feedbackResponse.ok) {
+                const feedbackData = await feedbackResponse.json();
+                if (feedbackData.success && feedbackData.feedback) {
+                    // Use existing feedback
+                    setEvaluation(feedbackData.feedback.feedback_data);
+                    // Auto-expand all questions for better UX
+                    const allQuestionIndices = feedbackData.feedback.feedback_data.qa_feedback.map((_: any, index: number) => index);
+                    setExpandedQuestions(new Set(allQuestionIndices));
+                    setIsLoading(false);
+                    return;
+                }
+            }
+
+            // If no existing feedback, generate new evaluation
             const response = await fetch(`${baseUrl}/api/v1/evaluate-interview`, {
                 method: 'POST',
                 headers: {
@@ -114,7 +154,8 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
                     sessionId,
                     candidateId: 'CAND123',
                     interviewSet: 'Set1',
-                    context: 'sbi-po'
+                    context: 'sbi-po',
+                    userId: user?.id // Pass the actual user ID
                 }),
             });
 
@@ -141,7 +182,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
     };
 
         evaluateInterview();
-    }, [sessionId]);
+    }, [sessionId, user?.id, propEvaluation]);
 
     return (
         <div className="bg-white shadow rounded-lg p-6">

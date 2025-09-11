@@ -3,16 +3,19 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Home } from 'lucide-react';
 import ResultsView from '../components/StreamingInterview/ResultsView';
 import LoadingScreen from '../components/LoadingScreen';
+import { useAuth } from '../lib/auth-context';
 
 interface InterviewResultsData {
     questions: string[];
     answers: string[];
     sessionId: string;
+    evaluation?: any; // Add evaluation data
 }
 
 const InterviewResults: React.FC = () => {
     const { sessionId } = useParams<{ sessionId: string }>();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [resultsData, setResultsData] = useState<InterviewResultsData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -24,20 +27,43 @@ const InterviewResults: React.FC = () => {
             return;
         }
 
-        // Fetch interview results from backend
+        // Fetch feedback from database (since session might be expired)
         const fetchResults = async () => {
             try {
                 const baseUrl = import.meta.env.VITE_API_BASE_URL;
-                const response = await fetch(`${baseUrl}/api/v1/get-interview-results/${sessionId}`);
 
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error('Interview session not found or expired');
+                // First try to get feedback from database
+                const feedbackResponse = await fetch(`${baseUrl}/api/v1/feedback/${sessionId}`);
+
+                if (feedbackResponse.ok) {
+                    const feedbackData = await feedbackResponse.json();
+                    if (feedbackData.success && feedbackData.feedback) {
+                        // Extract questions and answers from feedback data
+                        const feedback = feedbackData.feedback.feedback_data;
+                        const questions = feedback.qa_feedback.map((qa: any) => qa.question);
+                        const answers = feedback.qa_feedback.map((qa: any) => qa.answer);
+
+                        setResultsData({
+                            questions: questions,
+                            answers: answers,
+                            sessionId: sessionId,
+                            evaluation: feedback // Pass the full evaluation data
+                        });
+                        return;
                     }
-                    throw new Error(`Failed to fetch results: ${response.status}`);
                 }
 
-                const data = await response.json();
+                // If no feedback found, try to get from session (fallback)
+                const sessionResponse = await fetch(`${baseUrl}/api/v1/get-interview-results/${sessionId}`);
+
+                if (!sessionResponse.ok) {
+                    if (sessionResponse.status === 404) {
+                        throw new Error('Interview session not found or expired. Please check your interview history.');
+                    }
+                    throw new Error(`Failed to fetch results: ${sessionResponse.status}`);
+                }
+
+                const data = await sessionResponse.json();
 
                 if (data.success && data.results) {
                     setResultsData({
@@ -154,6 +180,7 @@ const InterviewResults: React.FC = () => {
                 questions={resultsData.questions}
                 answers={resultsData.answers}
                 sessionId={resultsData.sessionId}
+                evaluation={resultsData.evaluation}
             />
         </div>
     );

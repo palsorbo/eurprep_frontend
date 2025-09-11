@@ -2,22 +2,62 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
 import { usePayment } from '../lib/payment-context'
-import { BookOpen, Play, CheckCircle, Lock } from 'lucide-react'
+import { BookOpen, Play, CheckCircle, Lock, History, Eye, Calendar } from 'lucide-react'
 import LoadingScreen from '../components/LoadingScreen'
 import PaymentModal from '../components/PaymentModal'
 import { PRICING } from '../constants/pricing'
+import { supabase } from '../lib/supabase'
+
+interface FeedbackHistory {
+    id: string
+    session_id: string
+    interview_set: string
+    version: string
+    feedback_data: any
+    overall_feedback: any
+    created_at: string
+}
 
 export default function SBIPO() {
     const { user, loading: authLoading } = useAuth()
     const { hasPaidAccess, isLoading: paymentLoading } = usePayment()
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+    const [feedbackHistory, setFeedbackHistory] = useState<FeedbackHistory[]>([])
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false)
     const navigate = useNavigate()
 
+    // Load feedback history
+    const loadFeedbackHistory = async () => {
+        if (!user) return
+
+        setIsLoadingHistory(true)
+        try {
+            const baseUrl = import.meta.env.VITE_API_BASE_URL
+            const response = await fetch(`${baseUrl}/api/v1/feedback/user/${user.id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                if (data.success) {
+                    setFeedbackHistory(data.feedback)
+                }
+            }
+        } catch (error) {
+            console.error('Error loading feedback history:', error)
+        } finally {
+            setIsLoadingHistory(false)
+        }
+    }
+
     useEffect(() => {
-        console.log('SBI PO useEffect - user:', user, 'authLoading:', authLoading)
         if (!authLoading && !user) {
-            console.log('User not authenticated, navigating to home...')
             navigate('/', { replace: true, state: { from: 'sbi-po' } })
+        } else if (user) {
+            loadFeedbackHistory()
         }
     }, [user, authLoading, navigate])
 
@@ -222,6 +262,105 @@ export default function SBIPO() {
                 </div>
             </div>
 
+            {/* Feedback History Section */}
+            {feedbackHistory.length > 0 && (
+                <div className="mb-12">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-6 text-center">
+                        Your Interview History
+                    </h3>
+                    <p className="text-slate-600 text-center mb-8">
+                        Review your previous interview sessions and feedback.
+                    </p>
+
+                    <div className="max-w-4xl mx-auto">
+                        {isLoadingHistory ? (
+                            <div className="text-center py-8">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+                                <p className="text-slate-600">Loading your interview history...</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {feedbackHistory.map((feedback) => (
+                                    <div key={feedback.id} className="bg-white rounded-lg shadow-md border border-slate-200 p-6">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
+                                                    <History className="w-5 h-5 text-blue-600" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-lg font-semibold text-slate-900">
+                                                        {feedback.interview_set} Interview
+                                                    </h4>
+                                                    <p className="text-sm text-slate-600">
+                                                        Version {feedback.version}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="flex items-center text-slate-500 text-sm mb-1">
+                                                    <Calendar className="w-4 h-4 mr-1" />
+                                                    {new Date(feedback.created_at).toLocaleDateString()}
+                                                </div>
+                                                <div className="text-xs text-slate-400">
+                                                    {new Date(feedback.created_at).toLocaleTimeString()}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-sm font-medium text-slate-700">Overall Score</span>
+                                                <span className="text-lg font-bold text-green-600">
+                                                    {feedback.overall_feedback?.averageScore?.toFixed(1) || 'N/A'}/10
+                                                </span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div
+                                                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                                                    style={{
+                                                        width: `${((feedback.overall_feedback?.averageScore || 0) / 10) * 100}%`
+                                                    }}
+                                                ></div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-4">
+                                            <p className="text-sm text-slate-700 mb-2">
+                                                <span className="font-medium">Summary:</span> {feedback.overall_feedback?.summary || 'No summary available'}
+                                            </p>
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-sm font-medium text-slate-700">Recommendation:</span>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${feedback.overall_feedback?.recommendation === 'Recommended'
+                                                    ? 'text-green-600 bg-green-100'
+                                                    : feedback.overall_feedback?.recommendation === 'Recommended with improvements'
+                                                        ? 'text-yellow-600 bg-yellow-100'
+                                                        : 'text-red-600 bg-red-100'
+                                                    }`}>
+                                                    {feedback.overall_feedback?.recommendation || 'N/A'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-sm text-slate-500">
+                                                {feedback.feedback_data?.qa_feedback?.length || 0} Questions Answered
+                                            </div>
+                                            <Link
+                                                to={`/sbi-po/results/${feedback.session_id}`}
+                                                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                            >
+                                                <Eye className="w-4 h-4 mr-2" />
+                                                View Detailed Results
+                                            </Link>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {/* Payment Modal */}
             <PaymentModal
                 isOpen={isPaymentModalOpen}
@@ -232,14 +371,13 @@ export default function SBIPO() {
                 }}
             />
 
-            {/* Other Modules */}
-            <div className="mt-16">
+            {/* Other Modules Coming soon*/}
+            {/* <div className="mt-16">
                 <h3 className="text-2xl font-bold text-slate-900 mb-6 text-center">
                     Other Modules
                 </h3>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    {/* Coming Soon Card */}
                     <div className="group bg-white rounded-lg shadow-md p-6 border border-slate-200 opacity-60">
                         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg mb-4">
                             <div className="w-6 h-6 text-gray-400">👥</div>
@@ -255,7 +393,6 @@ export default function SBIPO() {
                         </div>
                     </div>
 
-                    {/* Coming Soon Card */}
                     <div className="group bg-white rounded-lg shadow-md p-6 border border-slate-200 opacity-60">
                         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg mb-4">
                             <div className="w-6 h-6 text-gray-400">🧠</div>
@@ -271,7 +408,7 @@ export default function SBIPO() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
         </div>
     )
 }
