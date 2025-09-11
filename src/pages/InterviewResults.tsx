@@ -54,25 +54,129 @@ const InterviewResults: React.FC = () => {
                 }
 
                 // If no feedback found, try to get from session (fallback)
+                console.log('No database feedback found, trying session fallback...');
                 const sessionResponse = await fetch(`${baseUrl}/api/v1/get-interview-results/${sessionId}`);
+                console.log('Session response status:', sessionResponse.status);
 
                 if (!sessionResponse.ok) {
                     if (sessionResponse.status === 404) {
-                        throw new Error('Interview session not found or expired. Please check your interview history.');
+                        console.log('Session not found, generating new evaluation...');
+                        // Session expired, generate new evaluation
+                        const evaluationResponse = await fetch(`${baseUrl}/api/v1/evaluate-interview`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                sessionId,
+                                candidateId: 'CAND123',
+                                interviewSet: 'Set1',
+                                context: 'sbi-po',
+                                userId: user?.id
+                            }),
+                        });
+
+                        if (!evaluationResponse.ok) {
+                            throw new Error(`Failed to generate evaluation: ${evaluationResponse.status}`);
+                        }
+
+                        const evaluationData = await evaluationResponse.json();
+                        if (evaluationData.success && evaluationData.evaluation) {
+                            const evaluation = evaluationData.evaluation;
+                            const questions = evaluation.qa_feedback.map((qa: any) => qa.question);
+                            const answers = evaluation.qa_feedback.map((qa: any) => qa.answer);
+
+                            setResultsData({
+                                questions: questions,
+                                answers: answers,
+                                sessionId: sessionId,
+                                evaluation: evaluation
+                            });
+                            return;
+                        } else {
+                            throw new Error(evaluationData.error || 'Failed to generate evaluation');
+                        }
                     }
                     throw new Error(`Failed to fetch results: ${sessionResponse.status}`);
                 }
 
                 const data = await sessionResponse.json();
+                console.log('Session data received:', data);
 
                 if (data.success && data.results) {
-                    setResultsData({
-                        questions: data.results.questions,
-                        answers: data.results.answers,
-                        sessionId: sessionId
+                    console.log('Session data found, but no DB evaluation - generating evaluation...');
+                    // Session data exists but no DB evaluation, generate and store it
+                    const evaluationResponse = await fetch(`${baseUrl}/api/v1/evaluate-interview`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sessionId,
+                            candidateId: 'CAND123',
+                            interviewSet: 'Set1',
+                            context: 'sbi-po',
+                            userId: user?.id
+                        }),
                     });
+
+                    if (!evaluationResponse.ok) {
+                        throw new Error(`Failed to generate evaluation: ${evaluationResponse.status}`);
+                    }
+
+                    const evaluationData = await evaluationResponse.json();
+                    if (evaluationData.success && evaluationData.evaluation) {
+                        const evaluation = evaluationData.evaluation;
+                        const questions = evaluation.qa_feedback.map((qa: any) => qa.question);
+                        const answers = evaluation.qa_feedback.map((qa: any) => qa.answer);
+
+                        setResultsData({
+                            questions: questions,
+                            answers: answers,
+                            sessionId: sessionId,
+                            evaluation: evaluation
+                        });
+                        return;
+                    } else {
+                        throw new Error(evaluationData.error || 'Failed to generate evaluation');
+                    }
                 } else {
-                    throw new Error(data.error || 'Failed to load interview results');
+                    console.log('Session data invalid, generating evaluation...');
+                    // Session data is invalid, generate new evaluation
+                    const evaluationResponse = await fetch(`${baseUrl}/api/v1/evaluate-interview`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sessionId,
+                            candidateId: 'CAND123',
+                            interviewSet: 'Set1',
+                            context: 'sbi-po',
+                            userId: user?.id
+                        }),
+                    });
+
+                    if (!evaluationResponse.ok) {
+                        throw new Error(`Failed to generate evaluation: ${evaluationResponse.status}`);
+                    }
+
+                    const evaluationData = await evaluationResponse.json();
+                    if (evaluationData.success && evaluationData.evaluation) {
+                        const evaluation = evaluationData.evaluation;
+                        const questions = evaluation.qa_feedback.map((qa: any) => qa.question);
+                        const answers = evaluation.qa_feedback.map((qa: any) => qa.answer);
+
+                        setResultsData({
+                            questions: questions,
+                            answers: answers,
+                            sessionId: sessionId,
+                            evaluation: evaluation
+                        });
+                        return;
+                    } else {
+                        throw new Error(evaluationData.error || 'Failed to generate evaluation');
+                    }
                 }
             } catch (err) {
                 console.error('Error fetching results:', err);
