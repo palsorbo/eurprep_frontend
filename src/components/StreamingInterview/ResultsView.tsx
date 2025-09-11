@@ -97,89 +97,114 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
 
     // Auto-evaluate when component mounts
     useEffect(() => {
-    const evaluateInterview = async () => {
-        // If evaluation is passed as prop, use it directly
-        if (propEvaluation) {
-            setEvaluation(propEvaluation);
-            const allQuestionIndices = propEvaluation.qa_feedback.map((_: any, index: number) => index);
-            setExpandedQuestions(new Set(allQuestionIndices));
-            setIsLoading(false);
-            return;
-        }
-
-        if (!sessionId) {
-            setError('Session ID not available for evaluation');
-            setIsLoading(false);
-            return;
-        }
-
-        // Prevent duplicate calls
-        if (isLoading) {
-            return;
-        }
-
-        setError(null);
-
-        try {
-            const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
-            // First, try to get existing feedback from database
-            const feedbackResponse = await fetch(`${baseUrl}/api/v1/feedback/${sessionId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (feedbackResponse.ok) {
-                const feedbackData = await feedbackResponse.json();
-                if (feedbackData.success && feedbackData.feedback) {
-                    // Use existing feedback
-                    setEvaluation(feedbackData.feedback.feedback_data);
-                    // Auto-expand all questions for better UX
-                    const allQuestionIndices = feedbackData.feedback.feedback_data.qa_feedback.map((_: any, index: number) => index);
-                    setExpandedQuestions(new Set(allQuestionIndices));
-                    setIsLoading(false);
-                    return;
-                }
+        const evaluateInterview = async () => {
+            // If evaluation is passed as prop, use it directly
+            if (propEvaluation) {
+                setEvaluation(propEvaluation);
+                const allQuestionIndices = propEvaluation.qa_feedback.map((_: any, index: number) => index);
+                setExpandedQuestions(new Set(allQuestionIndices));
+                setIsLoading(false);
+                return;
             }
 
-            // If no existing feedback, generate new evaluation
-            const response = await fetch(`${baseUrl}/api/v1/evaluate-interview`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+            if (!sessionId) {
+                setError('Session ID not available for evaluation');
+                setIsLoading(false);
+                return;
+            }
+
+            // Prevent duplicate calls
+            if (isLoading) {
+                return;
+            }
+
+            setError(null);
+
+            try {
+                const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+                // First, try to get existing feedback from database
+                console.log('Checking for existing feedback for session:', sessionId);
+                const feedbackResponse = await fetch(`${baseUrl}/api/v1/feedback/${sessionId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                console.log('Feedback response status:', feedbackResponse.status);
+                if (feedbackResponse.ok) {
+                    const feedbackData = await feedbackResponse.json();
+                    console.log('Feedback data received:', feedbackData);
+                    if (feedbackData.success && feedbackData.feedback) {
+                        // Use existing feedback
+                        console.log('Using existing feedback, skipping evaluation');
+                        setEvaluation(feedbackData.feedback.feedback_data);
+                        // Auto-expand all questions for better UX
+                        const allQuestionIndices = feedbackData.feedback.feedback_data.qa_feedback.map((_: any, index: number) => index);
+                        setExpandedQuestions(new Set(allQuestionIndices));
+                        setIsLoading(false);
+                        return;
+                    }
+                }
+
+                // If no existing feedback, generate new evaluation
+                console.log('Generating new evaluation for session:', sessionId);
+                console.log('API URL:', baseUrl);
+                console.log('Request body:', {
                     sessionId,
                     candidateId: 'CAND123',
                     interviewSet: 'Set1',
                     context: 'sbi-po',
-                    userId: user?.id // Pass the actual user ID
-                }),
-            });
+                    userId: user?.id
+                });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                // Create AbortController for timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
+                const response = await fetch(`${baseUrl}/api/v1/evaluate-interview`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId,
+                        candidateId: 'CAND123',
+                        interviewSet: 'Set1',
+                        context: 'sbi-po',
+                        userId: user?.id // Pass the actual user ID
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    setEvaluation(data.evaluation);
+                    // Auto-expand all questions for better UX
+                    const allQuestionIndices = data.evaluation.qa_feedback.map((_: any, index: number) => index);
+                    setExpandedQuestions(new Set(allQuestionIndices));
+                } else {
+                    setError(data.error || 'Failed to evaluate interview');
+                }
+            } catch (err) {
+                if (err instanceof Error && err.name === 'AbortError') {
+                    setError('Evaluation timed out. Please try again.');
+                } else {
+                    setError('Network error occurred while evaluating interview');
+                }
+                console.error('Evaluation error:', err);
+            } finally {
+                setIsLoading(false);
             }
-
-            const data = await response.json();
-
-            if (data.success) {
-                setEvaluation(data.evaluation);
-                // Auto-expand all questions for better UX
-                const allQuestionIndices = data.evaluation.qa_feedback.map((_: any, index: number) => index);
-                setExpandedQuestions(new Set(allQuestionIndices));
-            } else {
-                setError(data.error || 'Failed to evaluate interview');
-            }
-        } catch (err) {
-            setError('Network error occurred while evaluating interview');
-            console.error('Evaluation error:', err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+        };
 
         evaluateInterview();
     }, [sessionId, user?.id, propEvaluation]);
@@ -274,7 +299,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
                                         <div className="flex items-center gap-3 mb-2">
                                             <h3 className="font-semibold text-gray-800">
                                                 Question {index + 1}
-                                </h3>
+                                            </h3>
                                             {qaFeedback && (
                                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getScoreColor(qaFeedback.score)}`}>
                                                     {qaFeedback.score}/10
@@ -305,9 +330,9 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
                                     <div>
                                         <h4 className="font-semibold text-gray-800 mb-2">Your Answer:</h4>
                                         <p className="text-gray-700 bg-gray-50 p-3 rounded">
-                                    {answers[index] || 'No answer recorded'}
-                                </p>
-                            </div>
+                                            {answers[index] || 'No answer recorded'}
+                                        </p>
+                                    </div>
 
                                     {/* Score Meter */}
                                     <div>
@@ -437,7 +462,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
 
                                     {/* Context */}
                                     {qaFeedback.context && (
-                                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
                                             <h4 className="font-semibold text-blue-800 mb-2">📚 Additional Context</h4>
                                             <p className="text-blue-700">{qaFeedback.context}</p>
                                         </div>
