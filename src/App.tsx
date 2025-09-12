@@ -1,12 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './lib/auth-context'
 import { PaymentProvider } from './lib/payment-context'
-import { StreamingInterviewProvider } from './lib/streaming-interview-context'
 import ProtectedRoute from './components/ProtectedRoute'
-import PremiumRoute from './components/PremiumRoute'
 import AppLayout from './components/AppLayout'
 
-import './index.css'
 
 // Lazy load components for better performance
 import { lazy, Suspense } from 'react'
@@ -16,7 +13,6 @@ const AuthRedirect = lazy(() => import('./components/AuthRedirect'))
 const AuthCallback = lazy(() => import('./components/AuthCallback'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const SBIPO = lazy(() => import('./pages/SBIPO'))
-const StreamingInterview = lazy(() => import('./pages/StreamingInterview'))
 const StreamingInterviewWrapper = lazy(() => import('./pages/StreamingInterviewWrapper'))
 const InterviewResults = lazy(() => import('./pages/InterviewResults'))
 
@@ -31,8 +27,7 @@ function App() {
   return (
     <AuthProvider>
       <PaymentProvider>
-        <StreamingInterviewProvider>
-          <Router>
+        <Router>
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
               {/* Default landing page - Auth redirect (shows login if not authenticated, redirects to dashboard if authenticated) */}
@@ -63,7 +58,7 @@ function App() {
               <Route path="/sbi-po/interview/:setId" element={
                 <ProtectedRoute>
                   <AppLayout>
-                      <StreamingInterviewWrapper />
+                    <StreamingInterviewWrapper />
                   </AppLayout>
                 </ProtectedRoute>
               } />
@@ -77,21 +72,12 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              {/* Legacy Streaming Interview - protected route (for backward compatibility) */}
-              <Route path="/streaming-interview" element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <StreamingInterview />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
 
               {/* Fallback route */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
         </Router>
-        </StreamingInterviewProvider>
       </PaymentProvider>
     </AuthProvider>
   )
