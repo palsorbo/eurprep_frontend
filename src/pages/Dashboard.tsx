@@ -32,10 +32,10 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold text-slate-900 mb-4">
-                        Welcome to Eurprep
+                    Ready to Ace Your Banking Interview?
                     </h2>
                     <p className="text-slate-600 text-lg">
-                        Your dashboard is ready. Choose an interview type to get started!
+                    Choose your preparation path for SBI PO or IBPS PO and start practicing with smart-powered mock interviews.
                     </p>
                 </div>
 
@@ -53,7 +53,7 @@ export default function Dashboard() {
                             SBI PO
                         </h3>
                         <p className="text-slate-600 text-sm">
-                            SBI Probationary Officer preparation with interview sets and practice tests.
+                        SBI Probationary Officer preparation with smart-powered interview sets and instant feedback. Available now!
                         </p>
                         <div className="mt-4 flex items-center text-green-600 text-sm font-medium">
                             <span>Start Preparation</span>
@@ -70,7 +70,7 @@ export default function Dashboard() {
                             IBPS PO
                         </h3>
                         <p className="text-slate-600 text-sm">
-                            IBPS Probationary Officer preparation with comprehensive interview sets and practice tests.
+                        IBPS Probationary Officer preparation with comprehensive interview sets and smart feedback. Launching soon!
                         </p>
                         <div className="mt-4 text-gray-500 text-sm font-medium">
                             Coming Soon

@@ -74,10 +74,10 @@ export default function SBIPO() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-slate-900 mb-4">
-                    SBI PO Preparation
+                    SBI PO Smart Interview Prep
                 </h2>
                 <p className="text-slate-600 text-lg">
-                    Choose a module to start your SBI Probationary Officer preparation.
+                    Master your SBI Probationary Officer interview with smart-powered practice sessions and instant feedback.
                 </p>
             </div>
 
@@ -87,7 +87,7 @@ export default function SBIPO() {
                     Interview Sets
                 </h3>
                 <p className="text-slate-600 text-center mb-8">
-                    Choose an interview set to practice with structured questions.
+                    Choose an interview set to practice with structured questions and get smart feedback on your performance.
                 </p>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -109,7 +109,7 @@ export default function SBIPO() {
                             Set 1
                         </h3>
                         <p className="text-slate-600 text-sm mb-4">
-                            Comprehensive interview set with 10 banking-specific questions covering personal, HR, and technical aspects.
+                            Comprehensive interview set with 10 banking-specific questions covering personal, HR, and technical aspects. Get smart feedback on each answer.
                         </p>
                         <div className="flex items-center justify-between">
                             <div className="text-xs text-slate-500">
@@ -131,7 +131,7 @@ export default function SBIPO() {
                                         Unlock Premium Bundle
                                     </h3>
                                     <p className="text-green-700">
-                                        Get access to Set 2 & 3 with advanced questions and expert-level scenarios
+                                        Get access to Set 2 & 3 with advanced questions, expert-level scenarios, and smart feedback
                                     </p>
                                     <div className="mt-2 text-2xl font-bold text-green-800">
                                         ₹{PRICING.SBI_PO_PREMIUM_BUNDLE.AMOUNT} <span className="text-sm font-normal text-green-700">{PRICING.SBI_PO_PREMIUM_BUNDLE.TYPE}</span>
@@ -167,7 +167,7 @@ export default function SBIPO() {
                                 Set 2
                             </h3>
                             <p className="text-slate-600 text-sm mb-4">
-                                Advanced interview questions focusing on economic awareness, customer handling, and leadership scenarios.
+                                Advanced interview questions focusing on economic awareness, customer handling, and leadership scenarios with smart analysis.
                             </p>
                             <div className="flex items-center justify-between">
                                 <div className="text-xs text-slate-500">
@@ -223,7 +223,7 @@ export default function SBIPO() {
                                 Set 3
                             </h3>
                             <p className="text-slate-600 text-sm mb-4">
-                                Expert-level questions on banking operations, Basel norms, and complex situational scenarios.
+                                Expert-level questions on banking operations, Basel norms, and complex situational scenarios with detailed smart feedback.
                             </p>
                             <div className="flex items-center justify-between">
                                 <div className="text-xs text-slate-500">

@@ -38,17 +38,17 @@ export default function Login() {
             <section className="relative px-6 py-20 lg:py-32">
                 <div className="max-w-4xl mx-auto text-center">
                     <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 mb-6 leading-tight">
-                        Continue to Your
+                        Master Your Banking
                         <br />
-                        <span className="text-sky-600">Interview Prep</span>
+                        <span className="text-sky-600">Interview with Smart Practice</span>
                     </h1>
 
                     <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                        Get the feedback you need to grow and shine in every interview with Eurprep.
+                        Get instant speech analysis, detailed feedback, and expert-level preparation for your SBI PO and IBPS PO interviews. Practice with real banking questions and improve your confidence.
                     </p>
 
                     {/* Main CTA */}
-                    <div className="mb-8">
+                    <div className="mb-12 mt-8">
                         <button
                             onClick={handleGoogleAuth}
                             disabled={loading}
@@ -72,7 +72,7 @@ export default function Login() {
                             )}
                         </button>
 
-                        <p className="text-xs text-gray-500 mt-4 max-w-md mx-auto">
+                        {/* <p className="text-xs text-gray-500 mt-4 max-w-md mx-auto">
                             By continuing, you agree to our{' '}
                             <a href="#" className="text-slate-700 hover:text-slate-900 underline font-medium">
                                 Privacy Policy
@@ -81,27 +81,27 @@ export default function Login() {
                             <a href="#" className="text-slate-700 hover:text-slate-900 underline font-medium">
                                 Terms of Service
                             </a>
-                        </p>
+                        </p> */}
                     </div>
 
                     {/* Trust Builders */}
                     <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 mb-8">
                         <div className="flex items-center space-x-2">
                             <Users className="w-4 h-4 text-green-500 flex-shrink-0" />
-                            <span>1000+ Users</span>
+                            <span>10+ Banking Aspirants</span>
                         </div>
                         <div className="flex items-center space-x-2">
                             <Target className="w-4 h-4 text-green-500 flex-shrink-0" />
-                            <span className="text-green-600 font-semibold">✓ 95% Success Rate</span>
+                            <span className="text-green-600 font-semibold">✓ 95% Interview Success Rate</span>
                         </div>
                         <div className="flex items-center space-x-2">
                             <TrendingUp className="w-4 h-4 text-green-500 flex-shrink-0" />
-                            <span>⚡ Instant Feedback</span>
+                            <span>⚡ Instant Smart Feedback</span>
                         </div>
                     </div>
 
                     {/* Privacy Assurance */}
-                    <div className="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-200 max-w-2xl mx-auto">
+                    {/* <div className="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-200 max-w-2xl mx-auto">
                         <div className="flex items-center justify-center space-x-2 text-slate-700 mb-2">
                             <Lock className="w-4 h-4 text-green-600" />
                             <span className="font-medium text-sm">Privacy First</span>
@@ -109,7 +109,7 @@ export default function Login() {
                         <p className="text-sm text-gray-600 text-center">
                             We'll never share your data. Your practice sessions are completely private.
                         </p>
-                    </div>
+                    </div> */}
 
                     {/* Error Display */}
                     {error && (
