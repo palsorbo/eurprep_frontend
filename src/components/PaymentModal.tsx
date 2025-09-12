@@ -123,9 +123,9 @@ export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModa
                         </h3>
                         <ul className="text-green-700 space-y-2">
                             <li>✓ Access to Set 2 & 3</li>
+                            <li>✓ All future question sets & free updates</li>
                             <li>✓ Advanced interview questions</li>
                             <li>✓ Expert-level scenarios</li>
-                            <li>✓ Lifetime access</li>
                         </ul>
                     </div>
 

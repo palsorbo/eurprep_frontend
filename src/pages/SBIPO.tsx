@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
 import { usePayment } from '../lib/payment-context'
-import { BookOpen, Play, CheckCircle, Lock, History, Eye, Calendar } from 'lucide-react'
+import { History, Eye, Calendar, Lock } from 'lucide-react'
 import LoadingScreen from '../components/LoadingScreen'
-import PaymentModal from '../components/PaymentModal'
+import InterviewSetCard from '../components/InterviewSetCard'
+import { getInterviewSetsWithAccess } from '../constants/interviewSets'
 import { PRICING } from '../constants/pricing'
-import { supabase } from '../lib/supabase'
+
+// Lazy load PaymentModal
+const PaymentModal = lazy(() => import('../components/PaymentModal'))
 
 interface FeedbackHistory {
     id: string
@@ -91,36 +94,16 @@ export default function SBIPO() {
                 </p>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                    {/* Set 1 Card */}
-                    <Link
-                        to="/sbi-po/interview/1"
-                        className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-slate-200 hover:border-green-300"
-                    >
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
-                                <BookOpen className="w-6 h-6 text-green-600" />
-                            </div>
-                            <div className="flex items-center space-x-1 text-green-600">
-                                <CheckCircle className="w-4 h-4" />
-                                <span className="text-xs font-medium">Free Demo</span>
-                            </div>
-                        </div>
-                        <h3 className="text-xl font-semibold text-slate-900 mb-2 group-hover:text-green-600 transition-colors">
-                            Set 1
-                        </h3>
-                        <p className="text-slate-600 text-sm mb-4">
-                            Comprehensive interview set with 10 banking-specific questions covering personal, HR, and technical aspects. Get smart feedback on each answer.
-                        </p>
-                        <div className="flex items-center justify-between">
-                            <div className="text-xs text-slate-500">
-                                10 Questions
-                            </div>
-                            <div className="flex items-center text-green-600 text-sm font-medium">
-                                <span>Start Set</span>
-                                <Play className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                            </div>
-                        </div>
-                    </Link>
+
+
+                    {/* Interview Set Cards */}
+                    {getInterviewSetsWithAccess(hasPaidAccess).map((set) => (
+                        <InterviewSetCard
+                            key={set.id}
+                            set={set}
+                            onUpgrade={!hasPaidAccess ? () => setIsPaymentModalOpen(true) : undefined}
+                        />
+                    ))}
 
                     {/* Premium Bundle Banner */}
                     {!hasPaidAccess && (
@@ -131,7 +114,7 @@ export default function SBIPO() {
                                         Unlock Premium Bundle
                                     </h3>
                                     <p className="text-green-700">
-                                        Get access to Set 2 & 3 with advanced questions, expert-level scenarios, and smart feedback
+                                        Get access to Set 2 & 3 plus all future question sets with advanced questions, expert-level scenarios, and smart feedback
                                     </p>
                                     <div className="mt-2 text-2xl font-bold text-green-800">
                                         ₹{PRICING.SBI_PO_PREMIUM_BUNDLE.AMOUNT} <span className="text-sm font-normal text-green-700">{PRICING.SBI_PO_PREMIUM_BUNDLE.TYPE}</span>
@@ -144,118 +127,6 @@ export default function SBIPO() {
                                     <span>Unlock Premium</span>
                                     <Lock className="w-4 h-4" />
                                 </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Set 2 Card */}
-                    {hasPaidAccess ? (
-                        <Link
-                            to="/sbi-po/interview/2"
-                            className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-slate-200 hover:border-green-300"
-                        >
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
-                                    <BookOpen className="w-6 h-6 text-green-600" />
-                                </div>
-                                <div className="flex items-center space-x-1 text-green-600">
-                                    <CheckCircle className="w-4 h-4" />
-                                    <span className="text-xs font-medium">Available</span>
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-semibold text-slate-900 mb-2 group-hover:text-green-600 transition-colors">
-                                Set 2
-                            </h3>
-                            <p className="text-slate-600 text-sm mb-4">
-                                Advanced interview questions focusing on economic awareness, customer handling, and leadership scenarios with smart analysis.
-                            </p>
-                            <div className="flex items-center justify-between">
-                                <div className="text-xs text-slate-500">
-                                    10 Questions
-                                </div>
-                                <div className="flex items-center text-green-600 text-sm font-medium">
-                                    <span>Start Set</span>
-                                    <Play className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                                </div>
-                            </div>
-                        </Link>
-                    ) : (
-                        <div className="group bg-white/50 rounded-lg shadow-sm p-6 border border-slate-200 cursor-not-allowed">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center justify-center w-12 h-12 bg-slate-100 rounded-lg">
-                                    <Lock className="w-6 h-6 text-slate-400" />
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-semibold text-slate-400 mb-2">
-                                Set 2
-                            </h3>
-                            <p className="text-slate-400 text-sm mb-4">
-                                Advanced interview questions focusing on economic awareness, customer handling, and leadership scenarios.
-                            </p>
-                            <div className="flex items-center justify-between">
-                                <div className="text-xs text-slate-400">
-                                    10 Questions
-                                </div>
-                                <div className="flex items-center text-slate-400 text-sm">
-                                    <span>Premium Content</span>
-                                    <Lock className="w-4 h-4 ml-2" />
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Set 3 Card */}
-                    {hasPaidAccess ? (
-                        <Link
-                            to="/sbi-po/interview/3"
-                            className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-slate-200 hover:border-green-300"
-                        >
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
-                                    <BookOpen className="w-6 h-6 text-green-600" />
-                                </div>
-                                <div className="flex items-center space-x-1 text-green-600">
-                                    <CheckCircle className="w-4 h-4" />
-                                    <span className="text-xs font-medium">Available</span>
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-semibold text-slate-900 mb-2 group-hover:text-green-600 transition-colors">
-                                Set 3
-                            </h3>
-                            <p className="text-slate-600 text-sm mb-4">
-                                Expert-level questions on banking operations, Basel norms, and complex situational scenarios with detailed smart feedback.
-                            </p>
-                            <div className="flex items-center justify-between">
-                                <div className="text-xs text-slate-500">
-                                    10 Questions
-                                </div>
-                                <div className="flex items-center text-green-600 text-sm font-medium">
-                                    <span>Start Set</span>
-                                    <Play className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                                </div>
-                            </div>
-                        </Link>
-                    ) : (
-                        <div className="group bg-white/50 rounded-lg shadow-sm p-6 border border-slate-200 cursor-not-allowed">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center justify-center w-12 h-12 bg-slate-100 rounded-lg">
-                                    <Lock className="w-6 h-6 text-slate-400" />
-                                </div>
-                            </div>
-                            <h3 className="text-xl font-semibold text-slate-400 mb-2">
-                                Set 3
-                            </h3>
-                            <p className="text-slate-400 text-sm mb-4">
-                                Expert-level questions on banking operations, Basel norms, and complex situational scenarios.
-                            </p>
-                            <div className="flex items-center justify-between">
-                                <div className="text-xs text-slate-400">
-                                    10 Questions
-                                </div>
-                                <div className="flex items-center text-slate-400 text-sm">
-                                    <span>Premium Content</span>
-                                    <Lock className="w-4 h-4 ml-2" />
-                                </div>
                             </div>
                         </div>
                     )}
@@ -362,14 +233,25 @@ export default function SBIPO() {
             )}
 
             {/* Payment Modal */}
-            <PaymentModal
-                isOpen={isPaymentModalOpen}
-                onClose={() => setIsPaymentModalOpen(false)}
-                onSuccess={() => {
-                    // Handle successful payment
-                    console.log('Payment successful')
-                }}
-            />
+            {isPaymentModalOpen && (
+                <Suspense fallback={
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                            <p className="text-slate-600 mt-4">Loading payment modal...</p>
+                        </div>
+                    </div>
+                }>
+                    <PaymentModal
+                        isOpen={isPaymentModalOpen}
+                        onClose={() => setIsPaymentModalOpen(false)}
+                        onSuccess={() => {
+                            // Handle successful payment
+                            console.log('Payment successful')
+                        }}
+                    />
+                </Suspense>
+            )}
 
             {/* Other Modules Coming soon*/}
             {/* <div className="mt-16">

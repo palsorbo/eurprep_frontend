@@ -25,6 +25,8 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
             return
         }
 
+        // Check if the user has paid for the premium bundle 
+        // (✅ Payment Status Check - Frontend is OK)
         try {
             const { data: payments, error } = await supabase
                 .from('payments')
@@ -61,6 +63,7 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
             const { orderId } = await response.json()
 
             // Create payment record in Supabase
+            // !TODO: Add payment record in backend not frontend
             const { error } = await supabase
                 .from('payments')
                 .insert({
@@ -99,6 +102,7 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
             if (success) {
                 // Update payment record in Supabase
+                // !TODO: Update payment record in backend not frontend
                 const { error } = await supabase
                     .from('payments')
                     .update({
