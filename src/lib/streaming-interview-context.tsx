@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react';
+import { createContext, useContext, useReducer, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 
@@ -244,129 +244,128 @@ export function StreamingInterviewProvider({ children }: StreamingInterviewProvi
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-    useEffect(() => {
-        // Initialize Socket.IO connection
-        const socket = io(API_BASE_URL, {
-            transports: ['websocket', 'polling']
-        });
-
-        socketRef.current = socket;
-
-        socket.on('connect', () => {
-            console.log('Connected to streaming interview server');
-            dispatch({ type: 'SET_CONNECTED', payload: true });
-        });
-
-        socket.on('disconnect', () => {
-            console.log('Disconnected from streaming interview server');
-            dispatch({ type: 'SET_CONNECTED', payload: false });
-        });
-
-        socket.on('question', (data) => {
-            console.log('=== FRONTEND: QUESTION RECEIVED ===');
-            console.log('Question data:', data);
-            dispatch({
-                type: 'SET_QUESTION',
-                payload: {
-                    question: data.question,
-                    questionNumber: data.questionNumber,
-                    totalQuestions: data.totalQuestions
-                }
-            });
-            console.log('Question state updated');
-        });
-
-        socket.on('questionAudio', (data) => {
-            console.log('Received question audio, length:', data.audioContent?.length);
-            // Play the TTS audio
-            if (data.audioContent) {
-                playTTSAudio(data.audioContent);
-            } else {
-                console.error('No audio content received');
-            }
-        });
-
-        socket.on('startAnswering', (data) => {
-            console.log('Ready to start answering:', data);
-        });
-
-        socket.on('streamingStarted', (data) => {
-            console.log('Streaming started:', data);
-            dispatch({ type: 'SET_STREAMING', payload: true });
-            console.log('Streaming state set to true');
-        });
-
-        socket.on('streamingStopped', () => {
-            console.log('Streaming stopped');
-            dispatch({ type: 'SET_STREAMING', payload: false });
-            console.log('Streaming state set to false');
-        });
-
-        socket.on('streamingEnded', () => {
-            console.log('Streaming ended');
-            dispatch({ type: 'SET_STREAMING', payload: false });
-        });
-
-        socket.on('transcription', (data) => {
-            console.log('Received transcription data:', data);
-
-            // Backend sends { text, isFinal } directly
-            if (data.text !== undefined) {
-                console.log('Parsed transcription:', {
-                    text: data.text,
-                    isFinal: data.isFinal
-                });
-
-                dispatch({
-                    type: 'SET_TRANSCRIPTION',
-                    payload: {
-                        text: data.text,
-                        isFinal: !!data.isFinal
-                    }
-                });
-                console.log('Updated transcription state');
-            } else {
-                console.warn('Unexpected transcription data structure:', data);
-            }
-        });
-
-        socket.on('answerComplete', (data) => {
-            console.log('Answer complete:', data);
-            // Reset transcription for next question
-            dispatch({
-                type: 'SET_TRANSCRIPTION',
-                payload: {
-                    text: '',
-                    isFinal: false
-                }
-            });
-            // Stop streaming since answer is complete
-            dispatch({ type: 'SET_STREAMING', payload: false });
-        });
-
-        socket.on('interviewComplete', (data) => {
-            console.log('Interview completed:', data);
-            hasStartedInterview.current = false; // Reset the flag when interview completes
-            dispatch({ type: 'COMPLETE_INTERVIEW', payload: data });
-        });
-
-        socket.on('error', (data) => {
-            console.error('Socket error:', data);
-            hasStartedInterview.current = false; // Reset the flag on error
-            dispatch({ type: 'SET_ERROR', payload: data.message });
-            // Stop streaming on error
-            dispatch({ type: 'SET_STREAMING', payload: false });
-        });
-
-        return () => {
-            socket.disconnect();
-        };
-    }, [API_BASE_URL]);
+    // Remove the useEffect that connects immediately
+    // Move socket connection logic to startInterview
 
     const startInterview = useCallback(() => {
         if (hasStartedInterview.current) {
             console.log('⏭️ [CONTEXT] Interview already started, skipping...');
             return;
+        }
+
+        // Initialize Socket.IO connection only when starting interview
+        if (!socketRef.current) {
+            const socket = io(API_BASE_URL, {
+                transports: ['websocket', 'polling']
+            });
+
+            socketRef.current = socket;
+
+            socket.on('connect', () => {
+                console.log('Connected to streaming interview server');
+                dispatch({ type: 'SET_CONNECTED', payload: true });
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Disconnected from streaming interview server');
+                dispatch({ type: 'SET_CONNECTED', payload: false });
+            });
+
+            socket.on('question', (data) => {
+                console.log('=== FRONTEND: QUESTION RECEIVED ===');
+                console.log('Question data:', data);
+                dispatch({
+                    type: 'SET_QUESTION',
+                    payload: {
+                        question: data.question,
+                        questionNumber: data.questionNumber,
+                        totalQuestions: data.totalQuestions
+                    }
+                });
+                console.log('Question state updated');
+            });
+
+            socket.on('questionAudio', (data) => {
+                console.log('Received question audio, length:', data.audioContent?.length);
+                // Play the TTS audio
+                if (data.audioContent) {
+                    playTTSAudio(data.audioContent);
+                } else {
+                    console.error('No audio content received');
+                }
+            });
+
+            socket.on('startAnswering', (data) => {
+                console.log('Ready to start answering:', data);
+            });
+
+            socket.on('streamingStarted', (data) => {
+                console.log('Streaming started:', data);
+                dispatch({ type: 'SET_STREAMING', payload: true });
+                console.log('Streaming state set to true');
+            });
+
+            socket.on('streamingStopped', () => {
+                console.log('Streaming stopped');
+                dispatch({ type: 'SET_STREAMING', payload: false });
+                console.log('Streaming state set to false');
+            });
+
+            socket.on('streamingEnded', () => {
+                console.log('Streaming ended');
+                dispatch({ type: 'SET_STREAMING', payload: false });
+            });
+
+            socket.on('transcription', (data) => {
+                console.log('Received transcription data:', data);
+
+                // Backend sends { text, isFinal } directly
+                if (data.text !== undefined) {
+                    console.log('Parsed transcription:', {
+                        text: data.text,
+                        isFinal: data.isFinal
+                    });
+
+                    dispatch({
+                        type: 'SET_TRANSCRIPTION',
+                        payload: {
+                            text: data.text,
+                            isFinal: !!data.isFinal
+                        }
+                    });
+                    console.log('Updated transcription state');
+                } else {
+                    console.warn('Unexpected transcription data structure:', data);
+                }
+            });
+
+            socket.on('answerComplete', (data) => {
+                console.log('Answer complete:', data);
+                // Reset transcription for next question
+                dispatch({
+                    type: 'SET_TRANSCRIPTION',
+                    payload: {
+                        text: '',
+                        isFinal: false
+                    }
+                });
+                // Stop streaming since answer is complete
+                dispatch({ type: 'SET_STREAMING', payload: false });
+            });
+
+            socket.on('interviewComplete', (data) => {
+                console.log('Interview completed:', data);
+                hasStartedInterview.current = false; // Reset the flag when interview completes
+                dispatch({ type: 'COMPLETE_INTERVIEW', payload: data });
+            });
+
+            socket.on('error', (data) => {
+                console.error('Socket error:', data);
+                hasStartedInterview.current = false; // Reset the flag on error
+                dispatch({ type: 'SET_ERROR', payload: data.message });
+                // Stop streaming on error
+                dispatch({ type: 'SET_STREAMING', payload: false });
+            });
         }
 
         hasStartedInterview.current = true;
@@ -391,7 +390,7 @@ export function StreamingInterviewProvider({ children }: StreamingInterviewProvi
             });
             dispatch({ type: 'SET_ERROR', payload: 'Not connected to server' });
         }
-    }, [state.isConnected]);
+    }, [API_BASE_URL, state.isConnected]);
 
     const startStreaming = () => {
         if (socketRef.current && state.isConnected) {
