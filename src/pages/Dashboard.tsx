@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
-import { Mic, Play } from 'lucide-react'
+import { Play } from 'lucide-react'
 import LoadingScreen from '../components/LoadingScreen'
 
 export default function Dashboard() {
@@ -47,7 +47,7 @@ export default function Dashboard() {
                         className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 border border-slate-200 hover:border-green-300"
                     >
                         <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mb-4 group-hover:bg-green-200 transition-colors">
-                            <Mic className="w-6 h-6 text-green-600" />
+                        <div className="w-6 h-6 text-gray-400">🏦</div>
                         </div>
                         <h3 className="text-xl font-semibold text-slate-900 mb-2 group-hover:text-green-600 transition-colors">
                             SBI PO
