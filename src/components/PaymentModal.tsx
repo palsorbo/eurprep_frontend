@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { usePayment } from '../lib/payment-context'
 import { X } from 'lucide-react'
 import { PRICING, getAmountInPaise } from '../constants/pricing'
+import { loadRazorpayScript } from '../utils/loadScript'
 
 declare global {
     interface Window {
@@ -19,8 +20,34 @@ export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModa
     const { initializePayment, verifyPayment } = usePayment()
     const [isProcessing, setIsProcessing] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false)
+    const [isLoadingScript, setIsLoadingScript] = useState(false)
+
+    // Load Razorpay script when modal opens
+    useEffect(() => {
+        if (isOpen && !isRazorpayLoaded && !isLoadingScript) {
+            setIsLoadingScript(true)
+            loadRazorpayScript()
+                .then(() => {
+                    setIsRazorpayLoaded(true)
+                    console.log('Razorpay script loaded successfully')
+                })
+                .catch((error) => {
+                    console.error('Failed to load Razorpay script:', error)
+                    setError('Failed to load payment system. Please refresh and try again.')
+                })
+                .finally(() => {
+                    setIsLoadingScript(false)
+                })
+        }
+    }, [isOpen, isRazorpayLoaded, isLoadingScript])
 
     const handlePayment = async () => {
+        if (!isRazorpayLoaded) {
+            setError('Payment system is still loading. Please wait a moment and try again.')
+            return
+        }
+
         try {
             setIsProcessing(true)
             setError(null)
@@ -119,10 +146,10 @@ export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModa
 
                     <button
                         onClick={handlePayment}
-                        disabled={isProcessing}
+                        disabled={isProcessing || isLoadingScript || !isRazorpayLoaded}
                         className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isProcessing ? "Processing..." : "Pay Now"}
+                        {isLoadingScript ? "Loading Payment System..." : isProcessing ? "Processing..." : "Pay Now"}
                     </button>
 
                     <div className="text-center text-slate-500 text-sm">
