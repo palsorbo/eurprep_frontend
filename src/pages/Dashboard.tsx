@@ -78,7 +78,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Coming Soon Card */}
-                    <div className="group bg-white rounded-lg shadow-md p-6 border border-slate-200 opacity-60">
+                {/* <div className="group bg-white rounded-lg shadow-md p-6 border border-slate-200 opacity-60">
                         <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mb-4">
                             <div className="w-6 h-6 text-blue-400">🎓</div>
                         </div>
@@ -91,7 +91,7 @@ export default function Dashboard() {
                         <div className="mt-4 text-gray-500 text-sm font-medium">
                             Coming Soon
                         </div>
-                </div>
+                </div> */}
             </div>
         </div>
     )
