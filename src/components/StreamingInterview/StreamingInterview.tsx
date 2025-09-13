@@ -27,8 +27,8 @@ type InterviewState =
 
 const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     apiUrl = import.meta.env.VITE_API_BASE_URL,
-    selectedSet = 'Set1',
-    selectedContext = 'sbi-po'
+    selectedSet,
+    selectedContext
 }) => {
     const navigate = useNavigate();
 
@@ -41,6 +41,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     const [isConnected, setIsConnected] = useState(false);
     const [results, setResults] = useState<{ questions: string[]; answers: string[]; } | null>(null);
     const [sessionId, setSessionId] = useState<string | null>(null);
+    const [elapsedTime, setElapsedTime] = useState(0);
 
     // Interviewer panel state
     const [interviewers, setInterviewers] = useState<Interviewer[]>([]);
@@ -52,6 +53,35 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
     const isRecordingRef = useRef<boolean>(false);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const startTimeRef = useRef<number | null>(null);
+
+    // Timer utility functions
+    const formatTime = (seconds: number): string => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const startTimer = () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+        startTimeRef.current = Date.now();
+        timerRef.current = setInterval(() => {
+            if (startTimeRef.current) {
+                const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+                setElapsedTime(elapsed);
+            }
+        }, 1000);
+    };
+
+    const stopTimer = () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+        }
+    };
 
     // Initialize socket connection
     useEffect(() => {
@@ -96,6 +126,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             // Use interviewer ID from backend
             setActiveInterviewerId(data.interviewerId);
             setIsQuestionVisible(true);
+
         });
 
         socket.on('questionAudio', (data) => {
@@ -142,6 +173,9 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             console.log('🎉 [COMPONENT] Calling stopRecording with preserveInterviewState=true...');
             stopRecording(true);
 
+            // Stop timer when interview is complete
+            stopTimer();
+
             // Auto-redirect to results page after a short delay
             setTimeout(() => {
                 const currentSessionId = sessionId || socket.id;
@@ -173,6 +207,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
 
         return () => {
             socket.disconnect();
+            stopTimer();
         };
     }, [apiUrl]);
 
@@ -210,6 +245,10 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             setError('Not connected to server');
             return;
         }
+
+        // Start timer when interview begins
+        startTimer();
+
         socketRef.current?.emit('startInterview', {
             set: selectedSet,
             context: selectedContext
@@ -378,6 +417,22 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                                 </div>
                             </div>
                         )}
+
+                        {/* Timer Display */}
+                        {interviewState !== 'IDLE' && (
+                            <div className="mt-6 flex justify-center">
+                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl px-8 py-4 shadow-lg">
+                                    <div className="flex items-center space-x-3">
+                                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span className="text-3xl font-bold text-blue-800 font-mono">
+                                            {formatTime(elapsedTime)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Interviewer Panel */}
@@ -425,9 +480,9 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                                     relative w-32 h-32 lg:w-36 lg:h-36 rounded-full flex items-center justify-center
                                     transition-all duration-300 transform hover:scale-110
                                     ${interviewState === 'IDLE'
-                                        ? 'bg-gray-600 hover:bg-gray-700 text-white'
-                                        : 'bg-blue-600 hover:bg-blue-700 text-white animate-pulse'
-                                    }
+                                            ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                                            : 'bg-blue-600 hover:bg-blue-700 text-white animate-pulse'
+                                        }
                                     ${interviewState === 'LISTENING' ? 'shadow-2xl shadow-blue-500/60' : 'shadow-xl'}
                                 `}
                                     title={interviewState === 'IDLE' ? 'Click to speak' : 'Listening...'}
@@ -474,7 +529,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                         )}
 
                         {/* Debug info */}
-                        {interviewState === 'COMPLETE' && (
+                        {/* {interviewState === 'COMPLETE' && (
                             <div className="mt-6 p-4 bg-gray-100 rounded-lg">
                                 <h3 className="font-semibold">Debug Info:</h3>
                                 <p>Interview State: {interviewState}</p>
@@ -486,7 +541,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                                     </div>
                                 )}
                             </div>
-                        )}
+                        )} */}
                     </div>
                 </div>
             </div>
