@@ -225,7 +225,6 @@ interface StreamingInterviewContextType {
     socket: Socket | null;
     startInterview: () => void;
     startStreaming: () => void;
-    stopStreaming: () => void;
     sendAudioData: (audioChunk: string) => void;
     resetInterview: () => void;
 }
@@ -305,11 +304,6 @@ export function StreamingInterviewProvider({ children }: StreamingInterviewProvi
                 console.log('Streaming state set to true');
             });
 
-            socket.on('streamingStopped', () => {
-                console.log('Streaming stopped');
-                dispatch({ type: 'SET_STREAMING', payload: false });
-                console.log('Streaming state set to false');
-            });
 
             socket.on('streamingEnded', () => {
                 console.log('Streaming ended');
@@ -400,11 +394,6 @@ export function StreamingInterviewProvider({ children }: StreamingInterviewProvi
         }
     };
 
-    const stopStreaming = () => {
-        if (socketRef.current && state.isConnected) {
-            socketRef.current.emit('stopStreaming');
-        }
-    };
 
     const sendAudioData = (audioChunk: string) => {
         if (socketRef.current && state.isConnected) {
@@ -500,7 +489,6 @@ export function StreamingInterviewProvider({ children }: StreamingInterviewProvi
         socket: socketRef.current,
         startInterview,
         startStreaming,
-        stopStreaming,
         sendAudioData,
         resetInterview
     };

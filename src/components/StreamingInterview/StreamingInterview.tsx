@@ -141,10 +141,9 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             if (interviewState === 'LISTENING') {
                 setTranscription(data.text);
                 if (data.isFinal) {
-                    console.log('Final transcription received, auto-stopping recording');
+                    console.log('Final transcription received, waiting for Google VAD to end streaming');
                     setInterviewState('PROCESSING_ANSWER');
-                    // Auto-stop recording when we get final transcription
-                    stopRecording();
+                    // Google VAD will emit streamingEnded event to stop recording
                 }
             }
         });
@@ -193,13 +192,8 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
 
         console.log('🔌 [COMPONENT] All socket event listeners set up');
 
-        socket.on('streamingStopped', () => {
-            console.log('Streaming stopped by server');
-            stopRecording();
-        });
-
         socket.on('streamingEnded', () => {
-            console.log('Streaming ended by server');
+            console.log('Streaming ended by server - Google VAD detected speech completion');
             stopRecording();
         });
 
@@ -358,8 +352,6 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                 }
                 console.log('🛑 Stopping media tracks...');
                 mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-                console.log('🛑 Emitting stopStreaming...');
-                socketRef.current?.emit('stopStreaming');
             }
             // Clear media recorder
             mediaRecorderRef.current = null;
@@ -475,17 +467,18 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                         {currentQuestion && (interviewState === 'IDLE' || interviewState === 'LISTENING') && (
                             <div className="flex flex-col items-center space-y-12 py-16">
                                 <button
-                                    onClick={interviewState === 'IDLE' ? startRecording : () => stopRecording(false)}
+                                    onClick={startRecording}
+                                    disabled={interviewState !== 'IDLE'}
                                     className={`
                                     relative w-32 h-32 lg:w-36 lg:h-36 rounded-full flex items-center justify-center
                                     transition-all duration-300 transform hover:scale-110
                                     ${interviewState === 'IDLE'
                                             ? 'bg-gray-600 hover:bg-gray-700 text-white'
-                                            : 'bg-blue-600 hover:bg-blue-700 text-white animate-pulse'
+                                        : 'bg-blue-600 text-white animate-pulse cursor-not-allowed'
                                         }
                                     ${interviewState === 'LISTENING' ? 'shadow-2xl shadow-blue-500/60' : 'shadow-xl'}
                                 `}
-                                    title={interviewState === 'IDLE' ? 'Click to speak' : 'Listening...'}
+                                    title={interviewState === 'IDLE' ? 'Click to start speaking (Google will auto-detect when you finish)' : 'Listening... Google will detect when you finish speaking'}
                                 >
                                     <svg
                                         className="w-16 h-16 lg:w-18 lg:h-18"
