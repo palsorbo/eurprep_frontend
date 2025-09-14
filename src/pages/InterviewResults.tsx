@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Home } from 'lucide-react';
 import ResultsView from '../components/StreamingInterview/ResultsView';
 import LoadingScreen from '../components/LoadingScreen';
-import { useAuth } from '../lib/auth-context';
 
 interface InterviewResultsData {
     questions: string[];
@@ -15,7 +14,6 @@ interface InterviewResultsData {
 const InterviewResults: React.FC = () => {
     const { sessionId } = useParams<{ sessionId: string }>();
     const navigate = useNavigate();
-    const { user } = useAuth();
     const [resultsData, setResultsData] = useState<InterviewResultsData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -60,42 +58,7 @@ const InterviewResults: React.FC = () => {
 
                 if (!sessionResponse.ok) {
                     if (sessionResponse.status === 404) {
-                        console.log('Session not found, generating new evaluation...');
-                        // Session expired, generate new evaluation
-                        const evaluationResponse = await fetch(`${baseUrl}/api/v1/evaluate-interview`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                sessionId,
-                                candidateId: 'CAND123',
-                                interviewSet: 'Set1',
-                                context: 'sbi-po',
-                                userId: user?.id
-                            }),
-                        });
-
-                        if (!evaluationResponse.ok) {
-                            throw new Error(`Failed to generate evaluation: ${evaluationResponse.status}`);
-                        }
-
-                        const evaluationData = await evaluationResponse.json();
-                        if (evaluationData.success && evaluationData.evaluation) {
-                            const evaluation = evaluationData.evaluation;
-                            const questions = evaluation.qa_feedback.map((qa: any) => qa.question);
-                            const answers = evaluation.qa_feedback.map((qa: any) => qa.answer);
-
-                            setResultsData({
-                                questions: questions,
-                                answers: answers,
-                                sessionId: sessionId,
-                                evaluation: evaluation
-                            });
-                            return;
-                        } else {
-                            throw new Error(evaluationData.error || 'Failed to generate evaluation');
-                        }
+                        throw new Error('Interview session not found. The session may have expired.');
                     }
                     throw new Error(`Failed to fetch results: ${sessionResponse.status}`);
                 }
@@ -104,79 +67,19 @@ const InterviewResults: React.FC = () => {
                 console.log('Session data received:', data);
 
                 if (data.success && data.results) {
-                    console.log('Session data found, but no DB evaluation - generating evaluation...');
-                    // Session data exists but no DB evaluation, generate and store it
-                    const evaluationResponse = await fetch(`${baseUrl}/api/v1/evaluate-interview`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            sessionId,
-                            candidateId: 'CAND123',
-                            interviewSet: 'Set1',
-                            context: 'sbi-po',
-                            userId: user?.id
-                        }),
+                    // Session data exists but no DB evaluation - let ResultsView handle evaluation
+                    const questions = data.results.questions || [];
+                    const answers = data.results.answers || [];
+
+                    setResultsData({
+                        questions: questions,
+                        answers: answers,
+                        sessionId: sessionId,
+                        evaluation: undefined // Let ResultsView handle evaluation
                     });
-
-                    if (!evaluationResponse.ok) {
-                        throw new Error(`Failed to generate evaluation: ${evaluationResponse.status}`);
-                    }
-
-                    const evaluationData = await evaluationResponse.json();
-                    if (evaluationData.success && evaluationData.evaluation) {
-                        const evaluation = evaluationData.evaluation;
-                        const questions = evaluation.qa_feedback.map((qa: any) => qa.question);
-                        const answers = evaluation.qa_feedback.map((qa: any) => qa.answer);
-
-                        setResultsData({
-                            questions: questions,
-                            answers: answers,
-                            sessionId: sessionId,
-                            evaluation: evaluation
-                        });
-                        return;
-                    } else {
-                        throw new Error(evaluationData.error || 'Failed to generate evaluation');
-                    }
+                    return;
                 } else {
-                    console.log('Session data invalid, generating evaluation...');
-                    // Session data is invalid, generate new evaluation
-                    const evaluationResponse = await fetch(`${baseUrl}/api/v1/evaluate-interview`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            sessionId,
-                            candidateId: 'CAND123',
-                            interviewSet: 'Set1',
-                            context: 'sbi-po',
-                            userId: user?.id
-                        }),
-                    });
-
-                    if (!evaluationResponse.ok) {
-                        throw new Error(`Failed to generate evaluation: ${evaluationResponse.status}`);
-                    }
-
-                    const evaluationData = await evaluationResponse.json();
-                    if (evaluationData.success && evaluationData.evaluation) {
-                        const evaluation = evaluationData.evaluation;
-                        const questions = evaluation.qa_feedback.map((qa: any) => qa.question);
-                        const answers = evaluation.qa_feedback.map((qa: any) => qa.answer);
-
-                        setResultsData({
-                            questions: questions,
-                            answers: answers,
-                            sessionId: sessionId,
-                            evaluation: evaluation
-                        });
-                        return;
-                    } else {
-                        throw new Error(evaluationData.error || 'Failed to generate evaluation');
-                    }
+                    throw new Error('Invalid session data received');
                 }
             } catch (err) {
                 console.error('Error fetching results:', err);

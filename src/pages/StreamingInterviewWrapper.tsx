@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import PremiumRoute from '../components/PremiumRoute';
 import StreamingInterview from '../components/StreamingInterview';
+import { StreamingInterviewProvider } from '../lib/streaming-interview-context';
 import { INTERVIEW_SETS } from '../constants/interviewSets';
 
 export default function StreamingInterviewWrapper() {
@@ -23,11 +24,14 @@ export default function StreamingInterviewWrapper() {
     // Convert setId to Set name (e.g., "1" -> "Set1")
     const set = setId ? `Set${setId}` : 'Set1';
     const context = 'sbi-po'; // Hardcoded for now
+    const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
     const content = (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <StreamingInterview selectedSet={set} selectedContext={context} />
-        </div>
+        <StreamingInterviewProvider apiUrl={apiUrl}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <StreamingInterview selectedSet={set} selectedContext={context} />
+            </div>
+        </StreamingInterviewProvider>
     );
 
     // If set is free, render directly

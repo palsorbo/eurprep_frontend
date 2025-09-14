@@ -95,9 +95,9 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
         );
     };
 
-    // Auto-evaluate when component mounts
+    // Load evaluation when component mounts
     useEffect(() => {
-        const evaluateInterview = async () => {
+        const loadEvaluation = async () => {
             // If evaluation is passed as prop, use it directly
             if (propEvaluation) {
                 setEvaluation(propEvaluation);
@@ -113,17 +113,12 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
                 return;
             }
 
-            // Prevent duplicate calls
-            if (isLoading) {
-                return;
-            }
-
             setError(null);
 
             try {
                 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-                // First, try to get existing feedback from database
+                // Try to get existing feedback from database
                 console.log('Checking for existing feedback for session:', sessionId);
                 const feedbackResponse = await fetch(`${baseUrl}/api/v1/feedback/${sessionId}`, {
                     method: 'GET',
@@ -138,7 +133,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
                     console.log('Feedback data received:', feedbackData);
                     if (feedbackData.success && feedbackData.feedback) {
                         // Use existing feedback
-                        console.log('Using existing feedback, skipping evaluation');
+                        console.log('Using existing feedback from database');
                         setEvaluation(feedbackData.feedback.feedback_data);
                         // Auto-expand all questions for better UX
                         const allQuestionIndices = feedbackData.feedback.feedback_data.qa_feedback.map((_: any, index: number) => index);
@@ -148,65 +143,18 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
                     }
                 }
 
-                // If no existing feedback, generate new evaluation
-                console.log('Generating new evaluation for session:', sessionId);
-                console.log('API URL:', baseUrl);
-                console.log('Request body:', {
-                    sessionId,
-                    candidateId: 'CAND123',
-                    interviewSet: 'Set1',
-                    context: 'sbi-po',
-                    userId: user?.id
-                });
-
-                // Create AbortController for timeout
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
-
-                const response = await fetch(`${baseUrl}/api/v1/evaluate-interview`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        sessionId,
-                        candidateId: 'CAND123',
-                        interviewSet: 'Set1',
-                        context: 'sbi-po',
-                        userId: user?.id // Pass the actual user ID
-                    }),
-                    signal: controller.signal
-                });
-
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.success) {
-                    setEvaluation(data.evaluation);
-                    // Auto-expand all questions for better UX
-                    const allQuestionIndices = data.evaluation.qa_feedback.map((_: any, index: number) => index);
-                    setExpandedQuestions(new Set(allQuestionIndices));
-                } else {
-                    setError(data.error || 'Failed to evaluate interview');
-                }
+                // If no existing feedback found, show error
+                console.log('No evaluation found in database for session:', sessionId);
+                setError('No evaluation found for this interview session. The evaluation may not have been generated yet.');
             } catch (err) {
-                if (err instanceof Error && err.name === 'AbortError') {
-                    setError('Evaluation timed out. Please try again.');
-                } else {
-                    setError('Network error occurred while evaluating interview');
-                }
-                console.error('Evaluation error:', err);
+                setError('Failed to load evaluation data');
+                console.error('Error loading evaluation:', err);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        evaluateInterview();
+        loadEvaluation();
     }, [sessionId, user?.id, propEvaluation]);
 
     return (
@@ -216,7 +164,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
                 {isLoading && (
                     <div className="flex items-center text-blue-600">
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-2"></div>
-                        <span className="text-sm font-medium">Generating your evaluation...</span>
+                        <span className="text-sm font-medium">Loading your evaluation...</span>
                     </div>
                 )}
             </div>
@@ -231,8 +179,8 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
             {isLoading && !error && (
                 <div className="text-center py-12">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Generating your evaluation...</h3>
-                    <p className="text-gray-600">Please wait while we analyze your interview responses</p>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Loading your evaluation...</h3>
+                    <p className="text-gray-600">Please wait while we retrieve your interview results</p>
                 </div>
             )}
 
