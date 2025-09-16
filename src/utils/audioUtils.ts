@@ -31,19 +31,36 @@ export class AudioRecorderManager {
         onError?: (error: Error) => void
     ): Promise<void> {
         try {
+            console.log('🎤 AudioRecorderManager.startRecording called');
             // Clean up any existing recording
             this.cleanup();
 
+            // Check if getUserMedia is supported
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('getUserMedia is not supported in this browser');
+            }
+
             // Get user media
+            console.log('🎤 Requesting microphone access...');
             this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            console.log('🎤 Microphone access granted, stream:', this.stream);
+            console.log('🎤 Stream tracks:', this.stream.getTracks());
 
             // Create media recorder
+            console.log('🎤 Creating MediaRecorder with mimeType:', this.config.mimeType);
             this.mediaRecorder = new MediaRecorder(this.stream, {
                 mimeType: this.config.mimeType
             });
+            console.log('🎤 MediaRecorder created successfully, state:', this.mediaRecorder.state);
 
             // Set up data available handler
             this.mediaRecorder.ondataavailable = (event) => {
+                console.log('🎤 MediaRecorder data available:', {
+                    dataSize: event.data.size,
+                    isRecording: this.isRecording,
+                    mimeType: event.data.type
+                });
+
                 if (event.data.size > 0 && this.isRecording) {
                     this.audioChunks.push(event.data);
 
@@ -52,18 +69,25 @@ export class AudioRecorderManager {
                     reader.onloadend = () => {
                         const base64data = (reader.result as string)?.split(',')[1];
                         if (base64data && this.isRecording) {
+                            console.log('🎤 Sending base64 audio data, length:', base64data.length);
                             onDataAvailable(base64data);
+                        } else {
+                            console.log('🎤 Base64 data not sent - conditions not met');
                         }
                     };
                     reader.readAsDataURL(event.data);
+                } else {
+                    console.log('🎤 Data available event ignored - no data or not recording');
                 }
             };
 
             // Start recording
+            console.log('🎤 Starting MediaRecorder with chunk interval:', this.config.chunkInterval);
             this.mediaRecorder.start(this.config.chunkInterval);
             this.isRecording = true;
 
-            console.log('🎤 Audio recording started');
+            console.log('🎤 Audio recording started successfully');
+            console.log('🎤 MediaRecorder state after start:', this.mediaRecorder.state);
         } catch (error) {
             console.error('Error starting audio recording:', error);
             onError?.(error as Error);
