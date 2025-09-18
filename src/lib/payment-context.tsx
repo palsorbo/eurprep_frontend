@@ -4,7 +4,8 @@ import { supabase } from './supabase'
 // import type { Payment } from './supabase'
 
 interface PaymentContextType {
-    hasPaidAccess: boolean
+    hasAccessToProduct: (productType: string) => boolean
+    purchasedProducts: string[]
     isLoading: boolean
     refreshPaymentStatus: () => Promise<void>
     initializePayment: (amount: number, productType: string, productMetadata?: Record<string, unknown>) => Promise<string>
@@ -15,34 +16,39 @@ const PaymentContext = createContext<PaymentContextType | undefined>(undefined)
 
 export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth()
-    const [hasPaidAccess, setHasPaidAccess] = useState(false)
+    const [purchasedProducts, setPurchasedProducts] = useState<string[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
     const refreshPaymentStatus = async () => {
         if (!user) {
-            setHasPaidAccess(false)
+            setPurchasedProducts([])
             setIsLoading(false)
             return
         }
 
-        // Check if the user has paid for the premium bundle 
+        // Check if the user has paid for any products
         // (✅ Payment Status Check - Frontend is OK)
         try {
             const { data: payments, error } = await supabase
                 .from('payments')
-                .select('*')
+                .select('product_type')
                 .eq('user_id', user.id)
                 .eq('status', 'completed')
-                .limit(1)
 
             if (error) throw error
-            setHasPaidAccess(payments && payments.length > 0)
+
+            const productTypes = payments?.map(payment => payment.product_type) || []
+            setPurchasedProducts(productTypes)
         } catch (error) {
             console.error('Error fetching payment status:', error)
-            setHasPaidAccess(false)
+            setPurchasedProducts([])
         } finally {
             setIsLoading(false)
         }
+    }
+
+    const hasAccessToProduct = (productType: string): boolean => {
+        return purchasedProducts.includes(productType)
     }
 
     const initializePayment = async (amount: number, productType: string, productMetadata?: Record<string, unknown>): Promise<string> => {
@@ -130,7 +136,8 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <PaymentContext.Provider value={{
-            hasPaidAccess,
+            hasAccessToProduct,
+            purchasedProducts,
             isLoading,
             refreshPaymentStatus,
             initializePayment,

@@ -24,7 +24,8 @@ interface FeedbackHistory {
 
 export default function SBIPO() {
     const { user, loading: authLoading } = useAuth()
-    const { hasPaidAccess, isLoading: paymentLoading } = usePayment()
+    const { hasAccessToProduct, isLoading: paymentLoading } = usePayment()
+    const hasPaidAccess = hasAccessToProduct('sbi_po_premium_bundle')
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
     const [feedbackHistory, setFeedbackHistory] = useState<FeedbackHistory[]>([])
     const [isLoadingHistory, setIsLoadingHistory] = useState(false)
@@ -250,6 +251,7 @@ export default function SBIPO() {
                             // Handle successful payment
                             console.log('Payment successful')
                         }}
+                        productType="sbi_po_premium_bundle"
                     />
                 </Suspense>
             )}

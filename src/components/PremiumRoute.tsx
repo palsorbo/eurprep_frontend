@@ -5,21 +5,24 @@ import LoadingScreen from './LoadingScreen';
 
 interface PremiumRouteProps {
     children: React.ReactNode;
-    redirectTo?: string;
+    productType: string;
+    redirectTo: string;
 }
 
-export default function PremiumRoute({ children, redirectTo = '/sbi-po' }: PremiumRouteProps) {
-    const { hasPaidAccess, isLoading } = usePayment();
+export default function PremiumRoute({ children, productType, redirectTo }: PremiumRouteProps) {
+    const { hasAccessToProduct, isLoading } = usePayment();
     const navigate = useNavigate();
     const [shouldRender, setShouldRender] = useState(false);
 
+    const hasAccess = hasAccessToProduct(productType);
+
     useEffect(() => {
-        if (!isLoading && !hasPaidAccess) {
+        if (!isLoading && !hasAccess) {
             navigate(redirectTo, { replace: true });
-        } else if (!isLoading && hasPaidAccess) {
+        } else if (!isLoading && hasAccess) {
             setShouldRender(true);
         }
-    }, [hasPaidAccess, isLoading, navigate, redirectTo]);
+    }, [hasAccess, isLoading, navigate, redirectTo]);
 
     if (isLoading) {
         return <LoadingScreen message="Checking access..." />;
