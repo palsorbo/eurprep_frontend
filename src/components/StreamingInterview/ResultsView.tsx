@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useAuth } from '../../lib/auth-context';
 
 // Enhanced feedback structure for individual questions
 interface EnhancedQaFeedback {
@@ -29,7 +28,6 @@ interface OverallFeedback {
 }
 
 interface InterviewEvaluation {
-    candidate_id: string;
     interview_set: string;
     version: string;
     qa_feedback: EnhancedQaFeedback[];
@@ -39,15 +37,10 @@ interface InterviewEvaluation {
 interface ResultsViewProps {
     questions: string[];
     answers: string[];
-    sessionId?: string;
-    evaluation?: InterviewEvaluation; // Optional evaluation data
+    evaluation: InterviewEvaluation;
 }
 
-const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId, evaluation: propEvaluation }) => {
-    const { user } = useAuth();
-    const [evaluation, setEvaluation] = useState<InterviewEvaluation | null>(null);
-    const [isLoading, setIsLoading] = useState(true); // Start with loading true
-    const [error, setError] = useState<string | null>(null);
+const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluation }) => {
     const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(new Set());
 
     const getRecommendationColor = (recommendation: string) => {
@@ -95,142 +88,63 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
         );
     };
 
-    // Load evaluation when component mounts
+    // Auto-expand all questions on mount
     useEffect(() => {
-        const loadEvaluation = async () => {
-            // If evaluation is passed as prop, use it directly
-            if (propEvaluation) {
-                setEvaluation(propEvaluation);
-                const allQuestionIndices = propEvaluation.qa_feedback.map((_: any, index: number) => index);
-                setExpandedQuestions(new Set(allQuestionIndices));
-                setIsLoading(false);
-                return;
-            }
-
-            if (!sessionId) {
-                setError('Session ID not available for evaluation');
-                setIsLoading(false);
-                return;
-            }
-
-            setError(null);
-
-            try {
-                const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
-                // Try to get existing feedback from database
-                console.log('Checking for existing feedback for session:', sessionId);
-                const feedbackResponse = await fetch(`${baseUrl}/api/v1/feedback/${sessionId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                console.log('Feedback response status:', feedbackResponse.status);
-                if (feedbackResponse.ok) {
-                    const feedbackData = await feedbackResponse.json();
-                    console.log('Feedback data received:', feedbackData);
-                    if (feedbackData.success && feedbackData.feedback) {
-                        // Use existing feedback
-                        console.log('Using existing feedback from database');
-                        setEvaluation(feedbackData.feedback.feedback_data);
-                        // Auto-expand all questions for better UX
-                        const allQuestionIndices = feedbackData.feedback.feedback_data.qa_feedback.map((_: any, index: number) => index);
-                        setExpandedQuestions(new Set(allQuestionIndices));
-                        setIsLoading(false);
-                        return;
-                    }
-                }
-
-                // If no existing feedback found, show error
-                console.log('No evaluation found in database for session:', sessionId);
-                setError('No evaluation found for this interview session. The evaluation may not have been generated yet.');
-            } catch (err) {
-                setError('Failed to load evaluation data');
-                console.error('Error loading evaluation:', err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        loadEvaluation();
-    }, [sessionId, user?.id, propEvaluation]);
+        const allQuestionIndices = evaluation.qa_feedback.map((_: any, index: number) => index);
+        setExpandedQuestions(new Set(allQuestionIndices));
+    }, [evaluation]);
 
     return (
         <div className="bg-white shadow rounded-lg p-6">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Enhanced Interview Results</h2>
-                {isLoading && (
-                    <div className="flex items-center text-blue-600">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-2"></div>
-                        <span className="text-sm font-medium">Loading your evaluation...</span>
-                    </div>
-                )}
             </div>
 
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    {error}
-                </div>
-            )}
-
-            {/* Loading State */}
-            {isLoading && !error && (
-                <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Loading your evaluation...</h3>
-                    <p className="text-gray-600">Please wait while we retrieve your interview results</p>
-                </div>
-            )}
-
             {/* Enhanced Overall Evaluation Summary */}
-            {evaluation && (
-                <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                    <h3 className="text-xl font-bold mb-4 text-blue-900">Eurprep Team's Evaluation Summary</h3>
+            <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                <h3 className="text-xl font-bold mb-4 text-blue-900">Eurprep Team's Evaluation Summary</h3>
 
-                    {/* Score Metrics */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div className="bg-white p-4 rounded-lg shadow-sm">
-                            <div className="text-2xl font-bold text-blue-600">{evaluation.overall_feedback.averageScore.toFixed(1)}</div>
-                            <div className="text-sm text-gray-600">Average Score</div>
-                            {renderScoreMeter(evaluation.overall_feedback.averageScore)}
-                        </div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm">
-                            <div className="text-2xl font-bold text-green-600">{evaluation.overall_feedback.coveragePercentage}%</div>
-                            <div className="text-sm text-gray-600">Core Points Coverage</div>
-                            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                                <div
-                                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                                    style={{ width: `${evaluation.overall_feedback.coveragePercentage}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm">
-                            <div className="text-2xl font-bold text-purple-600">{evaluation.overall_feedback.totalScore}</div>
-                            <div className="text-sm text-gray-600">Total Score</div>
-                            <div className="text-xs text-gray-500 mt-1">Out of {questions.length * 10}</div>
+                {/* Score Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <div className="text-2xl font-bold text-blue-600">{evaluation.overall_feedback.averageScore.toFixed(1)}</div>
+                        <div className="text-sm text-gray-600">Average Score</div>
+                        {renderScoreMeter(evaluation.overall_feedback.averageScore)}
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <div className="text-2xl font-bold text-green-600">{evaluation.overall_feedback.coveragePercentage}%</div>
+                        <div className="text-sm text-gray-600">Core Points Coverage</div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div
+                                className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${evaluation.overall_feedback.coveragePercentage}%` }}
+                            ></div>
                         </div>
                     </div>
-
-                    <div className="mb-4">
-                        <p className="text-gray-700 mb-2">
-                            <span className="font-semibold">Summary:</span> {evaluation.overall_feedback.summary}
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <span className="font-semibold">Recommendation:</span>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRecommendationColor(evaluation.overall_feedback.recommendation)}`}>
-                                {evaluation.overall_feedback.recommendation}
-                            </span>
-                        </div>
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <div className="text-2xl font-bold text-purple-600">{evaluation.overall_feedback.totalScore}</div>
+                        <div className="text-sm text-gray-600">Total Score</div>
+                        <div className="text-xs text-gray-500 mt-1">Out of {questions.length * 10}</div>
                     </div>
                 </div>
-            )}
+
+                <div className="mb-4">
+                    <p className="text-gray-700 mb-2">
+                        <span className="font-semibold">Summary:</span> {evaluation.overall_feedback.summary}
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <span className="font-semibold">Recommendation:</span>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRecommendationColor(evaluation.overall_feedback.recommendation)}`}>
+                            {evaluation.overall_feedback.recommendation}
+                        </span>
+                    </div>
+                </div>
+            </div>
 
             {/* Enhanced Q&A with Detailed Feedback */}
             <div className="space-y-4">
                 {questions.map((question, index) => {
-                    const qaFeedback = evaluation?.qa_feedback.find(
+                    const qaFeedback = evaluation.qa_feedback.find(
                         qa => qa.question === question
                     );
                     const isExpanded = expandedQuestions.has(index);
@@ -429,7 +343,6 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, sessionId
                     );
                 })}
             </div>
-
         </div>
     );
 };

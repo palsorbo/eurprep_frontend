@@ -13,7 +13,8 @@ const PaymentModal = lazy(() => import('../components/PaymentModal'))
 
 interface FeedbackHistory {
     id: string
-    session_id: string
+    interview_session_id: string
+    interview_type: string
     interview_set: string
     version: string
     feedback_data: any
@@ -217,7 +218,7 @@ export default function SBIPO() {
                                                 {feedback.feedback_data?.qa_feedback?.length || 0} Questions Answered
                                             </div>
                                             <Link
-                                                to={`/sbi-po/results/${feedback.session_id}`}
+                                                to={`/results/${feedback.id}`}
                                                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                                             >
                                                 <Eye className="w-4 h-4 mr-2" />

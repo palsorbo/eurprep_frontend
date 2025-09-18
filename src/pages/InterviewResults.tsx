@@ -1,96 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React from 'react';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Home } from 'lucide-react';
 import ResultsView from '../components/StreamingInterview/ResultsView';
 import LoadingScreen from '../components/LoadingScreen';
-
-interface InterviewResultsData {
-    questions: string[];
-    answers: string[];
-    sessionId: string;
-    evaluation?: any; // Add evaluation data
-}
+import { useInterviewResults } from '../hooks/useInterviewResults';
 
 const InterviewResults: React.FC = () => {
-    const { sessionId } = useParams<{ sessionId: string }>();
+    const location = useLocation();
     const navigate = useNavigate();
-    const [resultsData, setResultsData] = useState<InterviewResultsData | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { sessionId } = location.state || {};
+    const { feedbackId } = useParams<{ feedbackId: string }>();
 
-    useEffect(() => {
-        if (!sessionId) {
-            setError('No session ID provided');
-            setIsLoading(false);
-            return;
-        }
-
-        // Fetch feedback from database (since session might be expired)
-        const fetchResults = async () => {
-            try {
-                const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
-                // First try to get feedback from database
-                const feedbackResponse = await fetch(`${baseUrl}/api/v1/feedback/${sessionId}`);
-
-                if (feedbackResponse.ok) {
-                    const feedbackData = await feedbackResponse.json();
-                    if (feedbackData.success && feedbackData.feedback) {
-                        // Extract questions and answers from feedback data
-                        const feedback = feedbackData.feedback.feedback_data;
-                        const questions = feedback.qa_feedback.map((qa: any) => qa.question);
-                        const answers = feedback.qa_feedback.map((qa: any) => qa.answer);
-
-                        setResultsData({
-                            questions: questions,
-                            answers: answers,
-                            sessionId: sessionId,
-                            evaluation: feedback // Pass the full evaluation data
-                        });
-                        return;
-                    }
-                }
-
-                // If no feedback found, try to get from session (fallback)
-                console.log('No database feedback found, trying session fallback...');
-                const sessionResponse = await fetch(`${baseUrl}/api/v1/get-interview-results/${sessionId}`);
-                console.log('Session response status:', sessionResponse.status);
-
-                if (!sessionResponse.ok) {
-                    if (sessionResponse.status === 404) {
-                        throw new Error('Interview session not found. The session may have expired.');
-                    }
-                    throw new Error(`Failed to fetch results: ${sessionResponse.status}`);
-                }
-
-                const data = await sessionResponse.json();
-                console.log('Session data received:', data);
-
-                if (data.success && data.results) {
-                    // Session data exists but no DB evaluation - let ResultsView handle evaluation
-                    const questions = data.results.questions || [];
-                    const answers = data.results.answers || [];
-
-                    setResultsData({
-                        questions: questions,
-                        answers: answers,
-                        sessionId: sessionId,
-                        evaluation: undefined // Let ResultsView handle evaluation
-                    });
-                    return;
-                } else {
-                    throw new Error('Invalid session data received');
-                }
-            } catch (err) {
-                console.error('Error fetching results:', err);
-                setError(err instanceof Error ? err.message : 'Failed to load interview results');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchResults();
-    }, [sessionId]);
+    const { resultsData, isLoading, error } = useInterviewResults({ feedbackId, sessionId });
 
     const handleStartNewInterview = () => {
         navigate('/sbi-po');
@@ -110,12 +31,21 @@ const InterviewResults: React.FC = () => {
     }
 
     if (error) {
+        const isFeedbackNotFound = error.includes('Feedback not found');
+        const isSessionNotFound = error.includes('Session not found');
+
         return (
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="text-center">
                     <div className="bg-red-50 border border-red-200 rounded-lg p-8">
-                        <div className="text-red-600 text-6xl mb-4">⚠️</div>
-                        <h2 className="text-2xl font-bold text-red-800 mb-4">Unable to Load Results</h2>
+                        <div className="text-red-600 text-6xl mb-4">
+                            {isFeedbackNotFound ? '🔍' : isSessionNotFound ? '⏰' : '⚠️'}
+                        </div>
+                        <h2 className="text-2xl font-bold text-red-800 mb-4">
+                            {isFeedbackNotFound ? 'Feedback Not Found' :
+                                isSessionNotFound ? 'Session Expired' :
+                                    'Unable to Load Results'}
+                        </h2>
                         <p className="text-red-700 mb-6">{error}</p>
                         <div className="space-x-4">
                             <button
@@ -177,16 +107,12 @@ const InterviewResults: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="mt-4 text-sm text-gray-600">
-                    Session ID: <span className="font-mono bg-gray-100 px-2 py-1 rounded">{sessionId}</span>
-                </div>
             </div>
 
             {/* Results View */}
             <ResultsView
                 questions={resultsData.questions}
                 answers={resultsData.answers}
-                sessionId={resultsData.sessionId}
                 evaluation={resultsData.evaluation}
             />
         </div>

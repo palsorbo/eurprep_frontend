@@ -34,13 +34,8 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             // Auto-redirect to results page after a short delay
             const timeoutId = setTimeout(() => {
                 const currentSessionId = state.sessionId;
-                console.log('🎉 [COMPONENT] Redirect timeout - sessionId:', currentSessionId);
-                if (currentSessionId) {
-                    console.log('🎉 [COMPONENT] Redirecting to results page:', `/sbi-po/results/${currentSessionId}`);
-                    navigate(`/sbi-po/results/${currentSessionId}`);
-                } else {
-                    console.error('❌ [COMPONENT] No session ID available for redirect');
-                }
+                navigate('/results', { state: { sessionId: currentSessionId } });
+                console.log('🎉 [COMPONENT] Redirecting to results page with sessionId:', currentSessionId);
             }, 2000); // 2 second delay to show completion message
 
             // Cleanup timeout on unmount or if dependencies change
@@ -168,7 +163,6 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                         {/* Microphone Button - appears after question is asked */}
                         {isMicrophoneEnabled && (
                             <div className="flex flex-col items-center space-y-12 py-16">
-                                {console.log('🎤 Rendering microphone button section')}
                                 <button
                                     onClick={(e) => {
                                         e.preventDefault();
