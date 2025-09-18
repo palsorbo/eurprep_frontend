@@ -52,7 +52,10 @@ export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModa
             setIsProcessing(true)
             setError(null)
 
-            const orderId = await initializePayment(PRICING.SBI_PO_PREMIUM_BUNDLE.AMOUNT)
+            const orderId = await initializePayment(
+                PRICING.SBI_PO_PREMIUM_BUNDLE.AMOUNT,
+                PRICING.SBI_PO_PREMIUM_BUNDLE.PRODUCT_TYPE
+            )
 
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Only public key needed in frontend

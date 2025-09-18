@@ -7,7 +7,7 @@ interface PaymentContextType {
     hasPaidAccess: boolean
     isLoading: boolean
     refreshPaymentStatus: () => Promise<void>
-    initializePayment: (amount: number) => Promise<string>
+    initializePayment: (amount: number, productType: string, productMetadata?: Record<string, unknown>) => Promise<string>
     verifyPayment: (paymentId: string, orderId: string, signature: string) => Promise<boolean>
 }
 
@@ -45,7 +45,7 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
-    const initializePayment = async (amount: number): Promise<string> => {
+    const initializePayment = async (amount: number, productType: string, productMetadata?: Record<string, unknown>): Promise<string> => {
         if (!user) throw new Error('User not authenticated')
 
         try {
@@ -55,7 +55,7 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ amount }),
+                body: JSON.stringify({ amount, productType }),
             })
 
             if (!response.ok) throw new Error('Failed to create order')
@@ -70,6 +70,8 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
                     user_id: user.id,
                     amount,
                     currency: 'INR',
+                    product_type: productType,
+                    product_metadata: productMetadata || null,
                     razorpay_order_id: orderId,
                     status: 'pending'
                 })

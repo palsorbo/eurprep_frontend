@@ -69,6 +69,8 @@ export interface Payment {
     user_id: string
     amount: number
     currency: string
+    product_type: string
+    product_metadata?: Record<string, unknown>
     razorpay_order_id: string
     razorpay_payment_id?: string
     status: 'pending' | 'completed' | 'failed'
