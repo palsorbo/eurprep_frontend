@@ -34,13 +34,8 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             // Auto-redirect to results page after a short delay
             const timeoutId = setTimeout(() => {
                 const currentSessionId = state.sessionId;
-                console.log('🎉 [COMPONENT] Redirect timeout - sessionId:', currentSessionId);
-                if (currentSessionId) {
-                    console.log('🎉 [COMPONENT] Redirecting to results page:', `/sbi-po/results/${currentSessionId}`);
-                    navigate(`/sbi-po/results/${currentSessionId}`);
-                } else {
-                    console.error('❌ [COMPONENT] No session ID available for redirect');
-                }
+                navigate('/results', { state: { sessionId: currentSessionId } });
+                console.log('🎉 [COMPONENT] Redirecting to results page with sessionId:', currentSessionId);
             }, 2000); // 2 second delay to show completion message
 
             // Cleanup timeout on unmount or if dependencies change
@@ -57,7 +52,13 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     }, [state.questionNumber, state.totalQuestions]);
 
     const isMicrophoneEnabled = useMemo(() => {
-        return state.currentQuestion && (state.flowState === 'IDLE' || state.flowState === 'LISTENING');
+        const enabled = state.currentQuestion && (state.flowState === 'IDLE' || state.flowState === 'LISTENING');
+        console.log('🎤 isMicrophoneEnabled check:', {
+            currentQuestion: !!state.currentQuestion,
+            flowState: state.flowState,
+            enabled: enabled
+        });
+        return enabled;
     }, [state.currentQuestion, state.flowState]);
 
     const microphoneButtonClass = useMemo(() => {
@@ -163,7 +164,28 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                         {isMicrophoneEnabled && (
                             <div className="flex flex-col items-center space-y-12 py-16">
                                 <button
-                                    onClick={state.flowState === 'IDLE' ? startRecording : () => stopRecording(false)}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        console.log('🎤 Microphone button clicked, flowState:', state.flowState);
+                                        console.log('🎤 Button click event:', e);
+                                        console.log('🎤 startRecording function:', typeof startRecording);
+
+                                        if (state.flowState === 'IDLE') {
+                                            console.log('🎤 Starting recording...');
+                                            try {
+                                                startRecording();
+                                                console.log('🎤 startRecording called successfully');
+                                            } catch (error) {
+                                                console.error('🎤 Error calling startRecording:', error);
+                                            }
+                                        } else if (state.flowState === 'LISTENING') {
+                                            console.log('🎤 Stopping recording...');
+                                            stopRecording(false);
+                                        } else {
+                                            console.log('🎤 Unknown flow state, not doing anything:', state.flowState);
+                                        }
+                                    }}
                                     className={microphoneButtonClass}
                                     title={state.flowState === 'IDLE' ? 'Click to speak' : 'Listening...'}
                                 >
@@ -184,10 +206,40 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                         )}
 
                         {/* Transcript Display */}
-                        {state.currentQuestion && state.transcription && (
-                            <div className="mt-12 p-8 bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl border border-gray-200">
-                                <h3 className="font-bold mb-4 text-gray-800 text-xl">Your Answer:</h3>
-                                <p className="text-gray-800 text-lg leading-relaxed font-medium">{state.transcription}</p>
+                        {state.currentQuestion && (state.transcription || state.flowState === 'LISTENING') && (
+                            <div className="mt-12 p-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-lg">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="font-bold text-gray-800 text-xl flex items-center">
+                                        <svg className="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                                        </svg>
+                                        Your Answer:
+                                    </h3>
+                                    {!state.isFinal && (
+                                        <div className="flex items-center text-blue-600">
+                                            <div className="animate-pulse w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+                                            <span className="text-sm font-medium">Listening...</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="bg-white rounded-xl p-6 shadow-inner transition-all duration-200">
+                                    <p className="text-gray-800 text-lg leading-relaxed font-medium">
+                                        {state.transcription || (
+                                            <span className="text-gray-400 italic">Start speaking to see your answer appear here...</span>
+                                        )}
+                                        {state.transcription && !state.isFinal && (
+                                            <span className="animate-pulse text-blue-500 ml-1">|</span>
+                                        )}
+                                    </p>
+                                </div>
+                                {state.isFinal && (
+                                    <div className="mt-4 flex items-center justify-center text-green-600">
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span className="text-sm font-medium">Answer Complete</span>
+                                    </div>
+                                )}
                             </div>
                         )}
 

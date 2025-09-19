@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { usePayment } from '../lib/payment-context'
 import { X } from 'lucide-react'
-import { PRICING, getAmountInPaise } from '../constants/pricing'
+import { getAmountInPaise, getProductByType } from '../constants/pricing'
 import { loadRazorpayScript } from '../utils/loadScript'
 
 declare global {
@@ -14,14 +14,21 @@ interface PaymentModalProps {
     isOpen: boolean
     onClose: () => void
     onSuccess: () => void
+    productType: string
 }
 
-export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModalProps) {
+export default function PaymentModal({ isOpen, onClose, onSuccess, productType }: PaymentModalProps) {
     const { initializePayment, verifyPayment } = usePayment()
     const [isProcessing, setIsProcessing] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false)
     const [isLoadingScript, setIsLoadingScript] = useState(false)
+
+    const product = getProductByType(productType)
+
+    if (!product) {
+        throw new Error(`Product type '${productType}' not found`)
+    }
 
     // Load Razorpay script when modal opens
     useEffect(() => {
@@ -52,14 +59,17 @@ export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModa
             setIsProcessing(true)
             setError(null)
 
-            const orderId = await initializePayment(PRICING.SBI_PO_PREMIUM_BUNDLE.AMOUNT)
+            const orderId = await initializePayment(
+                product.AMOUNT,
+                product.PRODUCT_TYPE
+            )
 
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Only public key needed in frontend
-                amount: getAmountInPaise(PRICING.SBI_PO_PREMIUM_BUNDLE.AMOUNT), // Amount in paise
-                currency: PRICING.SBI_PO_PREMIUM_BUNDLE.CURRENCY,
+                amount: getAmountInPaise(product.AMOUNT), // Amount in paise
+                currency: product.CURRENCY,
                 name: "EurPrep",
-                description: PRICING.SBI_PO_PREMIUM_BUNDLE.DESCRIPTION,
+                description: product.DESCRIPTION,
                 order_id: orderId,
                 handler: async function (response: any) {
                     try {
@@ -131,10 +141,10 @@ export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModa
 
                     <div className="text-center">
                         <div className="text-2xl font-bold text-slate-900 mb-1">
-                            ₹{PRICING.SBI_PO_PREMIUM_BUNDLE.AMOUNT}
+                            ₹{product.AMOUNT}
                         </div>
                         <div className="text-slate-600 text-sm">
-                            {PRICING.SBI_PO_PREMIUM_BUNDLE.TYPE} payment
+                            {product.TYPE} payment
                         </div>
                     </div>
 

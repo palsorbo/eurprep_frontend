@@ -4,10 +4,11 @@ import { supabase } from './supabase'
 // import type { Payment } from './supabase'
 
 interface PaymentContextType {
-    hasPaidAccess: boolean
+    hasAccessToProduct: (productType: string) => boolean
+    purchasedProducts: string[]
     isLoading: boolean
     refreshPaymentStatus: () => Promise<void>
-    initializePayment: (amount: number) => Promise<string>
+    initializePayment: (amount: number, productType: string, productMetadata?: Record<string, unknown>) => Promise<string>
     verifyPayment: (paymentId: string, orderId: string, signature: string) => Promise<boolean>
 }
 
@@ -15,37 +16,42 @@ const PaymentContext = createContext<PaymentContextType | undefined>(undefined)
 
 export function PaymentProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth()
-    const [hasPaidAccess, setHasPaidAccess] = useState(false)
+    const [purchasedProducts, setPurchasedProducts] = useState<string[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
     const refreshPaymentStatus = async () => {
         if (!user) {
-            setHasPaidAccess(false)
+            setPurchasedProducts([])
             setIsLoading(false)
             return
         }
 
-        // Check if the user has paid for the premium bundle 
+        // Check if the user has paid for any products
         // (✅ Payment Status Check - Frontend is OK)
         try {
             const { data: payments, error } = await supabase
                 .from('payments')
-                .select('*')
+                .select('product_type')
                 .eq('user_id', user.id)
                 .eq('status', 'completed')
-                .limit(1)
 
             if (error) throw error
-            setHasPaidAccess(payments && payments.length > 0)
+
+            const productTypes = payments?.map(payment => payment.product_type) || []
+            setPurchasedProducts(productTypes)
         } catch (error) {
             console.error('Error fetching payment status:', error)
-            setHasPaidAccess(false)
+            setPurchasedProducts([])
         } finally {
             setIsLoading(false)
         }
     }
 
-    const initializePayment = async (amount: number): Promise<string> => {
+    const hasAccessToProduct = (productType: string): boolean => {
+        return purchasedProducts.includes(productType)
+    }
+
+    const initializePayment = async (amount: number, productType: string, productMetadata?: Record<string, unknown>): Promise<string> => {
         if (!user) throw new Error('User not authenticated')
 
         try {
@@ -55,7 +61,7 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ amount }),
+                body: JSON.stringify({ amount, productType }),
             })
 
             if (!response.ok) throw new Error('Failed to create order')
@@ -70,6 +76,8 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
                     user_id: user.id,
                     amount,
                     currency: 'INR',
+                    product_type: productType,
+                    product_metadata: productMetadata || null,
                     razorpay_order_id: orderId,
                     status: 'pending'
                 })
@@ -128,7 +136,8 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <PaymentContext.Provider value={{
-            hasPaidAccess,
+            hasAccessToProduct,
+            purchasedProducts,
             isLoading,
             refreshPaymentStatus,
             initializePayment,

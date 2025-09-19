@@ -13,7 +13,8 @@ const PaymentModal = lazy(() => import('../components/PaymentModal'))
 
 interface FeedbackHistory {
     id: string
-    session_id: string
+    interview_session_id: string
+    interview_type: string
     interview_set: string
     version: string
     feedback_data: any
@@ -23,7 +24,8 @@ interface FeedbackHistory {
 
 export default function SBIPO() {
     const { user, loading: authLoading } = useAuth()
-    const { hasPaidAccess, isLoading: paymentLoading } = usePayment()
+    const { hasAccessToProduct, isLoading: paymentLoading } = usePayment()
+    const hasPaidAccess = hasAccessToProduct('sbi_po_premium_bundle')
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
     const [feedbackHistory, setFeedbackHistory] = useState<FeedbackHistory[]>([])
     const [isLoadingHistory, setIsLoadingHistory] = useState(false)
@@ -217,7 +219,7 @@ export default function SBIPO() {
                                                 {feedback.feedback_data?.qa_feedback?.length || 0} Questions Answered
                                             </div>
                                             <Link
-                                                to={`/sbi-po/results/${feedback.session_id}`}
+                                                to={`/results/${feedback.id}`}
                                                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                                             >
                                                 <Eye className="w-4 h-4 mr-2" />
@@ -249,6 +251,7 @@ export default function SBIPO() {
                             // Handle successful payment
                             console.log('Payment successful')
                         }}
+                        productType="sbi_po_premium_bundle"
                     />
                 </Suspense>
             )}

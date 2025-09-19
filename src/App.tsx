@@ -63,8 +63,8 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              {/* SBI PO Interview Results - protected route */}
-              <Route path="/sbi-po/results/:sessionId" element={
+              {/* Interview Results - protected route */}
+              <Route path="/results/:feedbackId" element={
                 <ProtectedRoute>
                   <AppLayout>
                     <InterviewResults />
@@ -72,6 +72,14 @@ function App() {
                 </ProtectedRoute>
               } />
 
+              {/* Interview Results - sessionId flow (from interview completion) */}
+              <Route path="/results" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <InterviewResults />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
 
               {/* Fallback route */}
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -41,7 +41,7 @@ export default function StreamingInterviewWrapper() {
 
     // If set requires premium, wrap with PremiumRoute
     return (
-        <PremiumRoute>
+        <PremiumRoute productType="sbi_po_premium_bundle" redirectTo="/sbi-po">
             {content}
         </PremiumRoute>
     );

@@ -2,6 +2,7 @@ import { createContext, useContext, useReducer, useRef, useCallback, useEffect }
 import type { ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { AudioRecorderManager, AudioPlaybackManager, audioUtils } from '../utils/audioUtils';
+import { useAuth } from './auth-context';
 
 // Types
 export type InterviewFlowState =
@@ -241,6 +242,9 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 from: state.flowState,
                 to: action.payload
             });
+            if (action.payload === 'IDLE' && state.flowState === 'LISTENING') {
+                console.log('⚠️ [REDUCER] Flow state changed from LISTENING to IDLE - this might interrupt audio recording');
+            }
             return newState;
 
         case 'SET_ERROR_STATE':
@@ -333,7 +337,7 @@ interface StreamingInterviewContextType {
     stopTimer: () => void;
     formatTime: (seconds: number) => string;
     startRecording: () => Promise<void>;
-    stopRecording: (preserveInterviewState?: boolean) => void;
+    stopRecording: (preserveInterviewState?: boolean, skipStopStreaming?: boolean) => void;
 }
 
 const StreamingInterviewContext = createContext<StreamingInterviewContextType | undefined>(undefined);
@@ -352,8 +356,16 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
     const startTimeRef = useRef<number | null>(null);
     const audioRecorderRef = useRef<AudioRecorderManager | null>(null);
     const audioPlaybackRef = useRef<AudioPlaybackManager | null>(null);
+    const currentFlowStateRef = useRef<InterviewFlowState>('IDLE');
+    const { user } = useAuth();
 
     const API_BASE_URL = apiUrl || import.meta.env.VITE_API_BASE_URL;
+
+    // Sync flow state ref with state
+    useEffect(() => {
+        console.log('🔄 Flow state ref updated:', state.flowState);
+        currentFlowStateRef.current = state.flowState;
+    }, [state.flowState]);
 
     // Timer utility functions
     const formatTime = audioUtils.formatTime;
@@ -393,7 +405,7 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         socket.on('connect', () => {
             console.log('Connected to interview server');
             console.log('Socket ID:', socket.id);
-            dispatch({ type: 'SET_SESSION_ID', payload: socket.id || null });
+            // Don't set session ID here - it will be set when session is created
             dispatch({ type: 'SET_CONNECTED', payload: true });
             dispatch({ type: 'SET_ERROR', payload: null });
         });
@@ -401,6 +413,11 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         socket.on('interviewers', (data) => {
             console.log('Received interviewers:', data);
             dispatch({ type: 'SET_INTERVIEWERS', payload: data.interviewers });
+        });
+
+        socket.on('sessionCreated', (data) => {
+            console.log('Session created:', data);
+            dispatch({ type: 'SET_SESSION_ID', payload: data.sessionId });
         });
 
         socket.on('disconnect', () => {
@@ -424,6 +441,11 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                 }
             });
 
+            // Request current transcript for this question
+            if (socketRef.current && state.sessionId) {
+                socketRef.current.emit('getTranscript', { sessionId: state.sessionId });
+            }
+
             // Start timer only when first question arrives and timer isn't already running
             if (data.questionNumber === 1 && !timerRef.current) {
                 startTimer();
@@ -438,20 +460,30 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         });
 
         socket.on('transcription', (data) => {
-            console.log('Received transcription:', data);
-            if (state.flowState === 'LISTENING') {
-                dispatch({
-                    type: 'SET_TRANSCRIPTION',
-                    payload: {
-                        text: data.text,
-                        isFinal: data.isFinal
-                    }
-                });
-                if (data.isFinal) {
-                    console.log('Final transcription received, auto-stopping recording');
-                    dispatch({ type: 'SET_FLOW_STATE', payload: 'PROCESSING_ANSWER' });
-                    // Auto-stop recording when we get final transcription
-                    stopRecording();
+            console.log('🎤 Received transcription:', data, 'Current flowState:', state.flowState);
+            console.log('🎤 Updating transcription in UI:', data.text);
+            dispatch({
+                type: 'SET_TRANSCRIPTION',
+                payload: {
+                    text: data.text,
+                    isFinal: data.isFinal
+                }
+            });
+            if (data.isFinal) {
+                console.log('🎤 Final transcription received, processing answer');
+                // Immediately change flow state to prevent more audio data
+                dispatch({ type: 'SET_FLOW_STATE', payload: 'PROCESSING_ANSWER' });
+                // Stop audio recording first
+                if (audioRecorderRef.current) {
+                    audioRecorderRef.current.stopRecording();
+                }
+                // Then trigger the next question flow directly
+                if (socketRef.current && state.isConnected && state.sessionId) {
+                    socketRef.current.emit('stopRecordingAndNext', {
+                        sessionId: state.sessionId,
+                        transcript: data.text
+                    });
+                    dispatch({ type: 'SET_STREAMING', payload: false });
                 }
             }
         });
@@ -485,6 +517,17 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         socket.on('streamingEnded', () => {
             console.log('Streaming ended by server - Google VAD detected speech completion');
             stopRecording();
+        });
+
+        socket.on('currentTranscript', (data) => {
+            console.log('📝 Received current transcript:', data);
+            dispatch({
+                type: 'SET_TRANSCRIPTION',
+                payload: {
+                    text: data.text,
+                    isFinal: data.isFinal
+                }
+            });
         });
 
         console.log('🔌 [CONTEXT] All socket event listeners set up');
@@ -540,6 +583,12 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             return;
         }
 
+        if (!user?.id) {
+            console.log('❌ [CONTEXT] Cannot start interview - user not authenticated');
+            dispatch({ type: 'SET_ERROR', payload: 'Please log in to start an interview' });
+            return;
+        }
+
         hasStartedInterview.current = true;
         if (process.env.NODE_ENV === 'development') {
             console.log('🔄 [CONTEXT] startInterview() called');
@@ -549,7 +598,8 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             console.log('✅ [CONTEXT] Emitting startInterview to server');
             socketRef.current.emit('startInterview', {
                 set: selectedSet,
-                context: selectedContext
+                context: selectedContext,
+                userId: user.id
             });
             console.log('✅ [CONTEXT] Dispatching START_INTERVIEW action');
             dispatch({ type: 'START_INTERVIEW' });
@@ -561,34 +611,45 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             });
             dispatch({ type: 'SET_ERROR', payload: 'Not connected to server' });
         }
-    }, [state.isConnected]);
+    }, [state.isConnected, user?.id]);
 
     const startStreaming = () => {
-        if (socketRef.current && state.isConnected) {
-            socketRef.current.emit('startStreaming');
-            dispatch({ type: 'SET_FLOW_STATE', payload: 'LISTENING' });
-            dispatch({ type: 'SET_QUESTION_VISIBLE', payload: false });
+        if (socketRef.current && state.isConnected && state.sessionId) {
+            console.log('🎤 Emitting startStreaming to backend');
+            socketRef.current.emit('startStreaming', { sessionId: state.sessionId });
+        // Don't change flow state here - let the audio recording handle it
         } else {
-            dispatch({ type: 'SET_ERROR', payload: 'Not connected to server' });
+            console.error('🎤 Cannot start streaming - missing requirements');
+            dispatch({ type: 'SET_ERROR', payload: 'Not connected to server or no session ID' });
         }
     };
 
     const stopStreaming = useCallback(() => {
-        if (socketRef.current && state.isConnected) {
-            socketRef.current.emit('stopStreaming');
+        if (socketRef.current && state.isConnected && state.sessionId) {
+            socketRef.current.emit('stopRecordingAndNext', { sessionId: state.sessionId });
             dispatch({ type: 'SET_STREAMING', payload: false });
         }
-    }, [state.isConnected]);
+    }, [state.isConnected, state.sessionId]);
 
     const sendAudioData = (audioChunk: string) => {
-        if (socketRef.current && state.isConnected) {
-            console.log('Emitting audio data to server, chunk length:', audioChunk.length);
-            socketRef.current.emit('audioData', audioChunk);
-        } else {
-            console.log('Audio data not sent - connection state:', {
-                hasSocket: !!socketRef.current,
-                isConnected: state.isConnected
+        console.log('🎤 sendAudioData called:', {
+            hasSocket: !!socketRef.current,
+            isConnected: state.isConnected,
+            sessionId: state.sessionId,
+            flowState: state.flowState,
+            audioChunkLength: audioChunk.length
+        });
+
+        // Send audio data if we have a socket, connection, and session ID
+        // Don't restrict by flow state since it changes too quickly
+        if (socketRef.current && state.isConnected && state.sessionId) {
+            console.log('🎤 Sending audio data to server');
+            socketRef.current.emit('audioData', {
+                audioChunk: audioChunk,
+                sessionId: state.sessionId
             });
+        } else {
+            console.log('🎤 Audio data not sent - missing socket, connection, or session ID');
         }
     };
 
@@ -596,17 +657,44 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
     const startRecording = async () => {
         try {
             console.log('🎤 startRecording called');
+            console.log('🎤 Current state:', {
+                isConnected: state.isConnected,
+                sessionId: state.sessionId,
+                flowState: state.flowState,
+                hasAudioRecorder: !!audioRecorderRef.current
+            });
+
+            // Check if we have the required conditions
+            if (!state.isConnected) {
+                console.error('🎤 Cannot start recording - not connected to server');
+                dispatch({ type: 'SET_ERROR', payload: 'Not connected to server' });
+                return;
+            }
+
+            if (!state.sessionId) {
+                console.error('🎤 Cannot start recording - no session ID');
+                dispatch({ type: 'SET_ERROR', payload: 'No session ID available' });
+                return;
+            }
 
             // Initialize audio recorder if not already done
             if (!audioRecorderRef.current) {
+                console.log('🎤 Creating new AudioRecorderManager');
                 audioRecorderRef.current = new AudioRecorderManager();
+            } else {
+                console.log('🎤 Using existing AudioRecorderManager');
             }
 
-            // Clear any existing recording state
-            dispatch({ type: 'SET_TRANSCRIPTION', payload: { text: '', isFinal: false } });
-            dispatch({ type: 'SET_ERROR', payload: null }); // Clear any previous errors
+            // Clear any previous errors
+            dispatch({ type: 'SET_ERROR', payload: null });
 
-            // First notify backend to prepare for streaming
+            // Clear transcription if there's existing text
+            if (state.transcription) {
+                dispatch({ type: 'SET_TRANSCRIPTION', payload: { text: '', isFinal: false } });
+            }
+
+            // Notify backend to prepare for streaming
+            console.log('🎤 Starting streaming on backend...');
             startStreaming();
 
             // Wait for backend to initialize streaming
@@ -631,10 +719,14 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                 socketRef.current?.once('error', handleError);
             });
 
+            // Set flow state to LISTENING when recording actually starts
+            dispatch({ type: 'SET_FLOW_STATE', payload: 'LISTENING' });
+            dispatch({ type: 'SET_QUESTION_VISIBLE', payload: false });
+
             // Start recording with the audio recorder manager
             await audioRecorderRef.current.startRecording(
                 (base64Data) => {
-                    console.log('🎤 Sending audio data, chunk size:', base64Data.length);
+                    console.log('🎤 Audio data received from recorder, chunk size:', base64Data.length);
                     sendAudioData(base64Data);
                 },
                 (error) => {
@@ -645,31 +737,35 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             );
 
         } catch (error) {
-            console.error('Error starting recording:', error);
+            console.error('🎤 Error starting recording:', error);
+            console.error('🎤 Error details:', {
+                name: (error as Error).name,
+                message: (error as Error).message,
+                stack: (error as Error).stack
+            });
             dispatch({ type: 'SET_ERROR', payload: 'Mic error, please try again' });
             dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
         }
     };
 
     // Stop recording
-    const stopRecording = useCallback((preserveInterviewState: boolean = false) => {
+    const stopRecording = useCallback((preserveInterviewState: boolean = false, skipStopStreaming: boolean = false) => {
         try {
-            console.log('🛑 stopRecording called, preserveInterviewState:', preserveInterviewState);
-
             // Stop recording using the audio recorder manager
             if (audioRecorderRef.current) {
                 audioRecorderRef.current.stopRecording();
             }
 
-            // Stop streaming
-            stopStreaming();
+            // Stop streaming (unless skipped)
+            if (!skipStopStreaming) {
+                stopStreaming();
+            }
 
             // Reset recording state (only if not preserving interview state)
             if (!preserveInterviewState) {
                 dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
             }
             dispatch({ type: 'SET_TRANSCRIPTION', payload: { text: '', isFinal: false } });
-            console.log('🛑 Recording stopped successfully');
         } catch (error) {
             console.error('Error stopping recording:', error);
             // Still try to clean up

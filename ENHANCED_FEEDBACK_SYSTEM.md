@@ -107,7 +107,6 @@ The Enhanced Candidate Feedback System provides comprehensive, structured feedba
 const evaluation = await InterviewEvaluationService.evaluateInterview(
   questions,
   answers,
-  candidateId,
   interviewSet,
   questionsWithExpectedAnswers
 );
