@@ -26,9 +26,12 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
 
     // Handle interview completion and redirect
     useEffect(() => {
-        if (state.interviewComplete && state.results && !hasHandledCompletion.current) {
+        if (state.interviewComplete && !hasHandledCompletion.current) {
             hasHandledCompletion.current = true;
-            console.log('🎉 [COMPONENT] Interview completed, redirecting...');
+            console.log('🎉 [COMPONENT] Interview completed, redirecting...', {
+                hasResults: !!state.results,
+                sessionId: state.sessionId
+            });
             stopRecording(true);
 
             // Auto-redirect to results page after a short delay
@@ -43,7 +46,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                 clearTimeout(timeoutId);
             };
         }
-    }, [state.interviewComplete, state.results, state.sessionId, navigate, stopRecording]);
+    }, [state.interviewComplete, state.sessionId, navigate, stopRecording]);
 
     // Memoized calculations
     const progressPercentage = useMemo(() => {
