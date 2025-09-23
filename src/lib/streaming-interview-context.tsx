@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer, useRef, useCallback, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { AudioRecorderManager, AudioPlaybackManager, audioUtils } from '../utils/audioUtils';
+import { AudioPlaybackManager, audioUtils, PCMRecorderManager } from '../utils/audioUtils';
 import { useAuth } from './auth-context';
 
 // Types
@@ -331,7 +331,6 @@ interface StreamingInterviewContextType {
     startInterview: (selectedSet?: string, selectedContext?: string) => void;
     startStreaming: () => void;
     stopStreaming: () => void;
-    sendAudioData: (audioChunk: string) => void;
     resetInterview: () => void;
     startTimer: () => void;
     stopTimer: () => void;
@@ -354,7 +353,7 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
     const hasStartedInterview = useRef(false);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const startTimeRef = useRef<number | null>(null);
-    const audioRecorderRef = useRef<AudioRecorderManager | null>(null);
+    const pcmRecorderRef = useRef<PCMRecorderManager | null>(null);
     const audioPlaybackRef = useRef<AudioPlaybackManager | null>(null);
     const currentFlowStateRef = useRef<InterviewFlowState>('IDLE');
     const { user } = useAuth();
@@ -366,6 +365,8 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         console.log('🔄 Flow state ref updated:', state.flowState);
         currentFlowStateRef.current = state.flowState;
     }, [state.flowState]);
+
+    const MAX_RECORDING_SECONDS = 120; // 2 minutes
 
     // Timer utility functions
     const formatTime = audioUtils.formatTime;
@@ -379,6 +380,10 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             if (startTimeRef.current) {
                 const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
                 dispatch({ type: 'SET_ELAPSED_TIME', payload: elapsed });
+                if (elapsed >= MAX_RECORDING_SECONDS) {
+                    // Auto-stop recording and streaming
+                    stopRecording();
+                }
             }
         }, 1000);
     };
@@ -441,6 +446,9 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                 }
             });
 
+            // Allow immediate mic usage even if TTS audio is unavailable for this question (e.g., probe)
+            dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
+
             // Request current transcript for this question
             if (socketRef.current && state.sessionId) {
                 socketRef.current.emit('getTranscript', { sessionId: state.sessionId });
@@ -459,9 +467,9 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             }
         });
 
+        // Update transcription handler: accumulate transcript as received, do not process answer on interim isFinal
         socket.on('transcription', (data) => {
             console.log('🎤 Received transcription:', data, 'Current flowState:', state.flowState);
-            console.log('🎤 Updating transcription in UI:', data.text);
             dispatch({
                 type: 'SET_TRANSCRIPTION',
                 payload: {
@@ -469,23 +477,6 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                     isFinal: data.isFinal
                 }
             });
-            if (data.isFinal) {
-                console.log('🎤 Final transcription received, processing answer');
-                // Immediately change flow state to prevent more audio data
-                dispatch({ type: 'SET_FLOW_STATE', payload: 'PROCESSING_ANSWER' });
-                // Stop audio recording first
-                if (audioRecorderRef.current) {
-                    audioRecorderRef.current.stopRecording();
-                }
-                // Then trigger the next question flow directly
-                if (socketRef.current && state.isConnected && state.sessionId) {
-                    socketRef.current.emit('stopRecordingAndNext', {
-                        sessionId: state.sessionId,
-                        transcript: data.text
-                    });
-                    dispatch({ type: 'SET_STREAMING', payload: false });
-                }
-            }
         });
 
         socket.on('error', (data) => {
@@ -514,8 +505,10 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             stopTimer();
         });
 
+        // Remove logic that processes answer on interim isFinal in transcription handler
+        // Only process answer on streamingEnded
         socket.on('streamingEnded', () => {
-            console.log('Streaming ended by server - Google VAD detected speech completion');
+            console.log('Streaming ended by server or timeout');
             stopRecording();
         });
 
@@ -538,8 +531,8 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             stopTimer();
 
             // Clean up audio resources
-            if (audioRecorderRef.current) {
-                audioRecorderRef.current.stopRecording();
+            if (pcmRecorderRef.current) {
+                pcmRecorderRef.current.stopRecording();
             }
             if (audioPlaybackRef.current) {
                 audioPlaybackRef.current.stopCurrentAudio();
@@ -617,7 +610,6 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         if (socketRef.current && state.isConnected && state.sessionId) {
             console.log('🎤 Emitting startStreaming to backend');
             socketRef.current.emit('startStreaming', { sessionId: state.sessionId });
-        // Don't change flow state here - let the audio recording handle it
         } else {
             console.error('🎤 Cannot start streaming - missing requirements');
             dispatch({ type: 'SET_ERROR', payload: 'Not connected to server or no session ID' });
@@ -626,32 +618,13 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
 
     const stopStreaming = useCallback(() => {
         if (socketRef.current && state.isConnected && state.sessionId) {
-            socketRef.current.emit('stopRecordingAndNext', { sessionId: state.sessionId });
+            console.log('🛑 Emitting stopStreaming to backend');
+            socketRef.current.emit('stopStreaming', { sessionId: state.sessionId });
             dispatch({ type: 'SET_STREAMING', payload: false });
         }
     }, [state.isConnected, state.sessionId]);
 
-    const sendAudioData = (audioChunk: string) => {
-        console.log('🎤 sendAudioData called:', {
-            hasSocket: !!socketRef.current,
-            isConnected: state.isConnected,
-            sessionId: state.sessionId,
-            flowState: state.flowState,
-            audioChunkLength: audioChunk.length
-        });
-
-        // Send audio data if we have a socket, connection, and session ID
-        // Don't restrict by flow state since it changes too quickly
-        if (socketRef.current && state.isConnected && state.sessionId) {
-            console.log('🎤 Sending audio data to server');
-            socketRef.current.emit('audioData', {
-                audioChunk: audioChunk,
-                sessionId: state.sessionId
-            });
-        } else {
-            console.log('🎤 Audio data not sent - missing socket, connection, or session ID');
-        }
-    };
+    // Removed base64 sendAudioData path; we use PCM binary via audioDataBinary
 
     // Initialize recording
     const startRecording = async () => {
@@ -661,7 +634,7 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                 isConnected: state.isConnected,
                 sessionId: state.sessionId,
                 flowState: state.flowState,
-                hasAudioRecorder: !!audioRecorderRef.current
+                hasPCMRecorder: !!pcmRecorderRef.current
             });
 
             // Check if we have the required conditions
@@ -677,13 +650,7 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                 return;
             }
 
-            // Initialize audio recorder if not already done
-            if (!audioRecorderRef.current) {
-                console.log('🎤 Creating new AudioRecorderManager');
-                audioRecorderRef.current = new AudioRecorderManager();
-            } else {
-                console.log('🎤 Using existing AudioRecorderManager');
-            }
+            // PCM recorder will be initialized in the recording flow below
 
             // Clear any previous errors
             dispatch({ type: 'SET_ERROR', payload: null });
@@ -723,14 +690,18 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             dispatch({ type: 'SET_FLOW_STATE', payload: 'LISTENING' });
             dispatch({ type: 'SET_QUESTION_VISIBLE', payload: false });
 
-            // Start recording with the audio recorder manager
-            await audioRecorderRef.current.startRecording(
-                (base64Data) => {
-                    console.log('🎤 Audio data received from recorder, chunk size:', base64Data.length);
-                    sendAudioData(base64Data);
+            // Prefer PCM path (16kHz LINEAR16) to match googleSTT POC
+            if (!pcmRecorderRef.current) {
+                pcmRecorderRef.current = new PCMRecorderManager(16000, 4096);
+            }
+            await pcmRecorderRef.current.startRecording(
+                (arrayBuffer) => {
+                    if (socketRef.current && state.isConnected && state.sessionId) {
+                        socketRef.current.emit('audioDataBinary', arrayBuffer, { sessionId: state.sessionId });
+                    }
                 },
                 (error) => {
-                    console.error('Recording error:', error);
+                    console.error('PCM recording error:', error);
                     dispatch({ type: 'SET_ERROR', payload: 'Mic error, please try again' });
                     dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
                 }
@@ -751,15 +722,17 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
     // Stop recording
     const stopRecording = useCallback((preserveInterviewState: boolean = false, skipStopStreaming: boolean = false) => {
         try {
-            // Stop recording using the audio recorder manager
-            if (audioRecorderRef.current) {
-                audioRecorderRef.current.stopRecording();
+            // Stop recording using the PCM recorder manager
+            if (pcmRecorderRef.current) {
+                pcmRecorderRef.current.stopRecording();
             }
 
             // Stop streaming (unless skipped)
             if (!skipStopStreaming) {
                 stopStreaming();
             }
+
+            // Do not emit stopRecordingAndNext; backend will advance on stopStreaming
 
             // Reset recording state (only if not preserving interview state)
             if (!preserveInterviewState) {
@@ -769,8 +742,8 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         } catch (error) {
             console.error('Error stopping recording:', error);
             // Still try to clean up
-            if (audioRecorderRef.current) {
-                audioRecorderRef.current.stopRecording();
+            if (pcmRecorderRef.current) {
+                pcmRecorderRef.current.stopRecording();
             }
             if (!preserveInterviewState) {
                 dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
@@ -786,8 +759,8 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         }
 
         // Clean up audio resources
-        if (audioRecorderRef.current) {
-            audioRecorderRef.current.stopRecording();
+        if (pcmRecorderRef.current) {
+            pcmRecorderRef.current.stopRecording();
         }
         if (audioPlaybackRef.current) {
             audioPlaybackRef.current.stopCurrentAudio();
@@ -804,7 +777,7 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         startInterview,
         startStreaming,
         stopStreaming,
-        sendAudioData,
+        // sendAudioData removed
         resetInterview,
         startTimer,
         stopTimer,

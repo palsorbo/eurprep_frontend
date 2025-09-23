@@ -3,129 +3,9 @@
  * Centralized audio management for recording, playback, and processing
  */
 
-export interface AudioRecorderConfig {
-    mimeType: string;
-    chunkInterval: number;
-}
-
 export interface AudioPlaybackConfig {
     volume?: number;
     playbackRate?: number;
-}
-
-export class AudioRecorderManager {
-    private mediaRecorder: MediaRecorder | null = null;
-    private audioChunks: Blob[] = [];
-    private isRecording = false;
-    private stream: MediaStream | null = null;
-
-    constructor(
-        private config: AudioRecorderConfig = {
-            mimeType: 'audio/webm;codecs=opus',
-            chunkInterval: 100
-        }
-    ) { }
-
-    async startRecording(
-        onDataAvailable: (base64Data: string) => void,
-        onError?: (error: Error) => void
-    ): Promise<void> {
-        try {
-            console.log('🎤 AudioRecorderManager.startRecording called');
-            // Clean up any existing recording
-            this.cleanup();
-
-            // Check if getUserMedia is supported
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                throw new Error('getUserMedia is not supported in this browser');
-            }
-
-            // Get user media
-            console.log('🎤 Requesting microphone access...');
-            this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            console.log('🎤 Microphone access granted, stream:', this.stream);
-            console.log('🎤 Stream tracks:', this.stream.getTracks());
-
-            // Create media recorder
-            console.log('🎤 Creating MediaRecorder with mimeType:', this.config.mimeType);
-            this.mediaRecorder = new MediaRecorder(this.stream, {
-                mimeType: this.config.mimeType
-            });
-            console.log('🎤 MediaRecorder created successfully, state:', this.mediaRecorder.state);
-
-            // Set up data available handler
-            this.mediaRecorder.ondataavailable = (event) => {
-                console.log('🎤 MediaRecorder data available:', {
-                    dataSize: event.data.size,
-                    isRecording: this.isRecording,
-                    mimeType: event.data.type
-                });
-
-                if (event.data.size > 0 && this.isRecording) {
-                    this.audioChunks.push(event.data);
-
-                    // Convert to base64 and send
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        const base64data = (reader.result as string)?.split(',')[1];
-                        if (base64data && this.isRecording) {
-                            console.log('🎤 Sending base64 audio data, length:', base64data.length);
-                            onDataAvailable(base64data);
-                        } else {
-                            console.log('🎤 Base64 data not sent - conditions not met');
-                        }
-                    };
-                    reader.readAsDataURL(event.data);
-                } else {
-                    console.log('🎤 Data available event ignored - no data or not recording');
-                }
-            };
-
-            // Start recording
-            console.log('🎤 Starting MediaRecorder with chunk interval:', this.config.chunkInterval);
-            this.mediaRecorder.start(this.config.chunkInterval);
-            this.isRecording = true;
-
-            console.log('🎤 Audio recording started successfully');
-            console.log('🎤 MediaRecorder state after start:', this.mediaRecorder.state);
-        } catch (error) {
-            console.error('Error starting audio recording:', error);
-            onError?.(error as Error);
-            throw error;
-        }
-    }
-
-    stopRecording(): void {
-        try {
-            this.isRecording = false;
-
-            if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-                this.mediaRecorder.stop();
-            }
-
-            this.cleanup();
-            console.log('🛑 Audio recording stopped');
-        } catch (error) {
-            console.error('Error stopping audio recording:', error);
-        }
-    }
-
-    private cleanup(): void {
-        if (this.mediaRecorder) {
-            this.mediaRecorder = null;
-        }
-
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => track.stop());
-            this.stream = null;
-        }
-
-        this.audioChunks = [];
-    }
-
-    get isCurrentlyRecording(): boolean {
-        return this.isRecording;
-    }
 }
 
 export class AudioPlaybackManager {
@@ -194,6 +74,87 @@ export class AudioPlaybackManager {
     }
 }
 
+export class PCMRecorderManager {
+    private audioContext: AudioContext | null = null;
+    private sourceNode: MediaStreamAudioSourceNode | null = null;
+    private processorNode: ScriptProcessorNode | null = null;
+    private isRecording = false;
+
+    constructor(private targetSampleRate = 16000, private bufferSize = 4096) {}
+
+    async startRecording(
+        onPcmChunk: (buffer: ArrayBuffer) => void,
+        onError?: (error: Error) => void
+    ): Promise<void> {
+        try {
+            this.stopRecording();
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1 } });
+            this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            this.sourceNode = this.audioContext.createMediaStreamSource(stream);
+            this.processorNode = this.audioContext.createScriptProcessor(this.bufferSize, 1, 1);
+            const inputSampleRate = this.audioContext.sampleRate; // typically 44100/48000
+            this.processorNode.onaudioprocess = (event) => {
+                if (!this.isRecording) return;
+                const input = event.inputBuffer.getChannelData(0);
+                const resampled = this.resampleFloat32(input, inputSampleRate, this.targetSampleRate);
+                const pcm16 = this.floatTo16BitPCM(resampled);
+                onPcmChunk(pcm16.buffer as ArrayBuffer);
+            };
+            this.sourceNode.connect(this.processorNode);
+            this.processorNode.connect(this.audioContext.destination);
+            this.isRecording = true;
+        } catch (e) {
+            onError?.(e as Error);
+            throw e;
+        }
+    }
+
+    stopRecording(): void {
+        try {
+            this.isRecording = false;
+            if (this.processorNode) {
+                this.processorNode.disconnect();
+                this.processorNode.onaudioprocess = null as any;
+                this.processorNode = null;
+            }
+            if (this.sourceNode) {
+                const mediaStream = (this.sourceNode.mediaStream);
+                mediaStream.getTracks().forEach(t => t.stop());
+                this.sourceNode.disconnect();
+                this.sourceNode = null;
+            }
+            if (this.audioContext) {
+                this.audioContext.close();
+                this.audioContext = null;
+            }
+        } catch {}
+    }
+
+    private resampleFloat32(input: Float32Array, inRate: number, outRate: number): Float32Array {
+        if (inRate === outRate) return input;
+        const ratio = inRate / outRate;
+        const newLen = Math.floor(input.length / ratio);
+        const output = new Float32Array(newLen);
+        for (let i = 0; i < newLen; i++) {
+            const idx = i * ratio;
+            const idx0 = Math.floor(idx);
+            const idx1 = Math.min(idx0 + 1, input.length - 1);
+            const frac = idx - idx0;
+            output[i] = input[idx0] * (1 - frac) + input[idx1] * frac;
+        }
+        return output;
+    }
+
+    private floatTo16BitPCM(input: Float32Array): Int16Array {
+        const buffer = new Int16Array(input.length);
+        for (let i = 0; i < input.length; i++) {
+            const s = Math.max(-1, Math.min(1, input[i]));
+            buffer[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+        }
+        return buffer;
+    }
+}
+
 /**
  * Utility functions for audio processing
  */
@@ -207,47 +168,5 @@ export const audioUtils = {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     },
 
-    /**
-     * Check if audio recording is supported
-     */
-    isRecordingSupported: (): boolean => {
-        return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-    },
-
-    /**
-     * Check if audio playback is supported
-     */
-    isPlaybackSupported: (): boolean => {
-        return typeof Audio !== 'undefined';
-    },
-
-    /**
-     * Get supported audio MIME types
-     */
-    getSupportedMimeTypes: (): string[] => {
-        const types = [
-            'audio/webm;codecs=opus',
-            'audio/webm',
-            'audio/mp4',
-            'audio/wav'
-        ];
-
-        return types.filter(type => {
-            return MediaRecorder.isTypeSupported(type);
-        });
-    },
-
-    /**
-     * Validate audio content
-     */
-    validateAudioContent: (content: string): boolean => {
-        try {
-            // Check if it's valid base64
-            atob(content);
-            return content.length > 0;
-        } catch {
-            return false;
-        }
-    }
 };
 

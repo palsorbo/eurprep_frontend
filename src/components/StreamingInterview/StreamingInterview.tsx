@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStreamingInterview } from '../../lib/streaming-interview-context';
 import InterviewerPanel from './InterviewerPanel';
@@ -20,6 +20,10 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
         stopRecording,
         formatTime
     } = useStreamingInterview();
+
+    // Local transcript panels (like POC): interim + completed finals
+    const [finalLines, setFinalLines] = useState<string[]>([]);
+    const [interimLine, setInterimLine] = useState<string>('');
 
     // Ref to track if we've already handled completion to prevent multiple redirects
     const hasHandledCompletion = useRef(false);
@@ -47,6 +51,27 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
             };
         }
     }, [state.interviewComplete, state.sessionId, navigate, stopRecording]);
+
+    // Reset local panels when a new question arrives
+    useEffect(() => {
+        setFinalLines([]);
+        setInterimLine('');
+    }, [state.currentQuestion, state.questionNumber]);
+
+    // Update local panels on new transcription data
+    useEffect(() => {
+        if (!state.transcription) {
+            if (state.isFinal) return; // ignore empty finals
+            setInterimLine('');
+            return;
+        }
+        if (state.isFinal) {
+            setFinalLines(prev => [...prev, state.transcription.trim()]);
+            setInterimLine('');
+        } else {
+            setInterimLine(state.transcription);
+        }
+    }, [state.transcription, state.isFinal]);
 
     // Memoized calculations
     const progressPercentage = useMemo(() => {
@@ -163,6 +188,24 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                             </div>
                         )}
 
+                        {/* Transcript Display */}
+                        {state.currentQuestion && (state.transcription || state.flowState === 'LISTENING') && (
+                            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 shadow-lg">
+                                <div className="relative">
+                                    {state.flowState === 'LISTENING' && (
+                                        <div className="absolute top-2 right-4 flex items-center text-blue-600">
+                                            <div className="animate-pulse w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+                                            <span className="text-xs font-medium">Listening...</span>
+                                        </div>
+                                    )}
+                                    <pre className="whitespace-pre-wrap text-gray-900 text-sm min-h-[80px]">
+                                        {finalLines.join('\n')}
+                                        <span className="text-gray-400">{interimLine}</span>
+                                    </pre>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Microphone Button - appears after question is asked */}
                         {isMicrophoneEnabled && (
                             <div className="flex flex-col items-center space-y-12 py-16">
@@ -209,42 +252,32 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                         )}
 
                         {/* Transcript Display */}
-                        {state.currentQuestion && (state.transcription || state.flowState === 'LISTENING') && (
+                        {/* {state.currentQuestion && (state.transcription || state.flowState === 'LISTENING') && (
                             <div className="mt-12 p-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-lg">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="font-bold text-gray-800 text-xl flex items-center">
-                                        <svg className="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                                        </svg>
-                                        Your Answer:
-                                    </h3>
-                                    {!state.isFinal && (
-                                        <div className="flex items-center text-blue-600">
-                                            <div className="animate-pulse w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
-                                            <span className="text-sm font-medium">Listening...</span>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="p-4 bg-white rounded-xl shadow-inner border">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="text-sm font-semibold text-gray-700">Interim</h4>
+                                            {!state.isFinal && state.flowState === 'LISTENING' && (
+                                                <div className="flex items-center text-blue-600">
+                                                    <div className="animate-pulse w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+                                                    <span className="text-xs font-medium">Listening...</span>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
-                                <div className="bg-white rounded-xl p-6 shadow-inner transition-all duration-200">
-                                    <p className="text-gray-800 text-lg leading-relaxed font-medium">
-                                        {state.transcription || (
-                                            <span className="text-gray-400 italic">Start speaking to see your answer appear here...</span>
-                                        )}
-                                        {state.transcription && !state.isFinal && (
-                                            <span className="animate-pulse text-blue-500 ml-1">|</span>
-                                        )}
-                                    </p>
-                                </div>
-                                {state.isFinal && (
-                                    <div className="mt-4 flex items-center justify-center text-green-600">
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span className="text-sm font-medium">Answer Complete</span>
+                                        <pre className="whitespace-pre-wrap text-gray-900 text-sm min-h-[64px]">{interimLine}</pre>
                                     </div>
-                                )}
+                                    <div className="p-4 bg-white rounded-xl shadow-inner border">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="text-sm font-semibold text-gray-700">Completed</h4>
+                                        </div>
+                                        <pre className="whitespace-pre-wrap text-gray-900 text-sm min-h-[64px]">{finalLines.join('\n')}</pre>
+                                    </div>
+                                </div>
                             </div>
-                        )}
+                        )} */}
+                        
+
 
                         {/* Interview Complete Message */}
                         {state.flowState === 'COMPLETE' && (
