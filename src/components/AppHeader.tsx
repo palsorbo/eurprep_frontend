@@ -13,15 +13,10 @@ export default function AppHeader({ title }: AppHeaderProps) {
     const location = useLocation()
 
     const handleLogout = async () => {
-        console.log('Logout button clicked')
         try {
-            console.log('Calling signOut...')
             await signOut()
-            console.log('signOut completed, navigating to home...')
             navigate('/', { replace: true, state: { from: 'logout' } })
-            console.log('Navigation completed')
         } catch (error) {
-            console.error('Logout error:', error)
             navigate('/', { replace: true, state: { from: 'logout_error' } })
         }
     }

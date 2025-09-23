@@ -32,17 +32,12 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     useEffect(() => {
         if (state.interviewComplete && !hasHandledCompletion.current) {
             hasHandledCompletion.current = true;
-            console.log('🎉 [COMPONENT] Interview completed, redirecting...', {
-                hasResults: !!state.results,
-                sessionId: state.sessionId
-            });
             stopRecording(true);
 
             // Auto-redirect to results page after a short delay
             const timeoutId = setTimeout(() => {
                 const currentSessionId = state.sessionId;
                 navigate('/results', { state: { sessionId: currentSessionId } });
-                console.log('🎉 [COMPONENT] Redirecting to results page with sessionId:', currentSessionId);
             }, 2000); // 2 second delay to show completion message
 
             // Cleanup timeout on unmount or if dependencies change
@@ -81,11 +76,6 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
 
     const isMicrophoneEnabled = useMemo(() => {
         const enabled = state.currentQuestion && (state.flowState === 'IDLE' || state.flowState === 'LISTENING');
-        console.log('🎤 isMicrophoneEnabled check:', {
-            currentQuestion: !!state.currentQuestion,
-            flowState: state.flowState,
-            enabled: enabled
-        });
         return enabled;
     }, [state.currentQuestion, state.flowState]);
 
@@ -99,14 +89,6 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
         return `${baseClass} ${stateClass} ${shadowClass}`;
     }, [state.flowState]);
 
-    // Debug logging (can be removed in production)
-    if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 [COMPONENT] Render - Current state:', {
-            flowState: state.flowState,
-            hasResults: !!state.results,
-            currentQuestion: !!state.currentQuestion
-        });
-    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8">
@@ -213,23 +195,15 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        console.log('🎤 Microphone button clicked, flowState:', state.flowState);
-                                        console.log('🎤 Button click event:', e);
-                                        console.log('🎤 startRecording function:', typeof startRecording);
 
                                         if (state.flowState === 'IDLE') {
-                                            console.log('🎤 Starting recording...');
                                             try {
                                                 startRecording();
-                                                console.log('🎤 startRecording called successfully');
                                             } catch (error) {
-                                                console.error('🎤 Error calling startRecording:', error);
                                             }
                                         } else if (state.flowState === 'LISTENING') {
-                                            console.log('🎤 Stopping recording...');
                                             stopRecording(false);
                                         } else {
-                                            console.log('🎤 Unknown flow state, not doing anything:', state.flowState);
                                         }
                                     }}
                                     className={microphoneButtonClass}

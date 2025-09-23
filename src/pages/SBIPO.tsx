@@ -52,7 +52,6 @@ export default function SBIPO() {
                 }
             }
         } catch (error) {
-            console.error('Error loading feedback history:', error)
         } finally {
             setIsLoadingHistory(false)
         }
@@ -249,7 +248,6 @@ export default function SBIPO() {
                         onClose={() => setIsPaymentModalOpen(false)}
                         onSuccess={() => {
                             // Handle successful payment
-                            console.log('Payment successful')
                         }}
                         productType="sbi_po_premium_bundle"
                     />

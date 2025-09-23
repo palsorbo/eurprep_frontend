@@ -11,9 +11,7 @@ export default function Dashboard() {
     const navigate = useNavigate()
 
     useEffect(() => {
-        console.log('Dashboard useEffect - user:', user, 'authLoading:', authLoading)
         if (!authLoading && !user) {
-            console.log('User not authenticated, navigating to home...')
             navigate('/', { replace: true, state: { from: 'dashboard' } })
         }
     }, [user, authLoading, navigate])

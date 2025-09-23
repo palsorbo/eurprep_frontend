@@ -12,7 +12,6 @@ export default function AuthCallback() {
                 const { data: { session }, error } = await supabase.auth.getSession()
 
                 if (error) {
-                    console.error('Auth callback error:', error)
                     navigate('/?error=auth_failed')
                     return
                 }
@@ -27,7 +26,6 @@ export default function AuthCallback() {
                     navigate('/', { replace: true })
                 }
             } catch (error) {
-                console.error('Unexpected error in auth callback:', error)
                 navigate('/?error=unexpected')
             }
         }

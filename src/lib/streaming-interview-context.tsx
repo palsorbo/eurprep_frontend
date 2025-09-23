@@ -117,10 +117,6 @@ const initialState: InterviewState = {
 
 // Reducer
 function streamingInterviewReducer(state: InterviewState, action: StreamingInterviewAction): InterviewState {
-    // Debug logging (can be removed in production)
-    if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 [REDUCER] Action:', action.type);
-    }
 
     let newState: InterviewState;
 
@@ -151,10 +147,6 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 ...state,
                 isStreaming: action.payload
             };
-            console.log('✅ [REDUCER] SET_STREAMING:', {
-                from: state.isStreaming,
-                to: action.payload
-            });
             return newState;
 
         case 'SET_QUESTION':
@@ -169,12 +161,6 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 isQuestionVisible: true,
                 activeInterviewerId: action.payload.interviewerId || null
             };
-            console.log('✅ [REDUCER] SET_QUESTION:', {
-                question: action.payload.question,
-                questionNumber: action.payload.questionNumber,
-                totalQuestions: action.payload.totalQuestions,
-                interviewerId: action.payload.interviewerId
-            });
             return newState;
 
         case 'SET_TRANSCRIPTION':
@@ -183,10 +169,6 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 transcription: action.payload.text,
                 isFinal: action.payload.isFinal
             };
-            console.log('✅ [REDUCER] SET_TRANSCRIPTION:', {
-                text: action.payload.text,
-                isFinal: action.payload.isFinal
-            });
             return newState;
 
         case 'SET_ERROR':
@@ -194,9 +176,6 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 ...state,
                 error: action.payload
             };
-            console.log('✅ [REDUCER] SET_ERROR:', {
-                error: action.payload
-            });
             return newState;
 
         case 'COMPLETE_INTERVIEW':
@@ -207,9 +186,6 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 isStreaming: false,
                 flowState: 'COMPLETE'
             };
-            console.log('✅ [REDUCER] COMPLETE_INTERVIEW:', {
-                results: action.payload
-            });
             return newState;
 
         case 'RESET_INTERVIEW':
@@ -219,18 +195,6 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 sessionId: state.sessionId, // Preserve session ID
                 interviewers: state.interviewers // Preserve interviewers
             };
-            console.log('✅ [REDUCER] RESET_INTERVIEW:', {
-                from: {
-                    isInterviewStarted: state.isInterviewStarted,
-                    isStreaming: state.isStreaming,
-                    flowState: state.flowState
-                },
-                to: {
-                    isInterviewStarted: newState.isInterviewStarted,
-                    isStreaming: newState.isStreaming,
-                    flowState: newState.flowState
-                }
-            });
             return newState;
 
         case 'SET_FLOW_STATE':
@@ -238,12 +202,7 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 ...state,
                 flowState: action.payload
             };
-            console.log('✅ [REDUCER] SET_FLOW_STATE:', {
-                from: state.flowState,
-                to: action.payload
-            });
             if (action.payload === 'IDLE' && state.flowState === 'LISTENING') {
-                console.log('⚠️ [REDUCER] Flow state changed from LISTENING to IDLE - this might interrupt audio recording');
             }
             return newState;
 
@@ -256,10 +215,6 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                     timestamp: new Date().toISOString()
                 }
             };
-            console.log('✅ [REDUCER] SET_ERROR_STATE:', {
-                phase: action.payload.phase,
-                message: action.payload.message
-            });
             return newState;
 
         case 'SET_INTERVIEWERS':
@@ -267,9 +222,6 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 ...state,
                 interviewers: action.payload
             };
-            console.log('✅ [REDUCER] SET_INTERVIEWERS:', {
-                count: action.payload.length
-            });
             return newState;
 
         case 'SET_ACTIVE_INTERVIEWER':
@@ -277,10 +229,6 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 ...state,
                 activeInterviewerId: action.payload
             };
-            console.log('✅ [REDUCER] SET_ACTIVE_INTERVIEWER:', {
-                from: state.activeInterviewerId,
-                to: action.payload
-            });
             return newState;
 
         case 'SET_QUESTION_VISIBLE':
@@ -288,10 +236,6 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 ...state,
                 isQuestionVisible: action.payload
             };
-            console.log('✅ [REDUCER] SET_QUESTION_VISIBLE:', {
-                from: state.isQuestionVisible,
-                to: action.payload
-            });
             return newState;
 
         case 'SET_ELAPSED_TIME':
@@ -299,10 +243,6 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 ...state,
                 elapsedTime: action.payload
             };
-            console.log('✅ [REDUCER] SET_ELAPSED_TIME:', {
-                from: state.elapsedTime,
-                to: action.payload
-            });
             return newState;
 
         case 'INCREMENT_ELAPSED_TIME':
@@ -310,15 +250,10 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
                 ...state,
                 elapsedTime: state.elapsedTime + 1
             };
-            console.log('✅ [REDUCER] INCREMENT_ELAPSED_TIME:', {
-                from: state.elapsedTime,
-                to: newState.elapsedTime
-            });
             return newState;
 
         default: {
             const exhaustiveCheck: never = action;
-            console.log('⚠️ [REDUCER] Unknown action type:', exhaustiveCheck);
             return state;
         }
     }
@@ -362,7 +297,6 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
 
     // Sync flow state ref with state
     useEffect(() => {
-        console.log('🔄 Flow state ref updated:', state.flowState);
         currentFlowStateRef.current = state.flowState;
     }, [state.flowState]);
 
@@ -397,44 +331,35 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
 
     // Initialize socket connection
     useEffect(() => {
-        console.log('🔌 [CONTEXT] Creating socket connection to:', API_BASE_URL);
         const socket = io(API_BASE_URL, {
             transports: ['websocket', 'polling'],
             timeout: 20000,
             forceNew: true
         });
-        console.log('🔌 [CONTEXT] Socket created:', socket.id);
 
         socketRef.current = socket;
 
         socket.on('connect', () => {
-            console.log('Connected to interview server');
-            console.log('Socket ID:', socket.id);
             // Don't set session ID here - it will be set when session is created
             dispatch({ type: 'SET_CONNECTED', payload: true });
             dispatch({ type: 'SET_ERROR', payload: null });
         });
 
         socket.on('interviewers', (data) => {
-            console.log('Received interviewers:', data);
             dispatch({ type: 'SET_INTERVIEWERS', payload: data.interviewers });
         });
 
         socket.on('sessionCreated', (data) => {
-            console.log('Session created:', data);
             dispatch({ type: 'SET_SESSION_ID', payload: data.sessionId });
         });
 
         socket.on('disconnect', () => {
-            console.log('Disconnected from interview server');
             dispatch({ type: 'SET_CONNECTED', payload: false });
             dispatch({ type: 'SET_ERROR', payload: 'Connection lost. Please refresh the page.' });
         });
 
         socket.on('question', (data) => {
-            console.log('Received question:', data);
             // Clean up any existing recording session
-            console.log('Stopping recording for new question...');
             stopRecording();
             dispatch({
                 type: 'SET_QUESTION',
@@ -461,7 +386,6 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         });
 
         socket.on('questionAudio', (data) => {
-            console.log('Received question audio');
             if (data.audioContent) {
                 playTTSAudio(data.audioContent);
             }
@@ -469,7 +393,6 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
 
         // Update transcription handler: accumulate transcript as received, do not process answer on interim isFinal
         socket.on('transcription', (data) => {
-            console.log('🎤 Received transcription:', data, 'Current flowState:', state.flowState);
             dispatch({
                 type: 'SET_TRANSCRIPTION',
                 payload: {
@@ -480,7 +403,6 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         });
 
         socket.on('error', (data) => {
-            console.error('Server error:', data);
             dispatch({ type: 'SET_ERROR', payload: data.message });
             // Stop recording and reset state on error
             stopRecording();
@@ -489,16 +411,12 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         });
 
         socket.on('answerComplete', (data) => {
-            console.log('Answer complete received:', data);
             // Stop recording when answer is complete
             stopRecording();
         });
 
         socket.on('interviewComplete', (data) => {
-            console.log('🎉 [CONTEXT] Interview completed event received:', data);
-            console.log('🎉 [CONTEXT] Setting interview state to COMPLETE');
             dispatch({ type: 'COMPLETE_INTERVIEW', payload: data });
-            console.log('🎉 [CONTEXT] Calling stopRecording with preserveInterviewState=true...');
             stopRecording(true);
 
             // Stop timer when interview is complete
@@ -508,12 +426,10 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         // Remove logic that processes answer on interim isFinal in transcription handler
         // Only process answer on streamingEnded
         socket.on('streamingEnded', () => {
-            console.log('Streaming ended by server or timeout');
             stopRecording();
         });
 
         socket.on('currentTranscript', (data) => {
-            console.log('📝 Received current transcript:', data);
             dispatch({
                 type: 'SET_TRANSCRIPTION',
                 payload: {
@@ -523,10 +439,8 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             });
         });
 
-        console.log('🔌 [CONTEXT] All socket event listeners set up');
 
         return () => {
-            console.log('🔌 [CONTEXT] Cleaning up socket connection');
             socket.disconnect();
             stopTimer();
 
@@ -558,13 +472,11 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                 },
                 (error) => {
                     // onError callback
-                    console.error('Audio playback error:', error);
                     dispatch({ type: 'SET_ERROR', payload: 'Failed to play question audio' });
                     dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
                 }
             );
         } catch (error) {
-            console.error('Error playing audio:', error);
             dispatch({ type: 'SET_ERROR', payload: 'Failed to play question audio' });
             dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
         }
@@ -572,53 +484,41 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
 
     const startInterview = useCallback((selectedSet?: string, selectedContext?: string) => {
         if (hasStartedInterview.current) {
-            console.log('⏭️ [CONTEXT] Interview already started, skipping...');
             return;
         }
 
         if (!user?.id) {
-            console.log('❌ [CONTEXT] Cannot start interview - user not authenticated');
             dispatch({ type: 'SET_ERROR', payload: 'Please log in to start an interview' });
             return;
         }
 
         hasStartedInterview.current = true;
         if (process.env.NODE_ENV === 'development') {
-            console.log('🔄 [CONTEXT] startInterview() called');
         }
 
         if (socketRef.current && state.isConnected) {
-            console.log('✅ [CONTEXT] Emitting startInterview to server');
             socketRef.current.emit('startInterview', {
                 set: selectedSet,
                 context: selectedContext,
                 userId: user.id
             });
-            console.log('✅ [CONTEXT] Dispatching START_INTERVIEW action');
             dispatch({ type: 'START_INTERVIEW' });
         } else {
             hasStartedInterview.current = false; // Reset on error
-            console.log('❌ [CONTEXT] Cannot start interview - connection issues:', {
-                hasSocket: !!socketRef.current,
-                isConnected: state.isConnected
-            });
             dispatch({ type: 'SET_ERROR', payload: 'Not connected to server' });
         }
     }, [state.isConnected, user?.id]);
 
     const startStreaming = () => {
         if (socketRef.current && state.isConnected && state.sessionId) {
-            console.log('🎤 Emitting startStreaming to backend');
             socketRef.current.emit('startStreaming', { sessionId: state.sessionId });
         } else {
-            console.error('🎤 Cannot start streaming - missing requirements');
             dispatch({ type: 'SET_ERROR', payload: 'Not connected to server or no session ID' });
         }
     };
 
     const stopStreaming = useCallback(() => {
         if (socketRef.current && state.isConnected && state.sessionId) {
-            console.log('🛑 Emitting stopStreaming to backend');
             socketRef.current.emit('stopStreaming', { sessionId: state.sessionId });
             dispatch({ type: 'SET_STREAMING', payload: false });
         }
@@ -629,23 +529,14 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
     // Initialize recording
     const startRecording = async () => {
         try {
-            console.log('🎤 startRecording called');
-            console.log('🎤 Current state:', {
-                isConnected: state.isConnected,
-                sessionId: state.sessionId,
-                flowState: state.flowState,
-                hasPCMRecorder: !!pcmRecorderRef.current
-            });
 
             // Check if we have the required conditions
             if (!state.isConnected) {
-                console.error('🎤 Cannot start recording - not connected to server');
                 dispatch({ type: 'SET_ERROR', payload: 'Not connected to server' });
                 return;
             }
 
             if (!state.sessionId) {
-                console.error('🎤 Cannot start recording - no session ID');
                 dispatch({ type: 'SET_ERROR', payload: 'No session ID available' });
                 return;
             }
@@ -661,7 +552,6 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             }
 
             // Notify backend to prepare for streaming
-            console.log('🎤 Starting streaming on backend...');
             startStreaming();
 
             // Wait for backend to initialize streaming
@@ -701,14 +591,12 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                     }
                 },
                 (error) => {
-                    console.error('PCM recording error:', error);
                     dispatch({ type: 'SET_ERROR', payload: 'Mic error, please try again' });
                     dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
                 }
             );
 
         } catch (error) {
-            console.error('🎤 Error starting recording:', error);
             console.error('🎤 Error details:', {
                 name: (error as Error).name,
                 message: (error as Error).message,
@@ -740,7 +628,6 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             }
             dispatch({ type: 'SET_TRANSCRIPTION', payload: { text: '', isFinal: false } });
         } catch (error) {
-            console.error('Error stopping recording:', error);
             // Still try to clean up
             if (pcmRecorderRef.current) {
                 pcmRecorderRef.current.stopRecording();
@@ -755,7 +642,6 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
     const resetInterview = () => {
         hasStartedInterview.current = false; // Reset the flag
         if (process.env.NODE_ENV === 'development') {
-            console.log('🔄 [CONTEXT] resetInterview() called');
         }
 
         // Clean up audio resources
@@ -768,7 +654,6 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
 
         stopTimer();
         dispatch({ type: 'RESET_INTERVIEW' });
-        console.log('✅ [CONTEXT] RESET_INTERVIEW action dispatched');
     };
 
     const value: StreamingInterviewContextType = {
