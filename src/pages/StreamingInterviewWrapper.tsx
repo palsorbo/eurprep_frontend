@@ -6,7 +6,7 @@ import { INTERVIEW_SETS } from '../constants/interviewSets';
 
 export default function StreamingInterviewWrapper() {
     const { setId } = useParams<{ setId: string }>();
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
 
     // Find the interview set by ID
     const interviewSet = INTERVIEW_SETS.find(set => set.id === parseInt(setId || '0'));
@@ -23,13 +23,12 @@ export default function StreamingInterviewWrapper() {
 
     // Convert setId to Set name (e.g., "1" -> "Set1")
     const set = setId ? `Set${setId}` : 'Set1';
-    const context = 'sbi-po'; // Hardcoded for now
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
     const content = (
         <StreamingInterviewProvider apiUrl={apiUrl}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <StreamingInterview selectedSet={set} selectedContext={context} />
+                <StreamingInterview selectedSet={set} />
             </div>
         </StreamingInterviewProvider>
     );

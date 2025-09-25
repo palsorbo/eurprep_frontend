@@ -2,15 +2,15 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStreamingInterview } from '../../lib/streaming-interview-context';
 import InterviewerPanel from './InterviewerPanel';
+import TranscriptDisplay from './TranscriptDisplay';
+import MicButton from './MicButton';
 
 interface StreamingInterviewProps {
     selectedSet?: string;
-    selectedContext?: string;
 }
 
 const StreamingInterview: React.FC<StreamingInterviewProps> = ({
-    selectedSet,
-    selectedContext
+    selectedSet
 }) => {
     const navigate = useNavigate();
     const {
@@ -79,15 +79,17 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
         return enabled;
     }, [state.currentQuestion, state.flowState]);
 
-    const microphoneButtonClass = useMemo(() => {
-        const baseClass = "relative w-32 h-32 lg:w-36 lg:h-36 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110";
-        const stateClass = state.flowState === 'IDLE'
-            ? 'bg-gray-600 hover:bg-gray-700 text-white'
-            : 'bg-blue-600 hover:bg-blue-700 text-white animate-pulse';
-        const shadowClass = state.flowState === 'LISTENING' ? 'shadow-2xl shadow-blue-500/60' : 'shadow-xl';
-
-        return `${baseClass} ${stateClass} ${shadowClass}`;
-    }, [state.flowState]);
+    const handleMicToggle = () => {
+        if (state.flowState === 'IDLE') {
+            try {
+                startRecording();
+            } catch (error) {
+                // Handle error if needed
+            }
+        } else if (state.flowState === 'LISTENING') {
+            stopRecording(false);
+        }
+    };
 
 
     return (
@@ -161,7 +163,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                         {state.flowState === 'IDLE' && !state.currentQuestion && (
                             <div className="py-20">
                                 <button
-                                    onClick={() => startInterview(selectedSet, selectedContext)}
+                                    onClick={() => startInterview(selectedSet, 'sbi-po')}
                                     disabled={!state.isConnected}
                                     className="bg-blue-600 text-white px-16 py-8 rounded-2xl text-2xl font-bold hover:bg-blue-700 disabled:bg-gray-400 transition-all duration-300 transform hover:scale-105 shadow-2xl"
                                 >
@@ -172,52 +174,22 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
 
                         {/* Transcript Display */}
                         {state.currentQuestion && (state.transcription || state.flowState === 'LISTENING') && (
-                            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 shadow-lg">
-                                <div className="relative">
-                                    {state.flowState === 'LISTENING' && (
-                                        <div className="absolute top-2 right-4 flex items-center text-blue-600">
-                                            <div className="animate-pulse w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
-                                            <span className="text-xs font-medium">Listening...</span>
-                                        </div>
-                                    )}
-                                    <pre className="whitespace-pre-wrap text-gray-900 text-sm min-h-[80px]">
-                                        {finalLines.join('\n')}
-                                        <span className="text-gray-400">{interimLine}</span>
-                                    </pre>
-                                </div>
-                            </div>
+                            <TranscriptDisplay
+                                finalLines={finalLines}
+                                interimLine={interimLine}
+                                isListening={state.flowState === 'LISTENING'}
+                            />
                         )}
 
                         {/* Microphone Button - appears after question is asked */}
                         {isMicrophoneEnabled && (
                             <div className="flex flex-col items-center space-y-12 py-16">
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-
-                                        if (state.flowState === 'IDLE') {
-                                            try {
-                                                startRecording();
-                                            } catch (error) {
-                                            }
-                                        } else if (state.flowState === 'LISTENING') {
-                                            stopRecording(false);
-                                        } else {
-                                        }
-                                    }}
-                                    className={microphoneButtonClass}
+                                <MicButton
+                                    onToggle={handleMicToggle}
+                                    flowState={state.flowState}
+                                    isEnabled={isMicrophoneEnabled}
                                     title={state.flowState === 'IDLE' ? 'Click to speak' : 'Listening...'}
-                                >
-                                    <svg
-                                        className="w-16 h-16 lg:w-18 lg:h-18"
-                                        fill="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-                                    </svg>
-                                </button>
+                                />
 
                                 <p className="text-2xl text-gray-700 font-bold">
                                     {state.flowState === 'IDLE' ? 'Click to speak' : 'Listening...'}
@@ -225,32 +197,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                             </div>
                         )}
 
-                        {/* Transcript Display */}
-                        {/* {state.currentQuestion && (state.transcription || state.flowState === 'LISTENING') && (
-                            <div className="mt-12 p-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-lg">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="p-4 bg-white rounded-xl shadow-inner border">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h4 className="text-sm font-semibold text-gray-700">Interim</h4>
-                                            {!state.isFinal && state.flowState === 'LISTENING' && (
-                                                <div className="flex items-center text-blue-600">
-                                                    <div className="animate-pulse w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
-                                                    <span className="text-xs font-medium">Listening...</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <pre className="whitespace-pre-wrap text-gray-900 text-sm min-h-[64px]">{interimLine}</pre>
-                                    </div>
-                                    <div className="p-4 bg-white rounded-xl shadow-inner border">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h4 className="text-sm font-semibold text-gray-700">Completed</h4>
-                                        </div>
-                                        <pre className="whitespace-pre-wrap text-gray-900 text-sm min-h-[64px]">{finalLines.join('\n')}</pre>
-                                    </div>
-                                </div>
-                            </div>
-                        )} */}
-                        
+
 
 
                         {/* Interview Complete Message */}
