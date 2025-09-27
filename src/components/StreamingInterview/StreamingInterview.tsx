@@ -1,14 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStreamingInterview } from '../../lib/streaming-interview-context';
 import InterviewerPanel from './InterviewerPanel';
-import TranscriptDisplay from './TranscriptDisplay';
-import MicButton from './MicButton';
 import TimerDisplay from './TimerDisplay';
 import ErrorDisplay from './ErrorDisplay';
 import InterviewHeader from './InterviewHeader';
-import StartInterviewButton from './StartInterviewButton';
-import CompleteMessage from './CompleteMessage';
 import MainContentArea from './MainContentArea';
 
 interface StreamingInterviewProps {
@@ -56,7 +52,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     }, [state.questionNumber, state.totalQuestions]);
 
     const isMicrophoneEnabled = useMemo(() => {
-        const enabled = state.currentQuestion && (state.flowState === 'IDLE' || state.flowState === 'LISTENING');
+        const enabled = Boolean(state.currentQuestion) && (state.flowState === 'IDLE' || state.flowState === 'LISTENING');
         return enabled;
     }, [state.currentQuestion, state.flowState]);
 
@@ -71,11 +67,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400 rounded-full -translate-y-32 translate-x-32"></div>
                         <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-400 rounded-full translate-y-24 -translate-x-24"></div>
                     </div> */}
-                    <InterviewHeader
-                        totalQuestions={state.totalQuestions}
-                        questionNumber={state.questionNumber}
-                        progressPercentage={progressPercentage}
-                    />
+                    <InterviewHeader />
                     <TimerDisplay
                         sessionId={state.sessionId}
                         elapsedTime={state.elapsedTime}
@@ -101,7 +93,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                         stopRecording={stopRecording}
                         selectedSet={selectedSet}
                         startInterview={startInterview}
-                        isConnected={state.isConnected ?? false}
+                        isConnected={Boolean(state.isConnected ?? false)}
                     />
                 </div>
             </div>

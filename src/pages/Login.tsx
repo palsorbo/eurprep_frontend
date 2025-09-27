@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Target, Users, TrendingUp, Lock } from 'lucide-react'
+import { Target, Users, TrendingUp } from 'lucide-react'
 
 export default function Login() {
     const [loading, setLoading] = useState(false)
@@ -121,4 +121,4 @@ export default function Login() {
             </section>
         </div>
     )
-} 
+}

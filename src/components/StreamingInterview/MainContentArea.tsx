@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import type { Dispatch, SetStateAction } from 'react';
 import type { InterviewState } from '../../lib/streaming-interview-context';
 import StartInterviewButton from './StartInterviewButton';
 import TranscriptDisplay from './TranscriptDisplay';

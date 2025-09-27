@@ -38,7 +38,7 @@ export default function PaymentModal({ isOpen, onClose, onSuccess, productType }
                 .then(() => {
                     setIsRazorpayLoaded(true)
                 })
-                .catch((error) => {
+                .catch((_error) => {
                     setError('Failed to load payment system. Please refresh and try again.')
                 })
                 .finally(() => {

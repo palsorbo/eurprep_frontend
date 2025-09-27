@@ -253,7 +253,9 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
             return newState;
 
         default: {
-            const exhaustiveCheck: never = action;
+            // TypeScript exhaustive check - ensures all action types are handled
+            const __exhaustiveCheck: never = action;
+            console.warn('Unhandled action type:', __exhaustiveCheck);
             return state;
         }
     }
@@ -410,7 +412,7 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
         });
 
-        socket.on('answerComplete', (data) => {
+        socket.on('answerComplete', (_data) => {
             // Stop recording when answer is complete
             stopRecording();
         });
@@ -470,7 +472,7 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                     // onEnded callback
                     dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
                 },
-                (error) => {
+                (_error) => {
                     // onError callback
                     dispatch({ type: 'SET_ERROR', payload: 'Failed to play question audio' });
                     dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
@@ -566,10 +568,10 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                     resolve(true);
                 };
 
-                const handleError = (error: any) => {
+                const handleError = (_error: any) => {
                     clearTimeout(timeoutId);
                     socketRef.current?.off('streamingStarted', handleStreamingStarted);
-                    reject(new Error(error.message));
+                    reject(new Error(_error.message));
                 };
 
                 socketRef.current?.once('streamingStarted', handleStreamingStarted);
@@ -590,17 +592,17 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                         socketRef.current.emit('audioDataBinary', arrayBuffer, { sessionId: state.sessionId });
                     }
                 },
-                (error) => {
+                (_error) => {
                     dispatch({ type: 'SET_ERROR', payload: 'Mic error, please try again' });
                     dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
                 }
             );
 
-        } catch (error) {
+        } catch (_error) {
             console.error('🎤 Error details:', {
-                name: (error as Error).name,
-                message: (error as Error).message,
-                stack: (error as Error).stack
+                name: (_error as Error).name,
+                message: (_error as Error).message,
+                stack: (_error as Error).stack
             });
             dispatch({ type: 'SET_ERROR', payload: 'Mic error, please try again' });
             dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
@@ -627,7 +629,7 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                 dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
             }
             dispatch({ type: 'SET_TRANSCRIPTION', payload: { text: '', isFinal: false } });
-        } catch (error) {
+        } catch (_error) {
             // Still try to clean up
             if (pcmRecorderRef.current) {
                 pcmRecorderRef.current.stopRecording();
