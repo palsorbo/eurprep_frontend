@@ -373,9 +373,6 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                 }
             });
 
-            // Allow immediate mic usage even if TTS audio is unavailable for this question (e.g., probe)
-            dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
-
             // Request current transcript for this question
             if (socketRef.current && state.sessionId) {
                 socketRef.current.emit('getTranscript', { sessionId: state.sessionId });
@@ -385,6 +382,9 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             if (data.questionNumber === 1 && !timerRef.current) {
                 startTimer();
             }
+
+            // Set to IDLE initially, but if there's audio, it will be overridden by questionAudio event
+            dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
         });
 
         socket.on('questionAudio', (data) => {
@@ -624,9 +624,10 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
 
             // Do not emit stopRecordingAndNext; backend will advance on stopStreaming
 
-            // Reset recording state (only if not preserving interview state)
+            // Reset recording state - set to QUESTION_LOADING when stopping recording to process answer
+            // Only set to IDLE if preserving interview state (like on completion)
             if (!preserveInterviewState) {
-                dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
+                dispatch({ type: 'SET_FLOW_STATE', payload: 'QUESTION_LOADING' });
             }
             dispatch({ type: 'SET_TRANSCRIPTION', payload: { text: '', isFinal: false } });
         } catch (_error) {
@@ -635,7 +636,7 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
                 pcmRecorderRef.current.stopRecording();
             }
             if (!preserveInterviewState) {
-                dispatch({ type: 'SET_FLOW_STATE', payload: 'IDLE' });
+                dispatch({ type: 'SET_FLOW_STATE', payload: 'QUESTION_LOADING' });
             }
             dispatch({ type: 'SET_TRANSCRIPTION', payload: { text: '', isFinal: false } });
         }

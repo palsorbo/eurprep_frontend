@@ -45,11 +45,6 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
         }
     }, [state.interviewComplete, state.sessionId, navigate, stopRecording]);
 
-    // Memoized calculations
-    const progressPercentage = useMemo(() => {
-        if (state.totalQuestions === 0) return 0;
-        return (state.questionNumber / state.totalQuestions) * 100;
-    }, [state.questionNumber, state.totalQuestions]);
 
     const isMicrophoneEnabled = useMemo(() => {
         const enabled = Boolean(state.currentQuestion) && (state.flowState === 'IDLE' || state.flowState === 'LISTENING');
@@ -63,10 +58,6 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                 {/* Single Card Design */}
                 <div className="bg-white relative overflow-hidden min-h-screen">
                     {/* Subtle background pattern */}
-                    {/* <div className="absolute inset-0 opacity-5">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400 rounded-full -translate-y-32 translate-x-32"></div>
-                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-400 rounded-full translate-y-24 -translate-x-24"></div>
-                    </div> */}
                     <InterviewHeader />
                     <TimerDisplay
                         sessionId={state.sessionId}
