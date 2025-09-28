@@ -47,7 +47,15 @@ const InterviewResults: React.FC = () => {
                                     'Unable to Load Results'}
                         </h2>
                         <p className="text-red-700 mb-6">{error}</p>
-                        <div className="space-x-4">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                        >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Retry to get results
+                        </button>
+                      
+                        {/* <div className="space-x-4">
                             <button
                                 onClick={handleBackToDashboard}
                                 className="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
@@ -62,7 +70,14 @@ const InterviewResults: React.FC = () => {
                                 <RotateCcw className="w-4 h-4 mr-2" />
                                 Start New Interview
                             </button>
-                        </div>
+                        </div> */}
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                        >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Retry
+                        </button>
                     </div>
                 </div>
             </div>

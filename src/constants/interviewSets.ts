@@ -10,6 +10,15 @@ export interface InterviewSet {
 
 export const INTERVIEW_SETS: InterviewSet[] = [
     {
+        id: 0,
+        name: "Set 0",
+        description: "Try a sample question and see how our smart feedback works.",
+        questions: 1,
+        isFree: true,
+        isAvailable: true, // Always available
+        path: "/sbi-po/interview/0"
+    },
+    {
         id: 1,
         name: "Set 1",
         description: "Comprehensive interview set with 10 banking-specific questions covering personal, HR, and technical aspects. Get smart feedback on each answer.",
