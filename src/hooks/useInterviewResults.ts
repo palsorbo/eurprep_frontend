@@ -37,32 +37,26 @@ export const useInterviewResults = ({
         // Check if we've already fetched for these parameters
         const currentParams = `${feedbackId || ''}-${sessionId || ''}`;
         if (lastFetchParams.current === currentParams) {
-            console.log('🔄 Already fetched for these parameters, skipping...');
             return;
         }
 
         try {
             lastFetchParams.current = currentParams;
-            console.log('🔄 Starting fetch for:', { feedbackId, sessionId });
 
             const baseUrl = import.meta.env.VITE_API_BASE_URL;
             let response: Response;
 
             if (feedbackId) {
             // Fetch existing feedback by feedbackId
-                console.log('📥 Fetching existing feedback by ID:', feedbackId);
                 response = await fetch(`${baseUrl}/api/v1/feedback/id/${feedbackId}`);
             } else {
                 // Generate new feedback by sessionId
-                console.log('🔄 Generating new feedback for session:', sessionId);
                 response = await fetch(`${baseUrl}/api/v1/result/${sessionId}`);
             }
 
-            console.log('📡 Response status:', response.status, response.statusText);
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('📊 Response data:', data);
 
                 if (data.success && data.feedback) {
                     const feedback = data.feedback.feedback_data;
@@ -74,10 +68,8 @@ export const useInterviewResults = ({
                         answers,
                         evaluation: feedback
                     });
-                    console.log('✅ Results fetched successfully');
                     return;
                 } else {
-                    console.warn('⚠️ Response successful but no feedback data:', data);
                 }
             }
 
@@ -95,7 +87,6 @@ export const useInterviewResults = ({
                 throw new Error(`Failed to fetch results: ${response.status}`);
             }
         } catch (err) {
-            console.error('❌ Error fetching results:', err);
             setError(err instanceof Error ? err.message : 'Failed to load interview results');
         } finally {
             setIsLoading(false);

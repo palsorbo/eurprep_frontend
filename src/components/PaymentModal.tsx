@@ -37,10 +37,8 @@ export default function PaymentModal({ isOpen, onClose, onSuccess, productType }
             loadRazorpayScript()
                 .then(() => {
                     setIsRazorpayLoaded(true)
-                    console.log('Razorpay script loaded successfully')
                 })
-                .catch((error) => {
-                    console.error('Failed to load Razorpay script:', error)
+                .catch((_error) => {
                     setError('Failed to load payment system. Please refresh and try again.')
                 })
                 .finally(() => {
@@ -73,7 +71,6 @@ export default function PaymentModal({ isOpen, onClose, onSuccess, productType }
                 order_id: orderId,
                 handler: async function (response: any) {
                     try {
-                        console.log('Razorpay response:', response);
                         const success = await verifyPayment(
                             response.razorpay_payment_id,
                             response.razorpay_order_id,
@@ -102,7 +99,6 @@ export default function PaymentModal({ isOpen, onClose, onSuccess, productType }
             const razorpay = new window.Razorpay(options)
             razorpay.open()
         } catch (error) {
-            console.error('Payment initialization failed:', error)
             setError("Failed to initialize payment. Please try again.")
         } finally {
             setIsProcessing(false)

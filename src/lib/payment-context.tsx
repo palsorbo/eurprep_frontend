@@ -40,7 +40,6 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
             const productTypes = payments?.map(payment => payment.product_type) || []
             setPurchasedProducts(productTypes)
         } catch (error) {
-            console.error('Error fetching payment status:', error)
             setPurchasedProducts([])
         } finally {
             setIsLoading(false)
@@ -85,7 +84,6 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
             if (error) throw error
             return orderId
         } catch (error) {
-            console.error('Error initializing payment:', error)
             throw error
         }
     }
@@ -95,7 +93,6 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
         try {
             const baseUrl = import.meta.env.VITE_API_BASE_URL;
-            console.log('Verifying payment:', { paymentId, orderId, signature });
             const response = await fetch(`${baseUrl}/api/v1/payments/verify`, {
                 method: 'POST',
                 headers: {
@@ -125,7 +122,6 @@ export function PaymentProvider({ children }: { children: React.ReactNode }) {
 
             return success
         } catch (error) {
-            console.error('Error verifying payment:', error)
             throw error
         }
     }

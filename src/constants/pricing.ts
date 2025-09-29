@@ -8,14 +8,15 @@ export const PRICING = {
         TYPE: 'one-time' as const,
         PRODUCT_TYPE: 'sbi_po_premium_bundle' as const
     },
-    // Future products can be added here
-    IBPS_PO_BUNDLE: {
+    // IBPS PO Premium Bundle pricing
+    IBPS_PO_PREMIUM_BUNDLE: {
         AMOUNT: 2, // Amount in rupees
         CURRENCY: 'INR',
-        DESCRIPTION: 'IBPS PO Bundle',
+        DESCRIPTION: 'IBPS PO Premium Bundle',
         TYPE: 'one-time' as const,
-        PRODUCT_TYPE: 'ibps_po_bundle' as const
+        PRODUCT_TYPE: 'ibps_po_premium_bundle' as const
     },
+    // Future products can be added here
     RRB_PO_BUNDLE: {
         AMOUNT: 3, // Amount in rupees
         CURRENCY: 'INR',

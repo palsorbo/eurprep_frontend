@@ -5,7 +5,7 @@ import { usePayment } from '../lib/payment-context'
 import { History, Eye, Calendar, Lock } from 'lucide-react'
 import LoadingScreen from '../components/LoadingScreen'
 import InterviewSetCard from '../components/InterviewSetCard'
-import { getSbiPoSets } from '../constants/interviewSets'
+import { getIbpsPoSets } from '../constants/interviewSets'
 import { PRICING } from '../constants/pricing'
 
 // Lazy load PaymentModal
@@ -22,10 +22,10 @@ interface FeedbackHistory {
     created_at: string
 }
 
-export default function SBIPO() {
+export default function IBPSPO() {
     const { user, loading: authLoading } = useAuth()
     const { hasAccessToProduct, isLoading: paymentLoading } = usePayment()
-    const hasPaidAccess = hasAccessToProduct('sbi_po_premium_bundle')
+    const hasPaidAccess = hasAccessToProduct('ibps_po_premium_bundle')
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
     const [feedbackHistory, setFeedbackHistory] = useState<FeedbackHistory[]>([])
     const [isLoadingHistory, setIsLoadingHistory] = useState(false)
@@ -46,7 +46,7 @@ export default function SBIPO() {
                 },
                 body: JSON.stringify({
                     userId: user.id,
-                    interviewType: 'sbi-po'
+                    interviewType: 'ibps-po'
                 })
             })
 
@@ -64,7 +64,7 @@ export default function SBIPO() {
 
     useEffect(() => {
         if (!authLoading && !user) {
-            navigate('/', { replace: true, state: { from: 'sbi-po' } })
+            navigate('/', { replace: true, state: { from: 'ibps-po' } })
         } else if (user) {
             loadFeedbackHistory()
         }
@@ -73,7 +73,7 @@ export default function SBIPO() {
     if (authLoading || paymentLoading) {
         return (
             <LoadingScreen
-                message="Loading SBI PO dashboard..."
+                message="Loading IBPS PO dashboard..."
                 size="lg"
             />
         )
@@ -83,10 +83,10 @@ export default function SBIPO() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-slate-900 mb-4">
-                    SBI PO Smart Interview Prep
+                    IBPS PO Smart Interview Prep
                 </h2>
                 <p className="text-slate-600 text-lg">
-                    Master your SBI Probationary Officer interview with smart-powered practice sessions and instant feedback.
+                    Master your IBPS Probationary Officer interview with smart-powered practice sessions and instant feedback.
                 </p>
             </div>
 
@@ -103,7 +103,7 @@ export default function SBIPO() {
 
 
                     {/* Interview Set Cards */}
-                    {getSbiPoSets(hasPaidAccess).map((set) => (
+                    {getIbpsPoSets(hasPaidAccess).map((set) => (
                         <InterviewSetCard
                             key={set.id}
                             set={set}
@@ -113,22 +113,22 @@ export default function SBIPO() {
 
                     {/* Premium Bundle Banner */}
                     {!hasPaidAccess && (
-                        <div className="md:col-span-2 lg:col-span-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg shadow-md p-6 border border-green-200 mb-6">
+                        <div className="md:col-span-2 lg:col-span-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md p-6 border border-blue-200 mb-6">
                             <div className="flex flex-col md:flex-row items-center justify-between">
                                 <div className="mb-4 md:mb-0">
-                                    <h3 className="text-xl font-semibold text-green-800 mb-2">
+                                    <h3 className="text-xl font-semibold text-blue-800 mb-2">
                                         Unlock Premium Bundle
                                     </h3>
-                                    <p className="text-green-700">
+                                    <p className="text-blue-700">
                                         Get access to Set 2 & 3 plus all future question sets with advanced questions, expert-level scenarios, and smart feedback
                                     </p>
-                                    <div className="mt-2 text-2xl font-bold text-green-800">
-                                        ₹{PRICING.SBI_PO_PREMIUM_BUNDLE.AMOUNT} <span className="text-sm font-normal text-green-700">{PRICING.SBI_PO_PREMIUM_BUNDLE.TYPE}</span>
+                                    <div className="mt-2 text-2xl font-bold text-blue-800">
+                                        ₹{PRICING.IBPS_PO_PREMIUM_BUNDLE.AMOUNT} <span className="text-sm font-normal text-blue-700">{PRICING.IBPS_PO_PREMIUM_BUNDLE.TYPE}</span>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setIsPaymentModalOpen(true)}
-                                    className="bg-green-600 text-white py-2 px-6 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+                                    className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
                                 >
                                     <span>Unlock Premium</span>
                                     <Lock className="w-4 h-4" />
@@ -152,7 +152,7 @@ export default function SBIPO() {
                     <div className="max-w-4xl mx-auto">
                         {isLoadingHistory ? (
                             <div className="text-center py-8">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                                 <p className="text-slate-600">Loading your interview history...</p>
                             </div>
                         ) : (
@@ -187,13 +187,13 @@ export default function SBIPO() {
                                         <div className="mb-4">
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-sm font-medium text-slate-700">Overall Score</span>
-                                                <span className="text-lg font-bold text-green-600">
+                                                <span className="text-lg font-bold text-blue-600">
                                                     {feedback.overall_feedback?.averageScore?.toFixed(1) || 'N/A'}/10
                                                 </span>
                                             </div>
                                             <div className="w-full bg-gray-200 rounded-full h-2">
                                                 <div
-                                                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                                                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                                                     style={{
                                                         width: `${((feedback.overall_feedback?.averageScore || 0) / 10) * 100}%`
                                                     }}
@@ -243,7 +243,7 @@ export default function SBIPO() {
                 <Suspense fallback={
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white rounded-lg p-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                             <p className="text-slate-600 mt-4">Loading payment modal...</p>
                         </div>
                     </div>
@@ -254,7 +254,7 @@ export default function SBIPO() {
                         onSuccess={() => {
                             // Handle successful payment
                         }}
-                        productType="sbi_po_premium_bundle"
+                        productType="ibps_po_premium_bundle"
                     />
                 </Suspense>
             )}
@@ -274,7 +274,7 @@ export default function SBIPO() {
                             Group Exercise
                         </h3>
                         <p className="text-slate-600 text-sm">
-                            Practice group discussion and collaborative exercises for SBI PO preparation.
+                            Practice group discussion and collaborative exercises for IBPS PO preparation.
                         </p>
                         <div className="mt-4 text-gray-500 text-sm font-medium">
                             Coming Soon
@@ -289,7 +289,7 @@ export default function SBIPO() {
                             Psychometric Test
                         </h3>
                         <p className="text-slate-600 text-sm">
-                            Assess your personality traits and behavioral patterns for SBI PO selection.
+                            Assess your personality traits and behavioral patterns for IBPS PO selection.
                         </p>
                         <div className="mt-4 text-gray-500 text-sm font-medium">
                             Coming Soon

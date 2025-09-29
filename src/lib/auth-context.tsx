@@ -30,14 +30,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
-                console.log('Auth state change:', event, 'session:', session?.user?.id)
                 setSession(session)
                 setUser(session?.user ?? null)
                 setLoading(false)
 
                 // Handle sign out explicitly
                 if (event === 'SIGNED_OUT') {
-                    console.log('User signed out, clearing state')
                     setUser(null)
                     setSession(null)
                 }
@@ -48,17 +46,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [])
 
     const signOut = async () => {
-        console.log('AuthContext signOut called')
         try {
-            console.log('Calling supabase.auth.signOut()...')
             const { error } = await supabase.auth.signOut()
             if (error) {
-                console.error('Supabase signOut error:', error)
                 throw error
             }
-            console.log('Supabase signOut successful')
         } catch (error) {
-            console.error('Error in signOut:', error)
             throw error
         }
     }

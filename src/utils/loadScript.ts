@@ -26,12 +26,10 @@ export const loadScript = (src: string, id: string): Promise<void> => {
         script.async = true
 
         script.onload = () => {
-            console.log(`Script loaded successfully: ${src}`)
             resolve()
         }
 
         script.onerror = () => {
-            console.error(`Failed to load script: ${src}`)
             reject(new Error(`Failed to load script: ${src}`))
         }
 
@@ -50,7 +48,6 @@ export const loadRazorpayScript = (): Promise<void> => {
             return new Promise<void>((resolve) => {
                 const checkRazorpay = () => {
                     if (window.Razorpay) {
-                        console.log('Razorpay is ready')
                         resolve()
                     } else {
                         setTimeout(checkRazorpay, 100)

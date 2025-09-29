@@ -54,9 +54,7 @@ export class AudioPlaybackManager {
 
             // Start playback
             await audio.play();
-            console.log('🔊 TTS audio playback started');
         } catch (error) {
-            console.error('Error playing TTS audio:', error);
             onError?.(error as Error);
             throw error;
         }
