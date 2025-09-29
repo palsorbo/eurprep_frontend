@@ -1,15 +1,6 @@
 import { Link } from 'react-router-dom'
 import { BookOpen, Play, CheckCircle, Lock } from 'lucide-react'
-
-interface InterviewSet {
-    id: number
-    name: string
-    description: string
-    questions: number
-    isFree: boolean
-    isAvailable: boolean
-    path: string
-}
+import type { InterviewSet } from '../constants/interviewSets'
 
 interface InterviewSetCardProps {
     set: InterviewSet

@@ -11,8 +11,9 @@ interface MainContentAreaProps {
     startRecording: () => void;
     stopRecording: (force: boolean) => void;
     selectedSet: string | undefined;
-    startInterview: (set: string | undefined, type: string) => void;
+    startInterview: (set: string | undefined, context: string) => void;
     isConnected: boolean;
+    context: string;
 }
 
 const MainContentArea: React.FC<MainContentAreaProps> = ({
@@ -22,7 +23,8 @@ const MainContentArea: React.FC<MainContentAreaProps> = ({
     stopRecording,
     selectedSet,
     startInterview,
-    isConnected
+    isConnected,
+    context
 }) => {
     // Local transcript panels (like POC): interim + completed finals
     const [finalLines, setFinalLines] = useState<string[]>([]);
@@ -87,13 +89,14 @@ const MainContentArea: React.FC<MainContentAreaProps> = ({
                     selectedSet={selectedSet}
                     startInterview={startInterview}
                     isConnected={isConnected}
+                    context={context}
                 />
             )}
 
             {/* Transcript Display - Only visible during LISTENING state */}
             <div className={`w-full max-w-2xl mb-4 h-32 transition-opacity duration-300 ${showTranscript && state.flowState === 'LISTENING' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 {state.flowState === 'LISTENING' && (
-            // Transcript is only shown during LISTENING state when user is actively recording
+                    // Transcript is only shown during LISTENING state when user is actively recording
                     <TranscriptDisplay
                         finalLines={finalLines}
                         interimLine={interimLine}

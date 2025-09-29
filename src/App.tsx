@@ -13,6 +13,7 @@ const AuthRedirect = lazy(() => import('./components/AuthRedirect'))
 const AuthCallback = lazy(() => import('./components/AuthCallback'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const SBIPO = lazy(() => import('./pages/SBIPO'))
+const IBPSPO = lazy(() => import('./pages/IBPSPO'))
 const StreamingInterviewWrapper = lazy(() => import('./pages/StreamingInterviewWrapper'))
 const InterviewResults = lazy(() => import('./pages/InterviewResults'))
 
@@ -56,6 +57,24 @@ function App() {
 
               {/* SBI PO Interview - protected route */}
               <Route path="/sbi-po/interview/:setId" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <StreamingInterviewWrapper />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* IBPS PO - protected route */}
+              <Route path="/ibps-po" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <IBPSPO />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* IBPS PO Interview - protected route */}
+              <Route path="/ibps-po/interview/:setId" element={
                 <ProtectedRoute>
                   <AppLayout>
                     <StreamingInterviewWrapper />

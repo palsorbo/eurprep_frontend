@@ -265,7 +265,7 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
 interface StreamingInterviewContextType {
     state: InterviewState;
     socket: Socket | null;
-    startInterview: (selectedSet?: string, selectedContext?: string) => void;
+    startInterview: (selectedSet: string | undefined, selectedContext: string) => void;
     startStreaming: () => void;
     stopStreaming: () => void;
     resetInterview: () => void;
@@ -282,9 +282,10 @@ const StreamingInterviewContext = createContext<StreamingInterviewContextType | 
 interface StreamingInterviewProviderProps {
     children: ReactNode;
     apiUrl?: string;
+    context?: string;
 }
 
-export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterviewProviderProps) {
+export function StreamingInterviewProvider({ children, apiUrl, context }: StreamingInterviewProviderProps) {
     const [state, dispatch] = useReducer(streamingInterviewReducer, initialState);
     const socketRef = useRef<Socket | null>(null);
     const hasStartedInterview = useRef(false);
@@ -484,7 +485,7 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
         }
     };
 
-    const startInterview = useCallback((selectedSet?: string, selectedContext?: string) => {
+    const startInterview = useCallback((selectedSet: string | undefined, selectedContext: string) => {
         if (hasStartedInterview.current) {
             return;
         }
@@ -494,14 +495,24 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             return;
         }
 
-        hasStartedInterview.current = true;
-        if (process.env.NODE_ENV === 'development') {
+        // Use provider context if no context provided
+        const finalContext = selectedContext || context;
+
+        if (!finalContext) {
+            dispatch({ type: 'SET_ERROR', payload: 'Interview context not provided' });
+            return;
         }
+
+        if (process.env.NODE_ENV === 'development') {
+            console.log('🎤 Starting interview with:', { selectedSet, selectedContext, finalContext, providerContext: context });
+        }
+
+        hasStartedInterview.current = true;
 
         if (socketRef.current && state.isConnected) {
             socketRef.current.emit('startInterview', {
                 set: selectedSet,
-                context: selectedContext,
+                context: finalContext,
                 userId: user.id
             });
             dispatch({ type: 'START_INTERVIEW' });
@@ -509,7 +520,7 @@ export function StreamingInterviewProvider({ children, apiUrl }: StreamingInterv
             hasStartedInterview.current = false; // Reset on error
             dispatch({ type: 'SET_ERROR', payload: 'Not connected to server' });
         }
-    }, [state.isConnected, user?.id]);
+    }, [state.isConnected, user?.id, context]);
 
     const startStreaming = () => {
         if (socketRef.current && state.isConnected && state.sessionId) {

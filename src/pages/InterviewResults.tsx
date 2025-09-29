@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Home } from 'lucide-react';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 import ResultsView from '../components/StreamingInterview/ResultsView';
 import LoadingScreen from '../components/LoadingScreen';
 import { useInterviewResults } from '../hooks/useInterviewResults';
@@ -15,10 +15,6 @@ const InterviewResults: React.FC = () => {
 
     const handleStartNewInterview = () => {
         navigate('/sbi-po');
-    };
-
-    const handleBackToDashboard = () => {
-        navigate('/dashboard');
     };
 
     if (isLoading) {
@@ -54,7 +50,7 @@ const InterviewResults: React.FC = () => {
                             <RotateCcw className="w-4 h-4 mr-2" />
                             Retry to get results
                         </button>
-                      
+
                         {/* <div className="space-x-4">
                             <button
                                 onClick={handleBackToDashboard}

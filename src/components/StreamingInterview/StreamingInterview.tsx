@@ -9,10 +9,12 @@ import MainContentArea from './MainContentArea';
 
 interface StreamingInterviewProps {
     selectedSet?: string;
+    context: string;
 }
 
 const StreamingInterview: React.FC<StreamingInterviewProps> = ({
-    selectedSet
+    selectedSet,
+    context
 }) => {
     const navigate = useNavigate();
     const {
@@ -85,6 +87,7 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
                         selectedSet={selectedSet}
                         startInterview={startInterview}
                         isConnected={Boolean(state.isConnected ?? false)}
+                        context={context}
                     />
                 </div>
             </div>
