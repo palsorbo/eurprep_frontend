@@ -5,6 +5,15 @@ import { AudioPlaybackManager, audioUtils, PCMRecorderManager } from '../utils/a
 import { useAuth } from './auth-context';
 
 // Types
+// !TODO have a WAITING/ READY_FOR_INPUT STATE, 
+///type InterviewFlowState =
+//   | 'IDLE'
+//   | 'QUESTION_LOADING'
+//   | 'QUESTION_PLAYING'
+//   | 'WAITING_FOR_INPUT'
+//   | 'LISTENING'
+//   | 'PROCESSING_ANSWER'
+//   | 'COMPLETE';
 export type InterviewFlowState =
     | 'IDLE'               // Initial state
     | 'QUESTION_LOADING'   // Loading next question
@@ -204,6 +213,12 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
             };
             if (action.payload === 'IDLE' && state.flowState === 'LISTENING') {
             }
+            // Log flow state changes
+            console.log(`🔄 Flow State: ${state.flowState} → ${action.payload}`, {
+                timestamp: new Date().toISOString(),
+                previousState: state.flowState,
+                newState: action.payload
+            });
             return newState;
 
         case 'SET_ERROR_STATE':
@@ -700,3 +715,24 @@ export function useStreamingInterview() {
     }
     return context;
 }
+
+
+// Improvements
+
+// Make the flow states clear
+// Add a state like WAITING_FOR_INPUT instead of jumping directly from playing audio → listening.
+// Think of your flow as a map: QUESTION_LOADING → QUESTION_PLAYING → WAITING_FOR_INPUT → LISTENING → PROCESSING_ANSWER → COMPLETE.
+// Use event-based actions, not setters
+// Instead of { type: 'SET_FLOW_STATE', payload: 'LISTENING' }, dispatch events like AUDIO_FINISHED or ANSWER_SUBMITTED.
+// Let the reducer decide the next state.
+// Split concerns in the reducer
+// Don’t put connection, FSM, audio, timer, UI, and errors all in one reducer.
+// You can make smaller reducers: fsmReducer, connectionReducer, uiReducer.
+// Simplify the timer
+// One action like TIMER_TICK is enough. No need for separate SET_ELAPSED_TIME and INCREMENT_ELAPSED_TIME.
+// Separate UI state from interview logic
+// Things like isQuestionVisible can be handled in the component, not in the main reducer.
+// Unify error handling
+// Use one action like ERROR_OCCURRED with info about the phase and message.
+// Clean up logging
+// Keep logs in development only, or use a middleware-style logger, not in the reducer itself.
