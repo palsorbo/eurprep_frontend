@@ -113,26 +113,74 @@ export default function IBPSPO() {
 
                     {/* Premium Bundle Banner */}
                     {!hasPaidAccess && (
-                        <div className="md:col-span-2 lg:col-span-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md p-6 border border-blue-200 mb-6">
-                            <div className="flex flex-col md:flex-row items-center justify-between">
-                                <div className="mb-4 md:mb-0">
-                                    <h3 className="text-xl font-semibold text-blue-800 mb-2">
-                                        Unlock Premium Bundle
-                                    </h3>
-                                    <p className="text-blue-700">
-                                        Get access to Set 2 & 3 plus all future question sets with advanced questions, expert-level scenarios, and smart feedback
-                                    </p>
-                                    <div className="mt-2 text-2xl font-bold text-blue-800">
-                                        ₹{PRICING.IBPS_PO_PREMIUM_BUNDLE.AMOUNT} <span className="text-sm font-normal text-blue-700">{PRICING.IBPS_PO_PREMIUM_BUNDLE.TYPE}</span>
+                        <div className="md:col-span-2 lg:col-span-3 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 rounded-xl shadow-lg border border-blue-200 mb-6 overflow-hidden">
+                            <div className="relative p-8">
+                                {/* Background Pattern */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-indigo-600/5"></div>
+
+                                {/* Limited Time Badge */}
+                                <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+                                    LIMITED OFFER!
+                                </div>
+
+                                <div className="relative flex flex-col md:flex-row items-center justify-between">
+                                    <div className="mb-6 md:mb-0 text-center md:text-left">
+                                        <div className="flex items-center justify-center md:justify-start mb-3">
+                                            <div className="bg-blue-600 text-white p-2 rounded-lg mr-3">
+                                                <Lock className="w-6 h-6" />
+                                            </div>
+                                            <h3 className="text-2xl font-bold text-blue-800">
+                                                Unlock Premium Bundle
+                                            </h3>
+                                        </div>
+
+                                        <p className="text-blue-700 text-lg mb-4 leading-relaxed">
+                                            Get access to <span className="font-semibold text-blue-800">Sets 1, 2 & 3</span> with advanced questions, expert-level scenarios, and smart feedback
+                                        </p>
+
+                                        {/* Feature Highlights */}
+                                        <div className="flex flex-wrap justify-center md:justify-start gap-4 mb-4">
+                                            <div className="flex items-center bg-blue-100 px-3 py-2 rounded-full">
+                                                <div className="w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+                                                <span className="text-blue-800 text-sm font-medium">3 Complete Sets</span>
+                                            </div>
+                                            <div className="flex items-center bg-blue-100 px-3 py-2 rounded-full">
+                                                <div className="w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+                                                <span className="text-blue-800 text-sm font-medium">Expert Evaluation</span>
+                                            </div>
+                                            <div className="flex items-center bg-blue-100 px-3 py-2 rounded-full">
+                                                <div className="w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+                                                <span className="text-blue-800 text-sm font-medium">Smart Analysis</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Pricing Section */}
+                                        <div className="flex items-center justify-center md:justify-start space-x-3">
+                                            <span className="text-xl text-blue-600 line-through font-medium">
+                                                ₹{PRICING.IBPS_PO_PREMIUM_BUNDLE.ORIGINAL_AMOUNT}
+                                            </span>
+                                            <span className="text-3xl font-bold text-blue-800">
+                                                ₹{PRICING.IBPS_PO_PREMIUM_BUNDLE.AMOUNT}
+                                            </span>
+                                            {/* <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
+                                                SAVE ₹{PRICING.IBPS_PO_PREMIUM_BUNDLE.ORIGINAL_AMOUNT - PRICING.IBPS_PO_PREMIUM_BUNDLE.AMOUNT}
+                                            </span> */}
+                                        </div>
+                                    </div>
+
+                                    <div className="text-center">
+                                        <button
+                                            onClick={() => setIsPaymentModalOpen(true)}
+                                            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-8 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center space-x-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                                        >
+                                            <Lock className="w-5 h-5" />
+                                            <span>Unlock Premium</span>
+                                        </button>
+                                        <p className="text-blue-600 text-sm mt-2 font-medium">
+                                            Instant Access • No Hidden Fees
+                                        </p>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={() => setIsPaymentModalOpen(true)}
-                                    className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-                                >
-                                    <span>Unlock Premium</span>
-                                    <Lock className="w-4 h-4" />
-                                </button>
                             </div>
                         </div>
                     )}
@@ -168,9 +216,9 @@ export default function IBPSPO() {
                                                     <h4 className="text-lg font-semibold text-slate-900">
                                                         {feedback.interview_set} Interview
                                                     </h4>
-                                                    <p className="text-sm text-slate-600">
+                                                    {/* <p className="text-sm text-slate-600">
                                                         Version {feedback.version}
-                                                    </p>
+                                                    </p> */}
                                                 </div>
                                             </div>
                                             <div className="text-right">
