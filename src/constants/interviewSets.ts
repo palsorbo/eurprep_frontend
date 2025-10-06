@@ -14,8 +14,8 @@ export interface InterviewSet {
 export const SBI_PO_SETS: InterviewSet[] = [
     {
         id: 0,
-        name: "Set 0",
-        description: "Try a sample question and see how our smart feedback works.",
+        name: "Try for Free",
+        description: "Experience our mock interview with feedback for free",
         questions: 1,
         isFree: true,
         isAvailable: true,
@@ -24,17 +24,17 @@ export const SBI_PO_SETS: InterviewSet[] = [
     },
     {
         id: 1,
-        name: "Set 1",
+        name: "Basic",
         description: "Comprehensive interview set with 10 banking-specific questions covering personal, HR, and technical aspects. Get smart feedback on each answer.",
         questions: 10,
-        isFree: true,
+        isFree: false,
         isAvailable: true,
         path: "/sbi-po/interview/1",
         examType: 'sbi-po'
     },
     {
         id: 2,
-        name: "Set 2",
+        name: "Intermediate",
         description: "Advanced interview questions focusing on economic awareness, customer handling, and leadership scenarios with smart analysis.",
         questions: 10,
         isFree: false,
@@ -44,7 +44,7 @@ export const SBI_PO_SETS: InterviewSet[] = [
     },
     {
         id: 3,
-        name: "Set 3",
+        name: "Advance",
         description: "Expert-level questions on banking operations, Basel norms, and complex situational scenarios with detailed smart feedback.",
         questions: 10,
         isFree: false,
@@ -58,8 +58,8 @@ export const SBI_PO_SETS: InterviewSet[] = [
 export const IBPS_PO_SETS: InterviewSet[] = [
     {
         id: 0,
-        name: "Set 0",
-        description: "Try a sample question and see how our smart feedback works.",
+        name: "Try for Free",
+        description: "Experience our mock interview with feedback for free",
         questions: 1,
         isFree: true,
         isAvailable: true,
@@ -68,17 +68,17 @@ export const IBPS_PO_SETS: InterviewSet[] = [
     },
     {
         id: 1,
-        name: "Set 1",
+        name: "Basic",
         description: "Comprehensive interview set with 10 banking-specific questions covering personal, HR, and technical aspects. Get smart feedback on each answer.",
         questions: 10,
-        isFree: true,
+        isFree: false,
         isAvailable: true,
         path: "/ibps-po/interview/1",
         examType: 'ibps-po'
     },
     {
         id: 2,
-        name: "Set 2",
+        name: "Intermediate",
         description: "Advanced interview questions focusing on economic awareness, customer handling, and leadership scenarios with smart analysis.",
         questions: 10,
         isFree: false,
@@ -88,7 +88,7 @@ export const IBPS_PO_SETS: InterviewSet[] = [
     },
     {
         id: 3,
-        name: "Set 3",
+        name: "Advance",
         description: "Expert-level questions on banking operations, Basel norms, and complex situational scenarios with detailed smart feedback.",
         questions: 10,
         isFree: false,
