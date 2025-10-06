@@ -39,6 +39,9 @@ export interface InterviewState {
     isStreaming: boolean;
     flowState: InterviewFlowState;
 
+    // Readiness state
+    isReadinessComplete: boolean;
+
     // Question state
     currentQuestion: string | null;
     questionNumber: number;
@@ -76,6 +79,7 @@ type StreamingInterviewAction =
     | { type: 'SET_SESSION_ID'; payload: string | null }
     | { type: 'START_INTERVIEW' }
     | { type: 'SET_STREAMING'; payload: boolean }
+    | { type: 'SET_READINESS_COMPLETE' }
     | { type: 'SET_QUESTION'; payload: { question: string; questionNumber: number; totalQuestions: number; interviewerId?: number } }
     | { type: 'SET_TRANSCRIPTION'; payload: { text: string; isFinal: boolean } }
     | { type: 'SET_ERROR'; payload: string | null }
@@ -99,6 +103,9 @@ const initialState: InterviewState = {
     isInterviewStarted: false,
     isStreaming: false,
     flowState: 'IDLE',
+
+    // Readiness state
+    isReadinessComplete: false,
 
     // Question state
     currentQuestion: null,
@@ -155,6 +162,13 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
             newState = {
                 ...state,
                 isStreaming: action.payload
+            };
+            return newState;
+
+        case 'SET_READINESS_COMPLETE':
+            newState = {
+                ...state,
+                isReadinessComplete: true
             };
             return newState;
 
@@ -289,6 +303,7 @@ interface StreamingInterviewContextType {
     formatTime: (seconds: number) => string;
     startRecording: () => Promise<void>;
     stopRecording: (preserveInterviewState?: boolean, skipStopStreaming?: boolean) => void;
+    markReadinessComplete: () => void;
 }
 
 const StreamingInterviewContext = createContext<StreamingInterviewContextType | undefined>(undefined);
@@ -685,6 +700,10 @@ export function StreamingInterviewProvider({ children, apiUrl, context }: Stream
         dispatch({ type: 'RESET_INTERVIEW' });
     };
 
+    const markReadinessComplete = useCallback(() => {
+        dispatch({ type: 'SET_READINESS_COMPLETE' });
+    }, []);
+
     const value: StreamingInterviewContextType = {
         state,
         socket: socketRef.current,
@@ -697,7 +716,8 @@ export function StreamingInterviewProvider({ children, apiUrl, context }: Stream
         stopTimer,
         formatTime,
         startRecording,
-        stopRecording
+        stopRecording,
+        markReadinessComplete
     };
 
     return (
