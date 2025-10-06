@@ -1,7 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
-import { LogOut } from 'lucide-react'
+import { LogOut, Mail, Copy, Check } from 'lucide-react'
 import Logo from './Logo'
+import { useState, useEffect, useRef } from 'react'
 
 interface AppHeaderProps {
     title?: string
@@ -11,6 +12,11 @@ export default function AppHeader({ title }: AppHeaderProps) {
     const { user, signOut } = useAuth()
     const navigate = useNavigate()
     const location = useLocation()
+    const [showEmailTooltip, setShowEmailTooltip] = useState(false)
+    const [copySuccess, setCopySuccess] = useState(false)
+    const tooltipRef = useRef<HTMLDivElement>(null)
+
+    const emailAddress = 'hello@eurprep.com'
 
     const handleLogout = async () => {
         try {
@@ -24,6 +30,44 @@ export default function AppHeader({ title }: AppHeaderProps) {
     const handleLogoClick = () => {
         navigate('/dashboard')
     }
+
+    const handleCopyEmail = async () => {
+        try {
+            await navigator.clipboard.writeText(emailAddress)
+            setCopySuccess(true)
+            setTimeout(() => {
+                setCopySuccess(false)
+                setShowEmailTooltip(false)
+            }, 2000)
+        } catch (error) {
+            console.error('Failed to copy email:', error)
+        }
+    }
+
+    // Handle clicking outside tooltip and Escape key
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
+                setShowEmailTooltip(false)
+            }
+        }
+
+        const handleEscapeKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setShowEmailTooltip(false)
+            }
+        }
+
+        if (showEmailTooltip) {
+            document.addEventListener('mousedown', handleClickOutside)
+            document.addEventListener('keydown', handleEscapeKey)
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+            document.removeEventListener('keydown', handleEscapeKey)
+        }
+    }, [showEmailTooltip])
 
 
     // Generate breadcrumbs based on current path
@@ -118,6 +162,49 @@ export default function AppHeader({ title }: AppHeaderProps) {
                         <span className="text-slate-700 text-sm">
                             Welcome, {user?.user_metadata?.full_name?.split(' ')[0] || user?.email || 'User'}
                         </span>
+
+                        {/* Email Contact Button */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowEmailTooltip(!showEmailTooltip)}
+                                className="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+                            >
+                                <Mail className="w-4 h-4" />
+                                <span className="hidden sm:inline">Contact</span>
+                            </button>
+
+                            {/* Email Tooltip */}
+                            {showEmailTooltip && (
+                                <div ref={tooltipRef} className="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-lg shadow-lg z-50 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <Mail className="w-5 h-5 text-slate-600" />
+                                            <div>
+                                                <div className="text-sm font-medium text-slate-900">Contact Email</div>
+                                                <div className="text-sm text-slate-600 font-mono">{emailAddress}</div>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={handleCopyEmail}
+                                            className="flex items-center space-x-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition-colors duration-200"
+                                        >
+                                            {copySuccess ? (
+                                                <>
+                                                    <Check className="w-4 h-4 text-green-600" />
+                                                    <span className="text-sm text-green-600">Copied!</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Copy className="w-4 h-4" />
+                                                    <span className="text-sm">Copy</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <button
                             onClick={handleLogout}
                             className="flex items-center space-x-2 px-4 py-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors duration-200"
