@@ -258,10 +258,10 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                         }`}>
                         <div className="p-4 bg-blue-25 rounded-lg">
                             <ul className="space-y-2 text-sm text-blue-800">
-                                <li> <strong>Duration:</strong> Plan for 15-30 minutes of focused interview time</li>
-                                <li> <strong>Question Flow:</strong> You'll receive one question at a time - take your time to think and respond naturally</li>
+                                <li> <strong>Duration:</strong> Plan for 15-25 minutes of focused interview time</li>
+                                <li> <strong>Recording:</strong> Click the start recording button when you're ready to answer, then stop recording when you're finished speaking</li>
+                                {/* <li> <strong>Question Flow:</strong> You'll receive one question at a time - take your time to think and respond naturally</li> */}
                                 <li> <strong>Smart Adaptation:</strong> Questions also evolve based on your previous answers, creating a personalized interview experience</li>
-                                <li> <strong>Recording:</strong> Your responses are recorded to provide detailed feedback and evaluation</li>
                                 <li> <strong>Interview Format:</strong> Listen carefully to each question, then respond verbally - just like a real interview</li>
                             </ul>
                         </div>
