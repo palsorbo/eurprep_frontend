@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStreamingInterview } from '../../lib/streaming-interview-context';
 import { useAuth } from '../../lib/auth-context';
 import { supabase } from '../../lib/supabase';
+import { Hand, CheckCircle, AlertTriangle, XCircle, Rocket } from 'lucide-react';
 
 // Full name validation function
 function validateFullName(name: string): boolean {
@@ -146,16 +147,16 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                     stream.getTracks().forEach(track => track.stop());
 
                     if (maxLevel > 5) {
-                        setMicTestResult('✅ Microphone test successful! Audio levels detected.');
+                        setMicTestResult('Microphone test successful! Audio levels detected.');
                     } else {
-                        setMicTestResult('⚠️ Microphone detected but no audio input. Please speak into your microphone during the interview.');
+                        setMicTestResult('Microphone detected but no audio input. Please speak into your microphone during the interview.');
                     }
                     setIsMicTestRunning(false);
                 }
             }, checkInterval);
 
         } catch (error) {
-            setMicTestResult('❌ Microphone test failed. Please check your microphone settings.');
+            setMicTestResult('Microphone test failed. Please check your microphone settings.');
             setIsMicTestRunning(false);
         }
     };
@@ -298,7 +299,7 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                                 <div className="space-y-4">
                                     <div className="flex items-start space-x-3">
                                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                            <span className="text-blue-600 text-sm">👋</span>
+                                            <Hand className="w-5 h-5 text-blue-600" />
                                         </div>
                                         <div>
                                             <h3 className="font-medium text-gray-900 mb-1">
@@ -487,7 +488,14 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                             : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             }`}
                     >
-                        {isReadyToStart ? '🚀 Start Interview' : 'Grant microphone access to continue'}
+                        {isReadyToStart ? (
+                            <div className="flex items-center justify-center">
+                                <Rocket className="w-5 h-5 mr-2" />
+                                Start Interview
+                            </div>
+                        ) : (
+                            'Grant microphone access to continue'
+                        )}
                     </button>
 
                     {!isReadyToStart && (

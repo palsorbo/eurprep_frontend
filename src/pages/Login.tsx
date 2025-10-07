@@ -129,15 +129,15 @@ export default function Login() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
             {/* Hero Section */}
-            <section className="relative px-6 py-20 lg:py-32">
+            <section className="relative px-4 sm:px-6 py-16 sm:py-20 lg:py-32">
                 <div className="max-w-4xl mx-auto text-center">
-                    <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 mb-6 leading-tight">
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 mb-4 sm:mb-6 leading-tight">
                         Master Banking
                         <br />
                         <span className="text-sky-600">Interviews</span>
                     </h1>
 
-                    <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+                    <p className="text-lg sm:text-xl text-gray-600 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2 sm:px-0">
                         Transform your interview skills with intelligent practice sessions. Get instant feedback and build genuine confidence for SBI PO and IBPS PO success.
                     </p>
 
@@ -146,7 +146,9 @@ export default function Login() {
                         <button
                             onClick={handleGoogleAuth}
                             disabled={loading}
-                            className="bg-white border-2 border-slate-300 text-slate-700 px-10 py-5 rounded-xl hover:bg-slate-50 hover:border-blue-400 transition-all duration-300 font-bold text-xl flex items-center justify-center mx-auto group shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-w-[280px]"
+                            aria-label={loading ? "Creating your account with Google" : "Sign in with your Google account"}
+                            aria-describedby="google-auth-description"
+                            className="bg-white border-2 border-slate-200 text-slate-800 px-12 py-6 rounded-2xl hover:bg-gray-50 hover:border-blue-500 hover:shadow-2xl transition-all duration-300 font-bold text-xl flex items-center justify-center mx-auto group shadow-xl transform hover:-translate-y-2 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-w-[320px] relative overflow-hidden focus:outline-none focus:ring-4 focus:ring-blue-500/20"
                         >
                             {loading ? (
                                 <>
@@ -167,12 +169,12 @@ export default function Login() {
                         </button>
 
                         {/* OR Divider */}
-                        <div className="mt-6 flex items-center justify-center">
-                            <div className="flex items-center space-x-4">
-                                <div className="h-px bg-slate-300 flex-1"></div>
-                                <span className="text-slate-500 font-medium text-sm px-3">OR</span>
-                                <div className="h-px bg-slate-300 flex-1"></div>
-                            </div>
+                        <div className="mt-8 flex items-center justify-center">
+                            <div className="h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent flex-1"></div>
+                            <span className="mx-4 px-4 py-2 bg-slate-100 text-slate-600 font-semibold text-sm rounded-full border border-slate-200">
+                                OR
+                            </span>
+                            <div className="h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent flex-1"></div>
                         </div>
 
                         {/* Progressive Disclosure Toggle */}
@@ -189,40 +191,54 @@ export default function Login() {
 
                         {/* Email Authentication Section */}
                         {showEmailOptions && (
-                            <div className="mt-8 w-full max-w-[280px] mx-auto">
+                            <div className="mt-8 w-full max-w-[400px] mx-auto">
                                 {!emailSent ? (
                                     <>
-                                        <div className="mb-4">
+                                        <div className="mb-6">
+                                            <label htmlFor="email-input" className="block text-sm font-medium text-slate-700 mb-2">
+                                                Email Address
+                                            </label>
                                             <input
+                                                id="email-input"
                                                 type="email"
                                                 value={email}
                                                 onChange={(e) => handleEmailChange(e.target.value)}
-                                                placeholder="Enter your email address"
-                                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all duration-200 text-lg ${email && !isEmailValid
-                                                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                                                    : 'border-slate-300'
+                                                placeholder="your.email@example.com"
+                                                className={`w-full px-5 py-4 border-2 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all duration-200 text-lg ${email && !isEmailValid
+                                                    ? 'border-red-400 focus:ring-red-500 focus:border-red-500 bg-red-50'
+                                                    : 'border-slate-300 hover:border-slate-400 focus:bg-white'
                                                     }`}
                                                 disabled={emailLoading}
                                             />
                                             {email && !isEmailValid && (
-                                                <p className="text-red-600 text-sm mt-1">Please enter a valid email address</p>
+                                                <div className="flex items-center mt-2 text-red-600">
+                                                    <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                    </svg>
+                                                    <p className="text-sm">Please enter a valid email address</p>
+                                                </div>
                                             )}
                                         </div>
 
                                         <button
                                             onClick={() => handleEmailAuth()}
                                             disabled={emailLoading || !isEmailValid}
-                                            className="bg-sky-600 hover:bg-sky-700 disabled:bg-slate-400 text-white px-8 py-3 rounded-lg font-semibold text-lg flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed w-full"
+                                            className="bg-sky-600 hover:bg-sky-700 disabled:bg-slate-400 text-white px-8 py-4 rounded-xl font-semibold text-lg flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed w-full shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
                                         >
                                             {emailLoading ? (
-                                                <div className="w-5 h-5 animate-spin rounded-full border-2 border-white border-t-transparent mr-2"></div>
+                                                <>
+                                                    <div className="w-5 h-5 animate-spin rounded-full border-2 border-white border-t-transparent mr-3"></div>
+                                                    Sending...
+                                                </>
                                             ) : (
-                                                <Mail className="w-5 h-5 mr-2" />
+                                                <>
+                                                    <Mail className="w-5 h-5 mr-3" />
+                                                    Continue with Email
+                                                </>
                                             )}
-                                            Continue using Email
                                         </button>
 
-                                        <div className="mt-3 text-sm text-gray-500 text-center">
+                                        <div className="mt-4 text-sm text-gray-500 text-center">
                                             <p>We'll send you an email with a link and verification code. Use either method to sign in securely.</p>
                                         </div>
                                     </>
@@ -249,16 +265,56 @@ export default function Login() {
                                         </div>
 
                                         {/* OTP Input Field */}
-                                        <div className="mb-4">
-                                            <input
-                                                type="text"
-                                                value={otp}
-                                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                                placeholder="Enter OTP"
-                                                className="w-full px-4 py-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all duration-200 text-lg text-center font-mono tracking-widest"
-                                                disabled={verifyingOtp}
-                                                maxLength={6}
-                                            />
+                                        <div className="mb-6">
+                                            <label className="block text-sm font-medium text-slate-700 mb-3 text-center">
+                                                Enter Verification Code
+                                            </label>
+                                            <div className="flex gap-2 justify-center">
+                                                {Array.from({ length: 6 }, (_, index) => (
+                                                    <input
+                                                        key={index}
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
+                                                        maxLength={1}
+                                                        value={otp[index] || ''}
+                                                        aria-label={`Digit ${index + 1} of 6`}
+                                                        aria-describedby="otp-help"
+                                                        onChange={(e) => {
+                                                            const value = e.target.value.replace(/\D/g, '');
+                                                            if (value || e.target.value === '') {
+                                                                const newOtp = otp.split('');
+                                                                newOtp[index] = value;
+                                                                const updatedOtp = newOtp.join('').slice(0, 6);
+                                                                setOtp(updatedOtp);
+
+                                                                // Auto-focus next input
+                                                                if (value && index < 5) {
+                                                                    const nextInput = e.target.nextElementSibling as HTMLInputElement;
+                                                                    if (nextInput) nextInput.focus();
+                                                                }
+                                                            }
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Backspace' && !otp[index] && index > 0) {
+                                                                const target = e.target as HTMLInputElement;
+                                                                const prevInput = target.previousElementSibling as HTMLInputElement;
+                                                                if (prevInput) {
+                                                                    prevInput.focus();
+                                                                    const newOtp = otp.split('');
+                                                                    newOtp[index - 1] = '';
+                                                                    setOtp(newOtp.join(''));
+                                                                }
+                                                            }
+                                                        }}
+                                                        className="w-12 h-12 text-center text-xl font-semibold border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                        disabled={verifyingOtp}
+                                                    />
+                                                ))}
+                                            </div>
+                                            {otp.length === 0 && (
+                                                <p className="text-sm text-gray-500 text-center mt-2">Enter the 6-digit code from your email</p>
+                                            )}
                                         </div>
 
                                         <div className="space-y-3">
@@ -330,8 +386,32 @@ export default function Login() {
 
                     {/* Error Display */}
                     {error && (
-                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg max-w-md mx-auto">
-                            <p className="text-red-700 text-sm text-center">{error}</p>
+                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl max-w-lg mx-auto shadow-sm">
+                            <div className="flex items-start">
+                                <div className="flex-shrink-0">
+                                    <svg className="w-5 h-5 text-red-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div className="ml-3 flex-1">
+                                    <h3 className="text-sm font-medium text-red-800 mb-1">
+                                        Authentication Error
+                                    </h3>
+                                    <p className="text-sm text-red-700 leading-relaxed">
+                                        {error}
+                                    </p>
+                                </div>
+                                <div className="ml-4 flex-shrink-0">
+                                    <button
+                                        onClick={() => setError('')}
+                                        className="inline-flex text-red-400 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-md p-1"
+                                    >
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>

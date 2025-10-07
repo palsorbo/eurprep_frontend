@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Search, Clock, AlertTriangle } from 'lucide-react';
 import ResultsView from '../components/StreamingInterview/ResultsView';
 import LoadingScreen from '../components/LoadingScreen';
 import { useInterviewResults } from '../hooks/useInterviewResults';
@@ -34,8 +34,14 @@ const InterviewResults: React.FC = () => {
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="text-center">
                     <div className="bg-red-50 border border-red-200 rounded-lg p-8">
-                        <div className="text-red-600 text-6xl mb-4">
-                            {isFeedbackNotFound ? '🔍' : isSessionNotFound ? '⏰' : '⚠️'}
+                        <div className="flex justify-center mb-4">
+                            {isFeedbackNotFound ? (
+                                <Search className="w-16 h-16 text-red-600" />
+                            ) : isSessionNotFound ? (
+                                <Clock className="w-16 h-16 text-red-600" />
+                            ) : (
+                                <AlertTriangle className="w-16 h-16 text-red-600" />
+                            )}
                         </div>
                         <h2 className="text-2xl font-bold text-red-800 mb-4">
                             {isFeedbackNotFound ? 'Feedback Not Found' :

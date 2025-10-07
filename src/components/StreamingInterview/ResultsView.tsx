@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, CheckCircle, XCircle, Lightbulb, ClipboardList, BookOpen } from 'lucide-react';
 
 // Enhanced feedback structure for individual questions
 interface EnhancedQaFeedback {
@@ -208,7 +208,10 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluatio
                                     {/* Strengths */}
                                     {qaFeedback.strengths.length > 0 && (
                                         <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
-                                            <h4 className="font-semibold text-green-800 mb-2">✅ Strengths</h4>
+                                            <h4 className="font-semibold text-green-800 mb-2 flex items-center">
+                                                <CheckCircle className="w-5 h-5 mr-2" />
+                                                Strengths
+                                            </h4>
                                             <ul className="text-green-700 space-y-1">
                                                 {qaFeedback.strengths.map((strength, idx) => (
                                                     <li key={idx} className="flex items-start">
@@ -223,7 +226,10 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluatio
                                     {/* Gaps */}
                                     {qaFeedback.gaps.length > 0 && (
                                         <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
-                                            <h4 className="font-semibold text-red-800 mb-2">❌ Areas for Improvement</h4>
+                                            <h4 className="font-semibold text-red-800 mb-2 flex items-center">
+                                                <XCircle className="w-5 h-5 mr-2" />
+                                                Areas for Improvement
+                                            </h4>
                                             <ul className="text-red-700 space-y-1">
                                                 {qaFeedback.gaps.map((gap, idx) => (
                                                     <li key={idx} className="flex items-start">
@@ -238,7 +244,10 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluatio
                                     {/* Improvement Tips */}
                                     {qaFeedback.improvementTips.length > 0 && (
                                         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                                            <h4 className="font-semibold text-yellow-800 mb-2">💡 Improvement Tips</h4>
+                                            <h4 className="font-semibold text-yellow-800 mb-2 flex items-center">
+                                                <Lightbulb className="w-5 h-5 mr-2" />
+                                                Improvement Tips
+                                            </h4>
                                             <ul className="text-yellow-700 space-y-1">
                                                 {qaFeedback.improvementTips.map((tip, idx) => (
                                                     <li key={idx} className="flex items-start">
@@ -253,7 +262,10 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluatio
                                     {/* Core Points Coverage */}
                                     {(qaFeedback.coveredCorePoints || qaFeedback.missedCorePoints) && (
                                         <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                                            <h4 className="font-semibold text-blue-800 mb-2">📋 Core Points Analysis</h4>
+                                            <h4 className="font-semibold text-blue-800 mb-2 flex items-center">
+                                                <ClipboardList className="w-5 h-5 mr-2" />
+                                                Core Points Analysis
+                                            </h4>
                                             {qaFeedback.coveredCorePoints && qaFeedback.coveredCorePoints.length > 0 && (
                                                 <div className="mb-3">
                                                     <h5 className="font-medium text-green-700 mb-1">✅ Covered Points:</h5>
@@ -325,7 +337,10 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluatio
                                     {/* Context */}
                                     {qaFeedback.context && (
                                         <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                                            <h4 className="font-semibold text-blue-800 mb-2">📚 Additional Context</h4>
+                                            <h4 className="font-semibold text-blue-800 mb-2 flex items-center">
+                                                <BookOpen className="w-5 h-5 mr-2" />
+                                                Additional Context
+                                            </h4>
                                             <p className="text-blue-700">{qaFeedback.context}</p>
                                         </div>
                                     )}

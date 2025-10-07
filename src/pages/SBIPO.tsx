@@ -96,25 +96,51 @@ export default function SBIPO() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center">
-                <h2 className="text-3xl font-bold text-slate-900 mb-4">
-                    Ace Your SBI PO Interview
-                </h2>
-                <p className="text-slate-600 text-lg">
+            {/* Enhanced Hero Section */}
+            <div className="text-center mb-12">
+                {/* <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl mb-6">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                        <div className="w-4 h-4 bg-white rounded-sm"></div>
+                    </div>
+                </div> */}
+                <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 leading-tight">
+                    Ace Your
+                    <span className="bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent"> SBI PO </span>
+                    Interview
+                </h1>
+                <p className="text-slate-600 text-xl max-w-3xl mx-auto leading-relaxed">
                     Transform your interview skills with intelligent practice sessions that deliver personalized evaluation and build genuine confidence.
                 </p>
+
+                {/* Stats Section */}
+                {/* <div className="flex flex-wrap justify-center gap-8 mt-8">
+                    <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-slate-700">AI-Powered Evaluation</span>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-slate-700">Real-time Feedback</span>
+                    </div>
+                    <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-slate-700">Expert Questions</span>
+                    </div>
+                </div> */}
             </div>
 
-            {/* Interview Sets */}
-            <div className="mb-12">
-                {/* <h3 className="text-2xl font-bold text-slate-900 mb-6 text-center">
-                    Interview Sets
-                </h3> */}
-                <p className="text-slate-600 text-center mb-8">
-                    Choose an interview set to practice with adaptive questions and get smart evaluation on your performance.
-                </p>
+            {/* Interview Sets Section */}
+            <div className="mb-16">
+                {/* <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold text-slate-900 mb-4">
+                        Choose Your Practice Level
+                    </h2>
+                    <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+                        Start with our free demo and unlock premium sets to access advanced scenarios and expert-level evaluation.
+                    </p>
+                </div> */}
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
 
 
                     {/* Interview Set Cards - Optimized with database aggregation */}
@@ -137,74 +163,99 @@ export default function SBIPO() {
                         )
                     })}
 
-                    {/* Premium Bundle Banner */}
+                    {/* Enhanced Premium Bundle Banner */}
                     {!hasPaidAccess && (
-                        <div className="md:col-span-2 lg:col-span-3 bg-gradient-to-br from-green-50 via-emerald-50 to-green-100 rounded-xl shadow-lg border border-green-200 mb-6 overflow-hidden">
+                        <div className="md:col-span-2 lg:col-span-3 relative overflow-hidden">
+                            {/* Background with enhanced gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-emerald-50 to-green-100"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 via-transparent to-emerald-600/10"></div>
+
+                            {/* Decorative elements */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-green-200/30 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
+                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-200/30 to-transparent rounded-full translate-y-12 -translate-x-12"></div>
+
+                            {/* Limited Time Badge */}
+                            <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg">
+                                🔥 LIMITED OFFER!
+                            </div>
+
                             <div className="relative p-8">
-                                {/* Background Pattern */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-green-600/5 to-emerald-600/5"></div>
-
-                                {/* Limited Time Badge */}
-                                <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
-                                    LIMITED OFFER!
-                                </div>
-
-                                <div className="relative flex flex-col md:flex-row items-center justify-between mr-1">
-                                    <div className="mb-6 md:mb-0 text-center md:text-left">
-                                        <div className="flex items-center justify-center md:justify-start mb-3">
-                                            <div className="bg-green-600 text-white p-2 rounded-lg mr-3">
-                                                <Lock className="w-6 h-6" />
+                                <div className="flex flex-col md:flex-row items-center justify-between">
+                                    <div className="mb-8 md:mb-0 text-center md:text-left flex-1">
+                                        <div className="flex items-center justify-center md:justify-start mb-4">
+                                            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-3 rounded-xl mr-4 shadow-lg">
+                                                <Lock className="w-7 h-7" />
                                             </div>
-                                            <h3 className="text-2xl font-bold text-green-800">
-                                                Unlock Premium Bundle
-                                            </h3>
+                                            <div>
+                                                <h3 className="text-3xl font-bold text-green-800 mb-1">
+                                                    Unlock Premium Bundle
+                                                </h3>
+                                                <div className="flex items-center space-x-2">
+                                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                                    <span className="text-green-600 text-sm font-medium">Most Popular Choice</span>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <p className="text-green-700 text-lg mb-4 leading-relaxed">
-                                            Unlock your full potential with <span className="font-semibold text-green-800">complete interview mastery</span> - advanced scenarios, expert-level evaluation, and personalized feedback that builds real confidence
+                                        <p className="text-green-700 text-lg mb-6 leading-relaxed max-w-lg">
+                                            Unlock your full potential with <span className="font-bold text-green-800">complete interview mastery</span> - advanced scenarios, expert-level evaluation, and personalized feedback that builds real confidence
                                         </p>
 
-                                        {/* Feature Highlights */}
-                                        <div className="flex flex-wrap justify-center md:justify-start gap-4 mb-4">
-                                            <div className="flex items-center bg-green-100 px-3 py-2 rounded-full">
-                                                <div className="w-2 h-2 bg-green-600 rounded-full mr-2"></div>
-                                                <span className="text-green-800 text-sm font-medium">3 Complete Sets</span>
+                                        {/* Enhanced Feature Highlights */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                                            <div className="flex items-center bg-white/70 backdrop-blur-sm px-4 py-3 rounded-lg border border-green-200/50">
+                                                <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                                <span className="text-green-800 text-sm font-semibold">3 Complete Sets</span>
                                             </div>
-                                            <div className="flex items-center bg-green-100 px-3 py-2 rounded-full">
-                                                <div className="w-2 h-2 bg-green-600 rounded-full mr-2"></div>
-                                                <span className="text-green-800 text-sm font-medium">Expert Evaluation</span>
+                                            <div className="flex items-center bg-white/70 backdrop-blur-sm px-4 py-3 rounded-lg border border-green-200/50">
+                                                <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                                <span className="text-green-800 text-sm font-semibold">Expert Evaluation</span>
                                             </div>
-                                            <div className="flex items-center bg-green-100 px-3 py-2 rounded-full">
-                                                <div className="w-2 h-2 bg-green-600 rounded-full mr-2"></div>
-                                                <span className="text-green-800 text-sm font-medium">Smart Analysis</span>
+                                            <div className="flex items-center bg-white/70 backdrop-blur-sm px-4 py-3 rounded-lg border border-green-200/50">
+                                                <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
+                                                <span className="text-green-800 text-sm font-semibold">Smart Analysis</span>
                                             </div>
                                         </div>
 
-                                        {/* Pricing Section */}
-                                        <div className="flex items-center justify-center md:justify-start space-x-3">
-                                            <span className="text-xl text-green-600 line-through font-medium">
-                                                ₹{PRICING.SBI_PO_PREMIUM_BUNDLE.ORIGINAL_AMOUNT}
-                                            </span>
-                                            <span className="text-3xl font-bold text-green-800">
-                                                ₹{PRICING.SBI_PO_PREMIUM_BUNDLE.AMOUNT}
-                                            </span>
-                                            {/* <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
-                                                SAVE ₹{PRICING.SBI_PO_PREMIUM_BUNDLE.ORIGINAL_AMOUNT - PRICING.SBI_PO_PREMIUM_BUNDLE.AMOUNT}
-                                            </span> */}
+                                        {/* Enhanced Pricing Section */}
+                                        <div className="flex items-center justify-center md:justify-start space-x-4">
+                                            <div className="text-center">
+                                                <div className="text-lg text-green-600 line-through font-medium">
+                                                    ₹{PRICING.SBI_PO_PREMIUM_BUNDLE.ORIGINAL_AMOUNT}
+                                                </div>
+                                                <div className="text-xs text-green-500">Original Price</div>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-px h-8 bg-green-400"></div>
+                                                <div className="text-center">
+                                                    <div className="text-4xl font-bold text-green-800">
+                                                        ₹{PRICING.SBI_PO_PREMIUM_BUNDLE.AMOUNT}
+                                                    </div>
+                                                    <div className="text-sm text-green-600 font-medium">Limited Time Offer</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="text-center">
+                                    <div className="text-center md:ml-8">
                                         <button
                                             onClick={() => setIsPaymentModalOpen(true)}
-                                            className="bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-8 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 flex items-center space-x-3 text-lg font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                                            className="bg-gradient-to-r from-green-600 to-green-700 text-white py-5 px-10 rounded-2xl hover:from-green-700 hover:to-green-800 transition-all duration-300 flex items-center space-x-3 text-lg font-bold shadow-xl hover:shadow-2xl transform hover:-translate-y-1 mb-4 group"
                                         >
-                                            <Lock className="w-5 h-5" />
+                                            <Lock className="w-6 h-6 group-hover:scale-110 transition-transform" />
                                             <span>Unlock Premium</span>
                                         </button>
-                                        <p className="text-green-600 text-sm mt-2 font-medium">
-                                            Instant Access • No Hidden Fees
-                                        </p>
+                                        <div className="space-y-1">
+                                            <p className="text-green-600 text-sm font-semibold">
+                                                ✅ Instant Access
+                                            </p>
+                                            <p className="text-green-600 text-sm font-semibold">
+                                                ✅ No Hidden Fees
+                                            </p>
+                                            <p className="text-green-600 text-sm font-semibold">
+                                                ✅ 30-Day Money Back
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -213,99 +264,130 @@ export default function SBIPO() {
                 </div>
             </div>
 
-            {/* Feedback History Section */}
+            {/* Enhanced Feedback History Section */}
             {feedbackHistory.length > 0 && (
-                <div className="mb-12">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-6 text-center">
-                        Your Interview History
-                    </h3>
-                    <p className="text-slate-600 text-center mb-8">
-                        Review your previous interview sessions and feedback.
-                    </p>
+                <div className="mb-16">
+                    <div className="text-center mb-12">
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl mb-6">
+                            <History className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <h2 className="text-3xl font-bold text-slate-900 mb-4">
+                            Your Interview Journey
+                        </h2>
+                        <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+                            Track your progress and see how your interview skills have evolved over time.
+                        </p>
+                    </div>
 
-                    <div className="max-w-4xl mx-auto">
+                    <div className="max-w-5xl mx-auto">
                         {isLoadingHistory ? (
-                            <div className="text-center py-8">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-                                <p className="text-slate-600">Loading your interview history...</p>
+                            <div className="text-center py-12">
+                                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-4">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                </div>
+                                <p className="text-slate-600 font-medium">Loading your interview history...</p>
                             </div>
                         ) : (
-                            <div className="space-y-4">
-                                {feedbackHistory.map((feedback) => (
-                                    <div key={feedback.id} className="bg-white rounded-lg shadow-md border border-slate-200 p-6">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="flex items-center space-x-3">
-                                                <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
-                                                    <History className="w-5 h-5 text-blue-600" />
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-lg font-semibold text-slate-900">
-                                                        {feedback.interview_set} Interview
-                                                    </h4>
-                                                    <p className="text-sm text-slate-600">
-                                                        Version {feedback.version}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="flex items-center text-slate-500 text-sm mb-1">
-                                                    <Calendar className="w-4 h-4 mr-1" />
-                                                    {new Date(feedback.created_at).toLocaleDateString()}
-                                                </div>
-                                                <div className="text-xs text-slate-400">
-                                                    {new Date(feedback.created_at).toLocaleTimeString()}
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div className="grid gap-6">
+                                    {feedbackHistory.map((feedback, index) => {
+                                        const score = feedback.overall_feedback?.averageScore || 0
+                                        const recommendation = feedback.overall_feedback?.recommendation || 'N/A'
 
-                                        <div className="mb-4">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-sm font-medium text-slate-700">Overall Score</span>
-                                                <span className="text-lg font-bold text-green-600">
-                                                    {feedback.overall_feedback?.averageScore?.toFixed(1) || 'N/A'}/10
-                                                </span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div
-                                                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                                                    style={{
-                                                        width: `${((feedback.overall_feedback?.averageScore || 0) / 10) * 100}%`
-                                                    }}
-                                                ></div>
-                                            </div>
-                                        </div>
+                                        return (
+                                            <div key={feedback.id} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200 overflow-hidden">
+                                                <div className="p-8">
+                                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
+                                                        <div className="flex items-center space-x-4 mb-4 lg:mb-0">
+                                                            <div className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+                                                                <History className="w-7 h-7 text-white" />
+                                                            </div>
+                                                            <div>
+                                                                <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                                                    {feedback.interview_set} Interview
+                                                                </h3>
+                                                                <p className="text-slate-600 font-medium">
+                                                                    Version {feedback.version}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="flex items-center text-slate-500 text-sm mb-2">
+                                                                <Calendar className="w-4 h-4 mr-2" />
+                                                                <span className="font-medium">{new Date(feedback.created_at).toLocaleDateString()}</span>
+                                                            </div>
+                                                            <div className="text-xs text-slate-400">
+                                                                {new Date(feedback.created_at).toLocaleTimeString()}
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-                                        <div className="mb-4">
-                                            <p className="text-sm text-slate-700 mb-2">
-                                                <span className="font-medium">Summary:</span> {feedback.overall_feedback?.summary || 'No summary available'}
-                                            </p>
-                                            <div className="flex items-center space-x-2">
-                                                <span className="text-sm font-medium text-slate-700">Recommendation:</span>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${feedback.overall_feedback?.recommendation === 'Recommended'
-                                                    ? 'text-green-600 bg-green-100'
-                                                    : feedback.overall_feedback?.recommendation === 'Recommended with improvements'
-                                                        ? 'text-yellow-600 bg-yellow-100'
-                                                        : 'text-red-600 bg-red-100'
-                                                    }`}>
-                                                    {feedback.overall_feedback?.recommendation || 'N/A'}
-                                                </span>
-                                            </div>
-                                        </div>
+                                                    <div className="grid md:grid-cols-2 gap-8 mb-6">
+                                                        {/* Score Section */}
+                                                        <div className="space-y-4">
+                                                            <div>
+                                                                <div className="flex items-center justify-between mb-3">
+                                                                    <span className="text-lg font-bold text-slate-800">Overall Score</span>
+                                                                    <div className="flex items-center space-x-2">
+                                                                        <span className="text-2xl font-bold text-green-600">
+                                                                            {score.toFixed(1)}
+                                                                        </span>
+                                                                        <span className="text-slate-500">/10</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                                                                    <div
+                                                                        className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-500 ease-out"
+                                                                        style={{
+                                                                            width: `${(score / 10) * 100}%`
+                                                                        }}
+                                                                    ></div>
+                                                                </div>
+                                                            </div>
 
-                                        <div className="flex items-center justify-between">
-                                            <div className="text-sm text-slate-500">
-                                                {feedback.feedback_data?.qa_feedback?.length || 0} Questions Answered
+                                                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                                                                <span className="font-semibold text-slate-700">Questions Answered</span>
+                                                                <span className="text-lg font-bold text-slate-900">
+                                                                    {feedback.feedback_data?.qa_feedback?.length || 0}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Summary Section */}
+                                                        <div className="space-y-4">
+                                                            <div>
+                                                                <h4 className="font-bold text-slate-800 mb-2">Performance Summary</h4>
+                                                                <p className="text-slate-600 leading-relaxed">
+                                                                    {feedback.overall_feedback?.summary || 'No summary available'}
+                                                                </p>
+                                                            </div>
+
+                                                            <div className="flex items-center space-x-3">
+                                                                <span className="font-semibold text-slate-700">Recommendation:</span>
+                                                                <span className={`px-3 py-2 rounded-full text-sm font-bold ${recommendation === 'Recommended'
+                                                                    ? 'text-green-700 bg-green-100'
+                                                                    : recommendation === 'Recommended with improvements'
+                                                                        ? 'text-yellow-700 bg-yellow-100'
+                                                                        : 'text-red-700 bg-red-100'
+                                                                    }`}>
+                                                                    {recommendation}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-center pt-4 border-t border-slate-100">
+                                                        <Link
+                                                            to={`/results/${feedback.id}`}
+                                                            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                                        >
+                                                            <Eye className="w-5 h-5 mr-2" />
+                                                            View Detailed Results
+                                                        </Link>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <Link
-                                                to={`/results/${feedback.id}`}
-                                                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                                            >
-                                                <Eye className="w-4 h-4 mr-2" />
-                                                View Detailed Results
-                                            </Link>
-                                        </div>
-                                    </div>
-                                ))}
+                                        )
+                                    })}
                             </div>
                         )}
                     </div>
