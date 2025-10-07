@@ -81,7 +81,7 @@ export default function IBPSPO() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center mb-12">
+            <div className="text-center">
                 <h2 className="text-3xl font-bold text-slate-900 mb-4">
                     IBPS PO Smart Interview Prep
                 </h2>
@@ -92,11 +92,11 @@ export default function IBPSPO() {
 
             {/* Interview Sets */}
             <div className="mb-12">
-                <h3 className="text-2xl font-bold text-slate-900 mb-6 text-center">
+                {/* <h3 className="text-2xl font-bold text-slate-900 mb-6 text-center">
                     Interview Sets
-                </h3>
+                </h3> */}
                 <p className="text-slate-600 text-center mb-8">
-                    Choose an interview set to practice with structured questions and get smart feedback on your performance.
+                    Choose an interview set to practice with adaptive questions and get smart feedback on your performance.
                 </p>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
