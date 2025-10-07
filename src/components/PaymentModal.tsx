@@ -112,7 +112,7 @@ export default function PaymentModal({ isOpen, onClose, onSuccess, productType }
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold text-slate-900">
-                        Unlock Premium Access
+                        Complete Your Purchase
                     </h2>
                     <button
                         onClick={onClose}
@@ -128,10 +128,10 @@ export default function PaymentModal({ isOpen, onClose, onSuccess, productType }
                             Premium Bundle Includes:
                         </h3>
                         <ul className="text-green-700 space-y-2">
-                            <li>✓ Access to Set 2 & 3</li>
-                            <li>✓ All future question sets & free updates</li>
+                            <li>✓ Access to Sets 1, 2 & 3</li>
                             <li>✓ Advanced interview questions</li>
-                            <li>✓ Expert-level scenarios</li>
+                            <li>✓ Expert-level scenarios & smart evaluation</li>
+                            <li>✓ Instant access to all premium content</li>
                         </ul>
                     </div>
 
