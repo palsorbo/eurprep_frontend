@@ -99,20 +99,26 @@ export default function AppHeader({ title }: AppHeaderProps) {
             isActive: location.pathname === '/dashboard'
         })
 
-        // Add other segments
-        if (pathSegments.includes('sbi-po')) {
+        // Handle exam type paths (sbi-po or ibps-po)
+        const examType = pathSegments.find(segment => segment === 'sbi-po' || segment === 'ibps-po')
+
+        if (examType) {
+            // Convert ibps-po to IBPS PO, sbi-po to SBI PO
+            const examLabel = examType.toUpperCase().replace('-', ' ')
+            const examPath = `/${examType}`
+
             if (pathSegments.length === 1) {
-                // /sbi-po
+                // /sbi-po or /ibps-po
                 breadcrumbs.push({
-                    label: 'SBI PO',
-                    path: '/sbi-po',
+                    label: examLabel,
+                    path: examPath,
                     isActive: true
                 })
             } else if (pathSegments.includes('interview')) {
-                // /sbi-po/interview/1
+                // /sbi-po/interview/1 or /ibps-po/interview/1
                 breadcrumbs.push({
-                    label: 'SBI PO',
-                    path: '/sbi-po',
+                    label: examLabel,
+                    path: examPath,
                     isActive: false
                 })
                 const setId = pathSegments[pathSegments.length - 1]
