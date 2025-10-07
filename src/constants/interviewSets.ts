@@ -8,6 +8,10 @@ export interface InterviewSet {
     isAvailable: boolean
     path: string
     examType: 'sbi-po' | 'ibps-po'
+    // Attempt tracking fields
+    attemptCount?: number
+    maxAttempts?: number
+    isAttemptLimitReached?: boolean
 }
 
 // SBI PO Interview Sets

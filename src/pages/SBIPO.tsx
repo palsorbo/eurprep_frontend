@@ -7,6 +7,7 @@ import LoadingScreen from '../components/LoadingScreen'
 import InterviewSetCard from '../components/InterviewSetCard'
 import { getSbiPoSets } from '../constants/interviewSets'
 import { PRICING } from '../constants/pricing'
+import { getAttemptCounts } from '../services/attemptService'
 
 // Lazy load PaymentModal
 const PaymentModal = lazy(() => import('../components/PaymentModal'))
@@ -29,6 +30,7 @@ export default function SBIPO() {
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
     const [feedbackHistory, setFeedbackHistory] = useState<FeedbackHistory[]>([])
     const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+    const [attemptCounts, setAttemptCounts] = useState<{ [key: string]: number }>({})
     const navigate = useNavigate()
 
     // Load feedback history
@@ -62,11 +64,24 @@ export default function SBIPO() {
         }
     }
 
+    // Load attempt counts
+    const loadAttemptCounts = async () => {
+        if (!user) return
+
+        try {
+            const counts = await getAttemptCounts(user.id, 'sbi-po')
+            setAttemptCounts(counts)
+        } catch (error) {
+            console.error('Error loading attempt counts:', error)
+        }
+    }
+
     useEffect(() => {
         if (!authLoading && !user) {
             navigate('/', { replace: true, state: { from: 'sbi-po' } })
         } else if (user) {
             loadFeedbackHistory()
+            loadAttemptCounts()
         }
     }, [user, authLoading, navigate])
 
@@ -102,14 +117,25 @@ export default function SBIPO() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
 
 
-                    {/* Interview Set Cards */}
-                    {getSbiPoSets(hasPaidAccess).map((set) => (
-                        <InterviewSetCard
-                            key={set.id}
-                            set={set}
-                            onUpgrade={!hasPaidAccess ? () => setIsPaymentModalOpen(true) : undefined}
-                        />
-                    ))}
+                    {/* Interview Set Cards - Optimized with database aggregation */}
+                    {getSbiPoSets(hasPaidAccess).map((set) => {
+                        // New optimized format: direct mapping
+                        const setKey = `Set${set.id}`
+                        const attemptCount = attemptCounts[setKey] || 0
+
+                        return (
+                            <InterviewSetCard
+                                key={set.id}
+                                set={{
+                                    ...set,
+                                    attemptCount,
+                                    maxAttempts: 2,
+                                    isAttemptLimitReached: attemptCount >= 2
+                                }}
+                                onUpgrade={!hasPaidAccess ? () => setIsPaymentModalOpen(true) : undefined}
+                            />
+                        )
+                    })}
 
                     {/* Premium Bundle Banner */}
                     {!hasPaidAccess && (
