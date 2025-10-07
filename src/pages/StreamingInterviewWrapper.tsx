@@ -105,7 +105,7 @@ export default function StreamingInterviewWrapper() {
     }
 
     // Convert setId to Set name format expected by backend (e.g., "1" -> "Set1")
-    const set = setId ? `Set${setId}` : 'Set0';
+    const set = setId ? `Set${setId}` : 'Set1';
 
     const content = (
         <StreamingInterviewProvider apiUrl={import.meta.env.VITE_API_BASE_URL} context={config.context}>
