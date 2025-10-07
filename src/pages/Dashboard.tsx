@@ -30,10 +30,10 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-slate-900 mb-4">
-                    Ready to Ace Your Banking Interview?
+                    Land Your Dream Banking Job
                 </h2>
                 <p className="text-slate-600 text-lg">
-                    Choose your preparation path for SBI PO or IBPS PO and start practicing with smart-powered mock interviews.
+                    Get interview-ready with intelligent mock interviews that build your confidence and perfect your responses for SBI PO and IBPS PO exams.
                 </p>
             </div>
 
@@ -51,7 +51,7 @@ export default function Dashboard() {
                         SBI PO
                     </h3>
                     <p className="text-slate-600 text-sm">
-                        SBI Probationary Officer preparation with smart-powered interview sets and instant feedback. Available now!
+                        Build confidence and ace your SBI PO interview with intelligent practice sessions that deliver instant, personalized evaluation.
                     </p>
                     <div className="mt-4 flex items-center text-green-600 text-sm font-medium">
                         <span>Start Preparation</span>
@@ -71,7 +71,7 @@ export default function Dashboard() {
                         IBPS PO
                     </h3>
                     <p className="text-slate-600 text-sm">
-                        IBPS Probationary Officer preparation with smart-powered interview sets and instant feedback. Available now!
+                        Build confidence and ace your IBPS PO interview with intelligent practice sessions that deliver instant, personalized evaluation.
                     </p>
                     <div className="mt-4 flex items-center text-blue-600 text-sm font-medium">
                         <span>Start Preparation</span>

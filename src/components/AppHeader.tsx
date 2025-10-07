@@ -20,6 +20,17 @@ export default function AppHeader({ title }: AppHeaderProps) {
 
     const emailAddress = 'hello@eurprep.com'
 
+    const getMotivationalMessage = (firstName: string) => {
+        const messages = [
+            `Great work, ${firstName}! Let's build more confidence`,
+            `${firstName}, you're making excellent progress!`,
+            `Welcome back, ${firstName}! Ready for more practice?`,
+            `${firstName}, your interview skills are improving!`,
+            `Keep it up, ${firstName}! Every session counts`
+        ]
+        return messages[Math.floor(Math.random() * messages.length)]
+    }
+
     const handleLogout = async () => {
         try {
             await signOut()
@@ -171,7 +182,7 @@ export default function AppHeader({ title }: AppHeaderProps) {
                         >
                             <User className="w-5 h-5" />
                             <span className="hidden sm:inline text-sm">
-                                Welcome, {user?.user_metadata?.full_name?.split(' ')[0] || 'Candidate'}
+                                {getMotivationalMessage(user?.user_metadata?.full_name?.split(' ')[0] || 'Candidate')}
                             </span>
                             <span className="sm:hidden text-sm">
                                 {user?.user_metadata?.full_name?.split(' ')[0] || 'User'}

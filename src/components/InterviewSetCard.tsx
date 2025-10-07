@@ -9,8 +9,8 @@ interface InterviewSetCardProps {
 
 // Constants for better maintainability
 const MAX_ATTEMPTS = 2
-const ATTEMPT_EXHAUSTED_TEXT = 'Attempts Exhausted'
-const PREMIUM_CONTENT_TEXT = 'Premium Content'
+const ATTEMPT_EXHAUSTED_TEXT = 'Practice Complete - Upgrade for More'
+const PREMIUM_CONTENT_TEXT = 'Premium Access Required'
 const FREE_DEMO_TEXT = 'Free Demo'
 const AVAILABLE_TEXT = 'Available'
 
@@ -60,7 +60,7 @@ function renderAvailableCard(set: InterviewSet) {
             <div className="mt-auto pt-3 border-t border-slate-100">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center text-green-600 text-sm font-medium">
-                        <span>Start Set</span>
+                        <span>Begin Practice</span>
                         <Play className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </div>
                     {set.attemptCount !== undefined && (

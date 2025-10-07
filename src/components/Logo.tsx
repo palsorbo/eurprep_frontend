@@ -35,9 +35,9 @@ export default function Logo({ size = 'md', showText = true, className = '', var
             </div>
             {showText && (
                 <span className={`${textSizes[size]} font-bold tracking-tight ${textColor} transition-colors duration-300 group-hover:text-sky-600`}>
-                    Eurprep
+                    EurPrep
                 </span>
             )}
         </div>
     )
-} 
+}

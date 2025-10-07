@@ -132,13 +132,13 @@ export default function Login() {
             <section className="relative px-6 py-20 lg:py-32">
                 <div className="max-w-4xl mx-auto text-center">
                     <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 mb-6 leading-tight">
-                        Ace Your Banking
+                        Master Banking
                         <br />
-                        <span className="text-sky-600">Interview</span>
+                        <span className="text-sky-600">Interviews</span>
                     </h1>
 
                     <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                        Smart-powered practice with instant feedback. Master SBI PO and IBPS PO interviews with real banking questions.
+                        Transform your interview skills with intelligent practice sessions. Get instant feedback and build genuine confidence for SBI PO and IBPS PO success.
                     </p>
 
                     {/* Main CTA */}

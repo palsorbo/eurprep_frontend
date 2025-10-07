@@ -98,10 +98,10 @@ export default function SBIPO() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center">
                 <h2 className="text-3xl font-bold text-slate-900 mb-4">
-                    SBI PO Smart Interview Prep
+                    Ace Your SBI PO Interview
                 </h2>
                 <p className="text-slate-600 text-lg">
-                    Master your SBI Probationary Officer interview with smart-powered practice sessions and instant feedback.
+                    Transform your interview skills with intelligent practice sessions that deliver personalized evaluation and build genuine confidence.
                 </p>
             </div>
 
@@ -111,7 +111,7 @@ export default function SBIPO() {
                     Interview Sets
                 </h3> */}
                 <p className="text-slate-600 text-center mb-8">
-                    Choose an interview set to practice with adaptive questions and get smart feedback on your performance.
+                    Choose an interview set to practice with adaptive questions and get smart evaluation on your performance.
                 </p>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -149,7 +149,7 @@ export default function SBIPO() {
                                     LIMITED OFFER!
                                 </div>
 
-                                <div className="relative flex flex-col md:flex-row items-center justify-between">
+                                <div className="relative flex flex-col md:flex-row items-center justify-between mr-1">
                                     <div className="mb-6 md:mb-0 text-center md:text-left">
                                         <div className="flex items-center justify-center md:justify-start mb-3">
                                             <div className="bg-green-600 text-white p-2 rounded-lg mr-3">
@@ -161,7 +161,7 @@ export default function SBIPO() {
                                         </div>
 
                                         <p className="text-green-700 text-lg mb-4 leading-relaxed">
-                                            Get access to <span className="font-semibold text-green-800">Sets 1, 2 & 3</span> with advanced questions, expert-level scenarios, and smart feedback
+                                            Unlock your full potential with <span className="font-semibold text-green-800">complete interview mastery</span> - advanced scenarios, expert-level evaluation, and personalized feedback that builds real confidence
                                         </p>
 
                                         {/* Feature Highlights */}

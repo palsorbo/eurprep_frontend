@@ -5,7 +5,7 @@ interface LoadingScreenProps {
 }
 
 export default function LoadingScreen({
-    message = 'Loading...',
+    message = 'Preparing your interview session...',
     size = 'lg',
     className = ''
 }: LoadingScreenProps) {
@@ -31,4 +31,4 @@ export default function LoadingScreen({
             </div>
         </div>
     )
-} 
+}
