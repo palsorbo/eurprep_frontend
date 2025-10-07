@@ -1,5 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useStreamingInterview } from '../../lib/streaming-interview-context';
+import { useAuth } from '../../lib/auth-context';
+import { supabase } from '../../lib/supabase';
+
+// Full name validation function
+function validateFullName(name: string): boolean {
+    // Trim whitespace
+    const trimmedName = name.trim();
+
+    // Check if empty
+    if (!trimmedName) return false;
+
+    // Check minimum 2 words
+    const words = trimmedName.split(/\s+/);
+    if (words.length < 2) return false;
+
+    // Regex: only letters, hyphens, apostrophes, and accented letters
+    const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$/;
+    for (let word of words) {
+        if (!nameRegex.test(word)) return false;
+    }
+
+    return true;
+}
 
 interface InterviewReadinessProps {
     selectedSet: string;
@@ -13,14 +36,21 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
     onStartInterview
 }) => {
     const { state, markReadinessComplete } = useStreamingInterview();
+    const { user } = useAuth();
     const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
         interviewInfo: false, // Start expanded for better UX
-        micTest: false
+        micTest: false,
+        profileInfo: false // Will be auto-expanded if name is missing
     });
 
     const [micPermissionStatus, setMicPermissionStatus] = useState<'unknown' | 'granted' | 'denied' | 'checking'>('unknown');
     const [micTestResult, setMicTestResult] = useState<string>('');
     const [isMicTestRunning, setIsMicTestRunning] = useState(false);
+
+    // Profile state
+    const [fullName, setFullName] = useState('');
+    const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+    const [profileUpdateMessage, setProfileUpdateMessage] = useState('');
 
     // Check microphone permission on component load
     useEffect(() => {
@@ -46,6 +76,8 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
 
         checkMicrophonePermission();
     }, []);
+
+    // Note: Profile section will be conditionally rendered only when name is missing
 
     // Request microphone permission
     const requestMicPermission = async () => {
@@ -138,6 +170,49 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
         }
     };
 
+    // Update user profile with full name
+    const updateProfile = async () => {
+        // Validate full name
+        if (!validateFullName(fullName)) {
+            if (!fullName.trim()) {
+                setProfileUpdateMessage('Please enter your full name (first and last name)');
+            } else {
+                const words = fullName.trim().split(/\s+/);
+                if (words.length < 2) {
+                    setProfileUpdateMessage('Please enter your full name (first and last name)');
+                } else {
+                    setProfileUpdateMessage('Please enter a valid name (letters, hyphens, and apostrophes only)');
+                }
+            }
+            return;
+        }
+
+        setIsUpdatingProfile(true);
+        setProfileUpdateMessage('');
+
+        try {
+            const { error } = await supabase.auth.updateUser({
+                data: {
+                    full_name: fullName.trim()
+                }
+            });
+
+            if (error) {
+                setProfileUpdateMessage('Failed to update profile. Please try again.');
+            } else {
+                setProfileUpdateMessage('✅ Profile updated successfully!');
+                // Clear the message after 3 seconds
+                setTimeout(() => {
+                    setProfileUpdateMessage('');
+                }, 3000);
+            }
+        } catch (error) {
+            setProfileUpdateMessage('An unexpected error occurred. Please try again.');
+        } finally {
+            setIsUpdatingProfile(false);
+        }
+    };
+
     const toggleSection = (section: string) => {
         setExpandedSections(prev => ({
             ...prev,
@@ -191,6 +266,91 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                         </div>
                     </div>
                 </div>
+
+                {/* Profile Information Section - Only show if name is missing */}
+                {!user?.user_metadata?.full_name && (
+                    <div className="mb-6">
+                        <button
+                            onClick={() => toggleSection('profileInfo')}
+                            className="w-full flex items-center justify-between p-4 bg-green-50 hover:bg-green-100 border-2 border-green-200 rounded-lg transition-colors duration-200"
+                        >
+                            <div className="flex items-center space-x-3">
+                                <h2 className="text-lg font-semibold text-green-900">
+                                    Profile Information
+                                </h2>
+                                <span className="px-2 py-1 bg-green-200 text-green-800 text-xs rounded-full">
+                                    Recommended
+                                </span>
+                            </div>
+                            <svg
+                                className={`w-5 h-5 text-green-600 transform transition-transform duration-200 ${expandedSections.profileInfo ? 'rotate-180' : ''}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div className={`overflow-hidden transition-all duration-300 ${expandedSections.profileInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                            }`}>
+                            <div className="p-4 bg-green-25 rounded-lg">
+                                <div className="space-y-4">
+                                    <div className="flex items-start space-x-3">
+                                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                            <span className="text-blue-600 text-sm">👋</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="font-medium text-gray-900 mb-1">
+                                                Add your name to personalize your experience
+                                            </h3>
+                                            <p className="text-sm text-gray-600 mb-4">
+                                                Enter your name to make this interview experience truly yours.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <input
+                                            type="text"
+                                            value={fullName}
+                                            onChange={(e) => setFullName(e.target.value)}
+                                            placeholder="Enter your full name"
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all duration-200"
+                                            disabled={isUpdatingProfile}
+                                        />
+
+                                        <div className="flex space-x-3">
+                                            <button
+                                                onClick={updateProfile}
+                                                disabled={isUpdatingProfile || !fullName.trim()}
+                                                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
+                                            >
+                                                {isUpdatingProfile ? 'Saving...' : 'Save Name'}
+                                            </button>
+
+                                            <button
+                                                onClick={() => setExpandedSections(prev => ({ ...prev, profileInfo: false }))}
+                                                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                                            >
+                                                Maybe Later
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {profileUpdateMessage && (
+                                    <div className={`mt-4 p-3 rounded-lg text-sm ${profileUpdateMessage.includes('✅')
+                                        ? 'bg-green-50 text-green-800'
+                                        : 'bg-red-50 text-red-800'
+                                        }`}>
+                                        {profileUpdateMessage}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Readiness Status Cards */}
                 <div className="space-y-4 mb-8">
