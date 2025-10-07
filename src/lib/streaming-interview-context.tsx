@@ -540,10 +540,15 @@ export function StreamingInterviewProvider({ children, apiUrl, context }: Stream
         hasStartedInterview.current = true;
 
         if (socketRef.current && state.isConnected) {
+            // Get first name for personalization (split on space and take first part)
+            const fullName = user?.user_metadata?.full_name?.trim();
+            const userName = fullName ? fullName.split(' ')[0] : "Candidate";
+
             socketRef.current.emit('startInterview', {
                 set: selectedSet,
                 context: finalContext,
-                userId: user.id
+                userId: user.id,
+                userName: userName
             });
             dispatch({ type: 'START_INTERVIEW' });
         } else {

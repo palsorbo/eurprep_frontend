@@ -92,7 +92,7 @@ export default function StreamingInterviewWrapper() {
     }
 
     // Find the interview set by ID
-    const interviewSet = config.interviewSets.find(set => set.id === parseInt(setId || '0'));
+    const interviewSet = config.interviewSets.find(set => set.id === parseInt(setId || '1'));
 
     // Handle invalid set ID
     if (!interviewSet) {
