@@ -89,13 +89,13 @@ export default function Profile() {
 
             <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
                 {/* Back Button */}
-                <button
+                {/* <button
                     onClick={() => navigate('/dashboard')}
                     className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 mb-8 transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     <span>Back to Dashboard</span>
-                </button>
+                </button> */}
 
                 {/* Profile Card */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">

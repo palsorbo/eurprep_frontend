@@ -99,6 +99,15 @@ export default function AppHeader({ title }: AppHeaderProps) {
             isActive: location.pathname === '/dashboard'
         })
 
+        // Handle profile path
+        if (pathSegments[0] === 'profile') {
+            breadcrumbs.push({
+                label: 'Profile',
+                path: '/profile',
+                isActive: true
+            })
+        }
+
         // Handle exam type paths (sbi-po or ibps-po)
         const examType = pathSegments.find(segment => segment === 'sbi-po' || segment === 'ibps-po')
 
@@ -150,11 +159,11 @@ export default function AppHeader({ title }: AppHeaderProps) {
                         </button>
 
                         {/* Page Title */}
-                        {title && (
+                        {/* {title && (
                             <div className="hidden md:block">
                                 <h1 className="text-xl font-semibold text-slate-900 tracking-tight">{title}</h1>
                             </div>
-                        )}
+                        )} */}
                     </div>
 
                     {/* Center - Breadcrumbs */}
@@ -171,7 +180,7 @@ export default function AppHeader({ title }: AppHeaderProps) {
                                 ) : (
                                     <button
                                         onClick={() => navigate(breadcrumb.path)}
-                                            className="text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-2 py-1 rounded transition-all duration-200"
+                                        className="text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-2 py-1 rounded transition-all duration-200"
                                     >
                                         {breadcrumb.label}
                                     </button>
