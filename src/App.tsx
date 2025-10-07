@@ -16,6 +16,7 @@ const SBIPO = lazy(() => import('./pages/SBIPO'))
 const IBPSPO = lazy(() => import('./pages/IBPSPO'))
 const StreamingInterviewWrapper = lazy(() => import('./pages/StreamingInterviewWrapper'))
 const InterviewResults = lazy(() => import('./pages/InterviewResults'))
+const Profile = lazy(() => import('./pages/Profile'))
 
 // Loading component
 const LoadingSpinner = () => (
@@ -97,6 +98,13 @@ function App() {
                   <AppLayout>
                     <InterviewResults />
                   </AppLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* Profile - protected route */}
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               } />
 
