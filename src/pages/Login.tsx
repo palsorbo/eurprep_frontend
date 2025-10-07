@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Target, Users, TrendingUp, Mail, Link, Hash } from 'lucide-react'
+import { Mail, Link, Hash } from 'lucide-react'
 
 export default function Login() {
     const [loading, setLoading] = useState(false)
@@ -8,10 +8,8 @@ export default function Login() {
     const [email, setEmail] = useState('')
     const [emailLoading, setEmailLoading] = useState(false)
     const [emailSent, setEmailSent] = useState(false)
-    const [authMethod, setAuthMethod] = useState<'magic_link' | 'otp' | null>(null)
     const [showEmailOptions, setShowEmailOptions] = useState(false)
     const [isEmailValid, setIsEmailValid] = useState(false)
-    const [showOtpInput, setShowOtpInput] = useState(false)
     const [otp, setOtp] = useState('')
     const [verifyingOtp, setVerifyingOtp] = useState(false)
 
@@ -41,7 +39,7 @@ export default function Login() {
         }
     }
 
-    const handleEmailAuth = async (method?: 'magic_link' | 'otp') => {
+    const handleEmailAuth = async () => {
         if (!email) {
             setError('Please enter your email address')
             return
@@ -56,7 +54,6 @@ export default function Login() {
 
         setEmailLoading(true)
         setError('')
-        setAuthMethod(method || 'magic_link')
 
         try {
             const { error } = await supabase.auth.signInWithOtp({
@@ -79,13 +76,7 @@ export default function Login() {
         }
     }
 
-    const resetEmailAuth = () => {
-        setEmailSent(false)
-        setAuthMethod(null)
-        setEmail('')
-        setError('')
-        setIsEmailValid(false)
-    }
+
 
     // Real-time email validation
     const validateEmail = (email: string) => {
@@ -128,10 +119,8 @@ export default function Login() {
     }
 
     const resetOtpFlow = () => {
-        setShowOtpInput(false)
         setOtp('')
         setEmailSent(false)
-        setAuthMethod(null)
         setEmail('')
         setError('')
         setIsEmailValid(false)
