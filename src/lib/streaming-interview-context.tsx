@@ -5,6 +5,15 @@ import { AudioPlaybackManager, audioUtils, PCMRecorderManager } from '../utils/a
 import { useAuth } from './auth-context';
 
 // Types
+// !TODO have a WAITING/ READY_FOR_INPUT STATE, 
+///type InterviewFlowState =
+//   | 'IDLE'
+//   | 'QUESTION_LOADING'
+//   | 'QUESTION_PLAYING'
+//   | 'WAITING_FOR_INPUT'
+//   | 'LISTENING'
+//   | 'PROCESSING_ANSWER'
+//   | 'COMPLETE';
 export type InterviewFlowState =
     | 'IDLE'               // Initial state
     | 'QUESTION_LOADING'   // Loading next question
@@ -29,6 +38,9 @@ export interface InterviewState {
     isInterviewStarted: boolean;
     isStreaming: boolean;
     flowState: InterviewFlowState;
+
+    // Readiness state
+    isReadinessComplete: boolean;
 
     // Question state
     currentQuestion: string | null;
@@ -67,6 +79,7 @@ type StreamingInterviewAction =
     | { type: 'SET_SESSION_ID'; payload: string | null }
     | { type: 'START_INTERVIEW' }
     | { type: 'SET_STREAMING'; payload: boolean }
+    | { type: 'SET_READINESS_COMPLETE' }
     | { type: 'SET_QUESTION'; payload: { question: string; questionNumber: number; totalQuestions: number; interviewerId?: number } }
     | { type: 'SET_TRANSCRIPTION'; payload: { text: string; isFinal: boolean } }
     | { type: 'SET_ERROR'; payload: string | null }
@@ -90,6 +103,9 @@ const initialState: InterviewState = {
     isInterviewStarted: false,
     isStreaming: false,
     flowState: 'IDLE',
+
+    // Readiness state
+    isReadinessComplete: false,
 
     // Question state
     currentQuestion: null,
@@ -149,6 +165,13 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
             };
             return newState;
 
+        case 'SET_READINESS_COMPLETE':
+            newState = {
+                ...state,
+                isReadinessComplete: true
+            };
+            return newState;
+
         case 'SET_QUESTION':
             newState = {
                 ...state,
@@ -204,6 +227,12 @@ function streamingInterviewReducer(state: InterviewState, action: StreamingInter
             };
             if (action.payload === 'IDLE' && state.flowState === 'LISTENING') {
             }
+            // Log flow state changes
+            console.log(`🔄 Flow State: ${state.flowState} → ${action.payload}`, {
+                timestamp: new Date().toISOString(),
+                previousState: state.flowState,
+                newState: action.payload
+            });
             return newState;
 
         case 'SET_ERROR_STATE':
@@ -274,6 +303,7 @@ interface StreamingInterviewContextType {
     formatTime: (seconds: number) => string;
     startRecording: () => Promise<void>;
     stopRecording: (preserveInterviewState?: boolean, skipStopStreaming?: boolean) => void;
+    markReadinessComplete: () => void;
 }
 
 const StreamingInterviewContext = createContext<StreamingInterviewContextType | undefined>(undefined);
@@ -510,10 +540,15 @@ export function StreamingInterviewProvider({ children, apiUrl, context }: Stream
         hasStartedInterview.current = true;
 
         if (socketRef.current && state.isConnected) {
+            // Get first name for personalization (split on space and take first part)
+            const fullName = user?.user_metadata?.full_name?.trim();
+            const userName = fullName ? fullName.split(' ')[0] : "Candidate";
+
             socketRef.current.emit('startInterview', {
                 set: selectedSet,
                 context: finalContext,
-                userId: user.id
+                userId: user.id,
+                userName: userName
             });
             dispatch({ type: 'START_INTERVIEW' });
         } else {
@@ -670,6 +705,10 @@ export function StreamingInterviewProvider({ children, apiUrl, context }: Stream
         dispatch({ type: 'RESET_INTERVIEW' });
     };
 
+    const markReadinessComplete = useCallback(() => {
+        dispatch({ type: 'SET_READINESS_COMPLETE' });
+    }, []);
+
     const value: StreamingInterviewContextType = {
         state,
         socket: socketRef.current,
@@ -682,7 +721,8 @@ export function StreamingInterviewProvider({ children, apiUrl, context }: Stream
         stopTimer,
         formatTime,
         startRecording,
-        stopRecording
+        stopRecording,
+        markReadinessComplete
     };
 
     return (
@@ -700,3 +740,24 @@ export function useStreamingInterview() {
     }
     return context;
 }
+
+
+// Improvements
+
+// Make the flow states clear
+// Add a state like WAITING_FOR_INPUT instead of jumping directly from playing audio → listening.
+// Think of your flow as a map: QUESTION_LOADING → QUESTION_PLAYING → WAITING_FOR_INPUT → LISTENING → PROCESSING_ANSWER → COMPLETE.
+// Use event-based actions, not setters
+// Instead of { type: 'SET_FLOW_STATE', payload: 'LISTENING' }, dispatch events like AUDIO_FINISHED or ANSWER_SUBMITTED.
+// Let the reducer decide the next state.
+// Split concerns in the reducer
+// Don’t put connection, FSM, audio, timer, UI, and errors all in one reducer.
+// You can make smaller reducers: fsmReducer, connectionReducer, uiReducer.
+// Simplify the timer
+// One action like TIMER_TICK is enough. No need for separate SET_ELAPSED_TIME and INCREMENT_ELAPSED_TIME.
+// Separate UI state from interview logic
+// Things like isQuestionVisible can be handled in the component, not in the main reducer.
+// Unify error handling
+// Use one action like ERROR_OCCURRED with info about the phase and message.
+// Clean up logging
+// Keep logs in development only, or use a middleware-style logger, not in the reducer itself.

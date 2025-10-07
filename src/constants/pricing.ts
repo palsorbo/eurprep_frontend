@@ -2,19 +2,23 @@
 export const PRICING = {
     // SBI PO Premium Bundle pricing
     SBI_PO_PREMIUM_BUNDLE: {
-        AMOUNT: 1, // Amount in rupees
+        AMOUNT: 1, // Actual price in rupees (testing price)
+        ORIGINAL_AMOUNT: 999, // Original price for strikethrough display
         CURRENCY: 'INR',
         DESCRIPTION: 'SBI PO Premium Bundle',
         TYPE: 'one-time' as const,
-        PRODUCT_TYPE: 'sbi_po_premium_bundle' as const
+        PRODUCT_TYPE: 'sbi_po_premium_bundle' as const,
+        IS_LIMITED_OFFER: true
     },
     // IBPS PO Premium Bundle pricing
     IBPS_PO_PREMIUM_BUNDLE: {
-        AMOUNT: 2, // Amount in rupees
+        AMOUNT: 1, // Actual price in rupees (testing price)
+        ORIGINAL_AMOUNT: 999, // Original price for strikethrough display
         CURRENCY: 'INR',
         DESCRIPTION: 'IBPS PO Premium Bundle',
         TYPE: 'one-time' as const,
-        PRODUCT_TYPE: 'ibps_po_premium_bundle' as const
+        PRODUCT_TYPE: 'ibps_po_premium_bundle' as const,
+        IS_LIMITED_OFFER: true
     },
     // Future products can be added here
     RRB_PO_BUNDLE: {

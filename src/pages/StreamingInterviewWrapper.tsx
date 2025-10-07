@@ -1,7 +1,8 @@
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import PremiumRoute from '../components/PremiumRoute';
 import StreamingInterview from '../components/StreamingInterview';
-import { StreamingInterviewProvider } from '../lib/streaming-interview-context';
+import InterviewReadiness from '../components/StreamingInterview/InterviewReadiness';
+import { StreamingInterviewProvider, useStreamingInterview } from '../lib/streaming-interview-context';
 import { SBI_PO_SETS, IBPS_PO_SETS } from '../constants/interviewSets';
 
 // Types for better type safety
@@ -31,7 +32,26 @@ const INTERVIEW_TYPE_CONFIG: Record<InterviewType, InterviewConfig> = {
         redirectTo: '/sbi-po',
         context: 'sbi-po'
     }
-};
+}
+
+// Internal component that manages the interview flow
+function InterviewFlowManager({ selectedSet, context }: { selectedSet: string; context: string }) {
+    const { state, startInterview } = useStreamingInterview();
+
+    // Show readiness page if readiness is not complete
+    if (!state.isReadinessComplete) {
+        return (
+            <InterviewReadiness
+                selectedSet={selectedSet}
+                context={context}
+                onStartInterview={startInterview}
+            />
+        );
+    }
+
+    // Show interview once readiness is complete
+    return <StreamingInterview selectedSet={selectedSet} context={context} />;
+}
 
 export default function StreamingInterviewWrapper() {
     const { setId } = useParams<{ setId: string }>();
@@ -72,7 +92,7 @@ export default function StreamingInterviewWrapper() {
     }
 
     // Find the interview set by ID
-    const interviewSet = config.interviewSets.find(set => set.id === parseInt(setId || '0'));
+    const interviewSet = config.interviewSets.find(set => set.id === parseInt(setId || '1'));
 
     // Handle invalid set ID
     if (!interviewSet) {
@@ -85,13 +105,11 @@ export default function StreamingInterviewWrapper() {
     }
 
     // Convert setId to Set name format expected by backend (e.g., "1" -> "Set1")
-    const set = setId ? `Set${setId}` : 'Set0';
+    const set = setId ? `Set${setId}` : 'Set1';
 
     const content = (
         <StreamingInterviewProvider apiUrl={import.meta.env.VITE_API_BASE_URL} context={config.context}>
-            <div>
-                <StreamingInterview selectedSet={set} context={config.context} />
-            </div>
+            <InterviewFlowManager selectedSet={set} context={config.context} />
         </StreamingInterviewProvider>
     );
 

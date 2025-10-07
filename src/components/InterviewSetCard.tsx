@@ -32,9 +32,9 @@ export default function InterviewSetCard({ set, onUpgrade }: InterviewSetCardPro
                     {set.description}
                 </p>
                 <div className="flex items-center justify-between">
-                    <div className="text-xs text-slate-500">
+                    {/* <div className="text-xs text-slate-500">
                         {set.questions} Questions
-                    </div>
+                    </div> */}
                     <div className="flex items-center text-green-600 text-sm font-medium">
                         <span>Start Set</span>
                         <Play className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -66,9 +66,9 @@ export default function InterviewSetCard({ set, onUpgrade }: InterviewSetCardPro
                 {set.description}
             </p>
             <div className="flex items-center justify-between">
-                <div className="text-xs text-slate-400">
+                {/* <div className="text-xs text-slate-400">
                     {set.questions} Questions
-                </div>
+                </div> */}
                 <div className="flex items-center text-slate-400 text-sm">
                     <span>Premium Content</span>
                     <Lock className="w-4 h-4 ml-2" />

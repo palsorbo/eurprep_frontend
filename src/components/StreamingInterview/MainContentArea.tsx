@@ -3,8 +3,6 @@ import type { InterviewFlowState, InterviewState } from '../../lib/streaming-int
 import StartInterviewButton from './StartInterviewButton';
 import TranscriptDisplay from './TranscriptDisplay';
 import MicButton from './MicButton';
-import CompleteMessage from './CompleteMessage';
-
 interface MainContentAreaProps {
     state: InterviewState;
     isMicrophoneEnabled: boolean;
@@ -120,11 +118,6 @@ const MainContentArea: React.FC<MainContentAreaProps> = ({
                 </div>
             )}
 
-
-            {/* Interview Complete Message - Show when interview is complete */}
-            {state.flowState === 'COMPLETE' && (
-                <CompleteMessage />
-            )}
         </div>
     );
 };

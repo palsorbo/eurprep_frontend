@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
+import posthog from 'posthog-js'
 
 interface AuthContextType {
     user: User | null
@@ -38,6 +39,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (event === 'SIGNED_OUT') {
                     setUser(null)
                     setSession(null)
+                    // Reset PostHog user identification on sign out
+                    posthog.reset()
+                }
+
+                // Identify user in PostHog when they sign in
+                if (event === 'SIGNED_IN' && session?.user) {
+                    posthog.identify(session.user.id, {
+                        email: session.user.email,
+                        created_at: session.user.created_at,
+                        // Add any additional user properties you want to track
+                    })
                 }
             }
         )
@@ -76,4 +88,4 @@ export function useAuth() {
         throw new Error('useAuth must be used within an AuthProvider')
     }
     return context
-} 
+}

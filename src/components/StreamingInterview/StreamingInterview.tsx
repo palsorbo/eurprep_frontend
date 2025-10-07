@@ -6,6 +6,7 @@ import TimerDisplay from './TimerDisplay';
 import ErrorDisplay from './ErrorDisplay';
 import InterviewHeader from './InterviewHeader';
 import MainContentArea from './MainContentArea';
+import CompleteMessage from './CompleteMessage';
 
 interface StreamingInterviewProps {
     selectedSet?: string;
@@ -53,6 +54,9 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
         return enabled;
     }, [state.currentQuestion, state.flowState]);
 
+    if (state.flowState === "COMPLETE" || state.interviewComplete) {
+        return <CompleteMessage />
+    }
 
     return (
         <div className="min-h-screen">

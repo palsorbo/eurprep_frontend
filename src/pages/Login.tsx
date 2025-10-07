@@ -1,10 +1,17 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Target, Users, TrendingUp } from 'lucide-react'
+import { Mail, Link, Hash } from 'lucide-react'
 
 export default function Login() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [email, setEmail] = useState('')
+    const [emailLoading, setEmailLoading] = useState(false)
+    const [emailSent, setEmailSent] = useState(false)
+    const [showEmailOptions, setShowEmailOptions] = useState(false)
+    const [isEmailValid, setIsEmailValid] = useState(false)
+    const [otp, setOtp] = useState('')
+    const [verifyingOtp, setVerifyingOtp] = useState(false)
 
     const handleGoogleAuth = async () => {
         setLoading(true)
@@ -32,19 +39,106 @@ export default function Login() {
         }
     }
 
+    const handleEmailAuth = async () => {
+        if (!email) {
+            setError('Please enter your email address')
+            return
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(email)) {
+            setError('Please enter a valid email address')
+            return
+        }
+
+        setEmailLoading(true)
+        setError('')
+
+        try {
+            const { error } = await supabase.auth.signInWithOtp({
+                email,
+                options: {
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
+                    shouldCreateUser: true,
+                }
+            })
+
+            if (error) {
+                setError(error.message)
+            } else {
+                setEmailSent(true)
+            }
+        } catch {
+            setError('An unexpected error occurred. Please try again.')
+        } finally {
+            setEmailLoading(false)
+        }
+    }
+
+
+
+    // Real-time email validation
+    const validateEmail = (email: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        return emailRegex.test(email)
+    }
+
+    const handleEmailChange = (value: string) => {
+        setEmail(value)
+        setIsEmailValid(validateEmail(value))
+    }
+
+    const handleVerifyOtp = async () => {
+        if (!otp || otp.length !== 6) {
+            setError('Please enter a valid 6-digit code')
+            return
+        }
+
+        setVerifyingOtp(true)
+        setError('')
+
+        try {
+            const { error } = await supabase.auth.verifyOtp({
+                email,
+                token: otp,
+                type: 'email'
+            })
+
+            if (error) {
+                setError(error.message)
+            } else {
+                // Success - user will be redirected via AuthCallback component
+                window.location.href = '/dashboard'
+            }
+        } catch {
+            setError('An unexpected error occurred. Please try again.')
+        } finally {
+            setVerifyingOtp(false)
+        }
+    }
+
+    const resetOtpFlow = () => {
+        setOtp('')
+        setEmailSent(false)
+        setEmail('')
+        setError('')
+        setIsEmailValid(false)
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
             {/* Hero Section */}
             <section className="relative px-6 py-20 lg:py-32">
                 <div className="max-w-4xl mx-auto text-center">
                     <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 mb-6 leading-tight">
-                        Master Your Banking
+                        Ace Your Banking
                         <br />
-                        <span className="text-sky-600">Interview with Smart Practice</span>
+                        <span className="text-sky-600">Interview</span>
                     </h1>
 
                     <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-                        Get instant speech analysis, detailed feedback, and expert-level preparation for your SBI PO and IBPS PO interviews. Practice with real banking questions and improve your confidence.
+                        Smart-powered practice with instant feedback. Master SBI PO and IBPS PO interviews with real banking questions.
                     </p>
 
                     {/* Main CTA */}
@@ -72,6 +166,129 @@ export default function Login() {
                             )}
                         </button>
 
+                        {/* OR Divider */}
+                        <div className="mt-6 flex items-center justify-center">
+                            <div className="flex items-center space-x-4">
+                                <div className="h-px bg-slate-300 flex-1"></div>
+                                <span className="text-slate-500 font-medium text-sm px-3">OR</span>
+                                <div className="h-px bg-slate-300 flex-1"></div>
+                            </div>
+                        </div>
+
+                        {/* Progressive Disclosure Toggle */}
+                        {!showEmailOptions && (
+                            <div className="mt-6">
+                                <button
+                                    onClick={() => setShowEmailOptions(true)}
+                                    className="text-slate-600 hover:text-slate-800 font-medium text-lg underline-offset-4 hover:underline transition-colors"
+                                >
+                                    Continue with Email
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Email Authentication Section */}
+                        {showEmailOptions && (
+                            <div className="mt-8 w-full max-w-[280px] mx-auto">
+                                {!emailSent ? (
+                                    <>
+                                        <div className="mb-4">
+                                            <input
+                                                type="email"
+                                                value={email}
+                                                onChange={(e) => handleEmailChange(e.target.value)}
+                                                placeholder="Enter your email address"
+                                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all duration-200 text-lg ${email && !isEmailValid
+                                                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                                                    : 'border-slate-300'
+                                                    }`}
+                                                disabled={emailLoading}
+                                            />
+                                            {email && !isEmailValid && (
+                                                <p className="text-red-600 text-sm mt-1">Please enter a valid email address</p>
+                                            )}
+                                        </div>
+
+                                        <button
+                                            onClick={() => handleEmailAuth()}
+                                            disabled={emailLoading || !isEmailValid}
+                                            className="bg-sky-600 hover:bg-sky-700 disabled:bg-slate-400 text-white px-8 py-3 rounded-lg font-semibold text-lg flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed w-full"
+                                        >
+                                            {emailLoading ? (
+                                                <div className="w-5 h-5 animate-spin rounded-full border-2 border-white border-t-transparent mr-2"></div>
+                                            ) : (
+                                                <Mail className="w-5 h-5 mr-2" />
+                                            )}
+                                            Continue using Email
+                                        </button>
+
+                                        <div className="mt-3 text-sm text-gray-500 text-center">
+                                            <p>We'll send you an email with a link and verification code. Use either method to sign in securely.</p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    /* Combined Success Section - Shows both options */
+                                    <div className="text-center p-6 bg-green-50 border border-green-200 rounded-lg">
+                                        <Mail className="w-12 h-12 text-green-600 mx-auto mb-4" />
+                                        <h3 className="text-lg font-semibold text-green-800 mb-2">
+                                            Check Your Email
+                                        </h3>
+                                        <p className="text-green-700 mb-4">
+                                            We've sent an email to {email} with:
+                                        </p>
+
+                                        <div className="bg-white rounded-lg p-4 mb-4 text-left">
+                                            <div className="flex items-center space-x-3 mb-2">
+                                                <Link className="w-5 h-5 text-sky-600" />
+                                                <span className="font-medium text-gray-800">Option 1: Click the link</span>
+                                            </div>
+                                            <div className="flex items-center space-x-3">
+                                                <Hash className="w-5 h-5 text-emerald-600" />
+                                                <span className="font-medium text-gray-800">Option 2: Enter the 6-digit code below</span>
+                                            </div>
+                                        </div>
+
+                                        {/* OTP Input Field */}
+                                        <div className="mb-4">
+                                            <input
+                                                type="text"
+                                                value={otp}
+                                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                                placeholder="Enter OTP"
+                                                className="w-full px-4 py-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all duration-200 text-lg text-center font-mono tracking-widest"
+                                                disabled={verifyingOtp}
+                                                maxLength={6}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <button
+                                                onClick={handleVerifyOtp}
+                                                disabled={verifyingOtp || otp.length !== 6}
+                                                className="w-full bg-green-600 hover:bg-green-700 disabled:bg-slate-400 text-white px-6 py-3 rounded-lg font-semibold text-lg flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed"
+                                            >
+                                                {verifyingOtp ? (
+                                                    <>
+                                                        <div className="w-5 h-5 animate-spin rounded-full border-2 border-white border-t-transparent mr-2"></div>
+                                                        Verifying...
+                                                    </>
+                                                ) : (
+                                                    'Verify Code'
+                                                )}
+                                            </button>
+
+                                            <button
+                                                onClick={resetOtpFlow}
+                                                className="w-full text-green-600 hover:text-green-700 font-medium text-sm"
+                                            >
+                                                Use different email
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* <p className="text-xs text-gray-500 mt-4 max-w-md mx-auto">
                             By continuing, you agree to our{' '}
                             <a href="#" className="text-slate-700 hover:text-slate-900 underline font-medium">
@@ -85,7 +302,7 @@ export default function Login() {
                     </div>
 
                     {/* Trust Builders */}
-                    <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 mb-8">
+                    {/* <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 mb-8">
                         <div className="flex items-center space-x-2">
                             <Users className="w-4 h-4 text-green-500 flex-shrink-0" />
                             <span>10+ Banking Aspirants</span>
@@ -98,7 +315,7 @@ export default function Login() {
                             <TrendingUp className="w-4 h-4 text-green-500 flex-shrink-0" />
                             <span>⚡ Instant Smart Feedback</span>
                         </div>
-                    </div>
+                    </div> */}
 
                     {/* Privacy Assurance */}
                     {/* <div className="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-200 max-w-2xl mx-auto">
