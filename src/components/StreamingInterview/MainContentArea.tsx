@@ -83,29 +83,32 @@ const MainContentArea: React.FC<MainContentAreaProps> = ({
         <div className="flex flex-col items-center min-h-[60vh] relative z-10">
             {/* Start Interview Button - Only show when no question and in IDLE state */}
             {state.flowState === 'IDLE' && !state.currentQuestion && (
-                <StartInterviewButton
-                    selectedSet={selectedSet}
-                    startInterview={startInterview}
-                    isConnected={isConnected}
-                    context={context}
-                />
+                <div className="w-full max-w-md mx-auto">
+                    <StartInterviewButton
+                        selectedSet={selectedSet}
+                        startInterview={startInterview}
+                        isConnected={isConnected}
+                        context={context}
+                    />
+                </div>
             )}
 
-            {/* Transcript Display - Only visible during LISTENING state */}
-            <div className={`w-full max-w-2xl mb-4 h-32 transition-opacity duration-300 ${showTranscript && state.flowState === 'LISTENING' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            {/* Subtle Transcript Display - Only visible during LISTENING state */}
+            <div className={`w-full max-w-2xl mb-4 transition-opacity duration-300 ${showTranscript && state.flowState === 'LISTENING' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 {state.flowState === 'LISTENING' && (
-                    // Transcript is only shown during LISTENING state when user is actively recording
-                    <TranscriptDisplay
-                        finalLines={finalLines}
-                        interimLine={interimLine}
-                        isListening={true}
-                    />
+                    <div className="bg-white/80 rounded-xl border border-blue-200/40 shadow-lg">
+                        <TranscriptDisplay
+                            finalLines={finalLines}
+                            interimLine={interimLine}
+                            isListening={true}
+                        />
+                    </div>
                 )}
             </div>
 
-            {/* Microphone Button - Hidden during question reading, visible when question is ready or during recording */}
+            {/* Clean Microphone Button Container */}
             {shouldShowMicButton() && (
-                <div className="flex flex-col items-center space-y-4 py-8 w-full max-w-md">
+                <div className="flex flex-col items-center space-y-4 py-6 w-full max-w-md mx-auto">
                     <MicButton
                         isEnabled={isMicrophoneEnabled}
                         title={state.flowState === 'IDLE' ? 'Start Recording' : 'Stop Recording'}
@@ -115,9 +118,22 @@ const MainContentArea: React.FC<MainContentAreaProps> = ({
                             stopRecording(false);
                         }}
                     />
+
+                    {/* Simple status indicator */}
+                    <div className="text-center">
+                        <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm transition-colors duration-300 ${state.flowState === 'LISTENING'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-blue-100 text-blue-800'
+                            }`}>
+                            <div className={`w-2 h-2 rounded-full ${state.flowState === 'LISTENING' ? 'bg-green-500' : 'bg-blue-500'
+                                }`}></div>
+                            <span>
+                                {state.flowState === 'LISTENING' ? 'Recording...' : 'Click to record'}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             )}
-
         </div>
     );
 };

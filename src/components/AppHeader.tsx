@@ -200,6 +200,7 @@ export default function AppHeader({ title }: AppHeaderProps) {
                                     src={user.user_metadata.avatar_url}
                                     alt="Profile"
                                     className="w-8 h-8 rounded-full object-cover"
+                                    referrerPolicy="no-referrer"
                                 />
                             ) : (
                                 <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">

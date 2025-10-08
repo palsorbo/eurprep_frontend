@@ -59,40 +59,43 @@ const StreamingInterview: React.FC<StreamingInterviewProps> = ({
     }
 
     return (
-        <div className="min-h-screen">
-            <div className="mx-auto">
-                {/* Single Card Design */}
-                <div className="bg-white relative overflow-hidden min-h-screen">
-                    {/* Subtle background pattern */}
-                    <InterviewHeader />
-                    <TimerDisplay
-                        sessionId={state.sessionId}
-                        elapsedTime={state.elapsedTime}
-                        formatTime={formatTime}
-                    />
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+            <div className="container mx-auto px-4 py-6">
+                {/* Main Interview Container */}
+                <div className="relative overflow-hidden">
+                    {/* Content Container */}
+                    <div className="relative z-10 p-6 lg:p-8">
+                        <InterviewHeader />
 
-                    {/* Interviewer Panel */}
-                    <div className="relative z-10">
-                        <InterviewerPanel
-                            interviewers={state.interviewers}
-                            activeInterviewerId={state.activeInterviewerId}
-                            currentQuestion={state.currentQuestion || ''}
-                            isQuestionVisible={state.isQuestionVisible}
+                        <TimerDisplay
+                            sessionId={state.sessionId}
+                            elapsedTime={state.elapsedTime}
+                            formatTime={formatTime}
+                        />
+
+                        {/* Interviewer Panel */}
+                        <div className="mb-8">
+                            <InterviewerPanel
+                                interviewers={state.interviewers}
+                                activeInterviewerId={state.activeInterviewerId}
+                                currentQuestion={state.currentQuestion || ''}
+                                isQuestionVisible={state.isQuestionVisible}
+                            />
+                        </div>
+
+                        <ErrorDisplay error={state.error} />
+
+                        <MainContentArea
+                            state={state}
+                            isMicrophoneEnabled={isMicrophoneEnabled}
+                            startRecording={startRecording}
+                            stopRecording={stopRecording}
+                            selectedSet={selectedSet}
+                            startInterview={startInterview}
+                            isConnected={Boolean(state.isConnected ?? false)}
+                            context={context}
                         />
                     </div>
-
-                    <ErrorDisplay error={state.error} />
-
-                    <MainContentArea
-                        state={state}
-                        isMicrophoneEnabled={isMicrophoneEnabled}
-                        startRecording={startRecording}
-                        stopRecording={stopRecording}
-                        selectedSet={selectedSet}
-                        startInterview={startInterview}
-                        isConnected={Boolean(state.isConnected ?? false)}
-                        context={context}
-                    />
                 </div>
             </div>
         </div>
