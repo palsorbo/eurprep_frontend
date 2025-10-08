@@ -12,7 +12,6 @@ interface SimplifiedQaFeedback {
         missed: string[]; // Focus on what's most important for improvement
     };
     keyImprovements: string[]; // Top 2-3 actionable items only
-    categoryInsight?: string; // Brief, encouraging guidance
 }
 
 interface SimplifiedOverallFeedback {
@@ -213,7 +212,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluatio
                                         {isExpanded ? (
                                             <ChevronUp className="w-4 h-4 text-gray-500" />
                                         ) : (
-                                                <ChevronDown className="w-4 h-4 text-gray-500" />
+                                            <ChevronDown className="w-4 h-4 text-gray-500" />
                                         )}
                                     </div>
                                 </div>
@@ -284,15 +283,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluatio
                                             </div>
                                         )}
 
-                                        {/* Category Insight */}
-                                        {qaFeedback.categoryInsight && (
-                                            <div>
-                                                <h4 className="font-semibold text-gray-800 mb-3">💡 Category Guidance</h4>
-                                                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
-                                                    <p className="text-blue-800">{qaFeedback.categoryInsight}</p>
-                                                </div>
-                                            </div>
-                                        )}
+
                                     </div>
                                 </div>
                             )}
