@@ -108,6 +108,15 @@ export default function AppHeader({ title }: AppHeaderProps) {
             })
         }
 
+        // Handle results path
+        if (pathSegments[0] === 'results') {
+            breadcrumbs.push({
+                label: 'Results',
+                path: '/results',
+                isActive: true
+            })
+        }
+
         // Handle exam type paths (sbi-po or ibps-po)
         const examType = pathSegments.find(segment => segment === 'sbi-po' || segment === 'ibps-po')
 
