@@ -1,43 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, CheckCircle, XCircle, Lightbulb, ClipboardList, BookOpen } from 'lucide-react';
+import { ChevronDown, ChevronUp, Lightbulb, ClipboardList } from 'lucide-react';
 
-// Enhanced feedback structure for individual questions
-interface EnhancedQaFeedback {
+// Simplified feedback structure with mentor tone
+interface SimplifiedQaFeedback {
     question: string;
     answer: string;
     category: string;
-    score: number; // 0-10
-    strengths: string[];
-    gaps: string[];
-    improvementTips: string[];
-    coveredCorePoints: string[] | null;
-    missedCorePoints: string[] | null;
-    reflectionPrompt: string | null;
-    context: string | null;
-    modelAnswerReference: string | null;
-    keywordsMatched: string[] | null;
-    keywordsMissed: string[] | null;
+    score: number; // 0-10 based primarily on core points coverage
+    corePointsCoverage: {
+        covered: string[];
+        missed: string[]; // Focus on what's most important for improvement
+    };
+    keyImprovements: string[]; // Top 2-3 actionable items only
+    categoryInsight?: string; // Brief, encouraging guidance
 }
 
-interface OverallFeedback {
-    summary: string;
-    recommendation: 'Recommended' | 'Recommended with improvements' | 'Not Recommended';
+interface SimplifiedOverallFeedback {
+    summary: string; // Concise, encouraging assessment
+    recommendation: 'You are ready' | 'Almost Ready' | 'Needs More Practice';
     totalScore: number;
     averageScore: number;
     coveragePercentage: number;
 }
 
-interface InterviewEvaluation {
+interface SimplifiedInterviewEvaluation {
     interview_set: string;
     version: string;
-    qa_feedback: EnhancedQaFeedback[];
-    overall_feedback: OverallFeedback;
+    qa_feedback: SimplifiedQaFeedback[];
+    overall_feedback: SimplifiedOverallFeedback;
 }
 
 interface ResultsViewProps {
     questions: string[];
     answers: string[];
-    evaluation: InterviewEvaluation;
+    evaluation: SimplifiedInterviewEvaluation;
 }
 
 const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluation }) => {
@@ -45,12 +41,12 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluatio
 
     const getRecommendationColor = (recommendation: string) => {
         switch (recommendation) {
-            case 'Recommended':
+            case 'You are ready':
                 return 'text-green-600 bg-green-100';
-            case 'Recommended with improvements':
-                return 'text-yellow-600 bg-yellow-100';
-            case 'Not Recommended':
-                return 'text-red-600 bg-red-100';
+            case 'Almost Ready':
+                return 'text-blue-600 bg-blue-100';
+            case 'Needs More Practice':
+                return 'text-orange-600 bg-orange-100';
             default:
                 return 'text-gray-600 bg-gray-100';
         }
@@ -185,7 +181,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluatio
                                 </div>
                             </div>
 
-                            {/* Expanded Content */}
+                            {/* Simplified Expanded Content */}
                             {isExpanded && qaFeedback && (
                                 <div className="p-4 space-y-4">
                                     {/* Your Answer */}
@@ -205,151 +201,65 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluatio
                                         {renderScoreMeter(qaFeedback.score)}
                                     </div>
 
-                                    {/* Strengths */}
-                                    {qaFeedback.strengths.length > 0 && (
+                                    {/* Core Points Coverage */}
+                                    {(qaFeedback.corePointsCoverage.covered.length > 0 || qaFeedback.corePointsCoverage.missed.length > 0) && (
+                                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                                            <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
+                                                <ClipboardList className="w-5 h-5 mr-2" />
+                                                Core Points Coverage
+                                            </h4>
+                                            {qaFeedback.corePointsCoverage.covered.length > 0 && (
+                                                <div className="mb-3">
+                                                    <h5 className="font-medium text-green-700 mb-2">✅ Points You Covered:</h5>
+                                                    <ul className="text-green-700 space-y-1">
+                                                        {qaFeedback.corePointsCoverage.covered.map((point: string, idx: number) => (
+                                                            <li key={idx} className="flex items-start">
+                                                                <span className="mr-2">•</span>
+                                                                <span>{point}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                            {qaFeedback.corePointsCoverage.missed.length > 0 && (
+                                                <div>
+                                                    <h5 className="font-medium text-orange-700 mb-2">🎯 Points to Include Next Time:</h5>
+                                                    <ul className="text-orange-700 space-y-1">
+                                                        {qaFeedback.corePointsCoverage.missed.map((point: string, idx: number) => (
+                                                            <li key={idx} className="flex items-start">
+                                                                <span className="mr-2">•</span>
+                                                                <span>{point}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Key Improvements */}
+                                    {qaFeedback.keyImprovements.length > 0 && (
                                         <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
                                             <h4 className="font-semibold text-green-800 mb-2 flex items-center">
-                                                <CheckCircle className="w-5 h-5 mr-2" />
-                                                Strengths
+                                                <Lightbulb className="w-5 h-5 mr-2" />
+                                                Key Improvements
                                             </h4>
                                             <ul className="text-green-700 space-y-1">
-                                                {qaFeedback.strengths.map((strength, idx) => (
+                                                {qaFeedback.keyImprovements.map((improvement: string, idx: number) => (
                                                     <li key={idx} className="flex items-start">
                                                         <span className="mr-2">•</span>
-                                                        <span>{strength}</span>
+                                                        <span>{improvement}</span>
                                                     </li>
                                                 ))}
                                             </ul>
                                         </div>
                                     )}
 
-                                    {/* Gaps */}
-                                    {qaFeedback.gaps.length > 0 && (
-                                        <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
-                                            <h4 className="font-semibold text-red-800 mb-2 flex items-center">
-                                                <XCircle className="w-5 h-5 mr-2" />
-                                                Areas for Improvement
-                                            </h4>
-                                            <ul className="text-red-700 space-y-1">
-                                                {qaFeedback.gaps.map((gap, idx) => (
-                                                    <li key={idx} className="flex items-start">
-                                                        <span className="mr-2">•</span>
-                                                        <span>{gap}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-
-                                    {/* Improvement Tips */}
-                                    {qaFeedback.improvementTips.length > 0 && (
-                                        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                                            <h4 className="font-semibold text-yellow-800 mb-2 flex items-center">
-                                                <Lightbulb className="w-5 h-5 mr-2" />
-                                                Improvement Tips
-                                            </h4>
-                                            <ul className="text-yellow-700 space-y-1">
-                                                {qaFeedback.improvementTips.map((tip, idx) => (
-                                                    <li key={idx} className="flex items-start">
-                                                        <span className="mr-2">•</span>
-                                                        <span>{tip}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-
-                                    {/* Core Points Coverage */}
-                                    {(qaFeedback.coveredCorePoints || qaFeedback.missedCorePoints) && (
-                                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                                            <h4 className="font-semibold text-blue-800 mb-2 flex items-center">
-                                                <ClipboardList className="w-5 h-5 mr-2" />
-                                                Core Points Analysis
-                                            </h4>
-                                            {qaFeedback.coveredCorePoints && qaFeedback.coveredCorePoints.length > 0 && (
-                                                <div className="mb-3">
-                                                    <h5 className="font-medium text-green-700 mb-1">✅ Covered Points:</h5>
-                                                    <ul className="text-green-600 text-sm space-y-1">
-                                                        {qaFeedback.coveredCorePoints.map((point, idx) => (
-                                                            <li key={idx} className="flex items-start">
-                                                                <span className="mr-2">•</span>
-                                                                <span>{point}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                            {qaFeedback.missedCorePoints && qaFeedback.missedCorePoints.length > 0 && (
-                                                <div>
-                                                    <h5 className="font-medium text-red-700 mb-1">❌ Missed Points:</h5>
-                                                    <ul className="text-red-600 text-sm space-y-1">
-                                                        {qaFeedback.missedCorePoints.map((point, idx) => (
-                                                            <li key={idx} className="flex items-start">
-                                                                <span className="mr-2">•</span>
-                                                                <span>{point}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* Keywords Analysis */}
-                                    {(qaFeedback.keywordsMatched || qaFeedback.keywordsMissed) && (
+                                    {/* Category Insight */}
+                                    {qaFeedback.categoryInsight && (
                                         <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded">
-                                            <h4 className="font-semibold text-purple-800 mb-2">🔑 Keywords Analysis</h4>
-                                            {qaFeedback.keywordsMatched && qaFeedback.keywordsMatched.length > 0 && (
-                                                <div className="mb-3">
-                                                    <h5 className="font-medium text-green-700 mb-1">✅ Keywords Used:</h5>
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {qaFeedback.keywordsMatched.map((keyword, idx) => (
-                                                            <span key={idx} className="px-2 py-1 bg-green-200 text-green-800 rounded text-xs">
-                                                                {keyword}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                            {qaFeedback.keywordsMissed && qaFeedback.keywordsMissed.length > 0 && (
-                                                <div>
-                                                    <h5 className="font-medium text-red-700 mb-1">❌ Keywords to Include:</h5>
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {qaFeedback.keywordsMissed.map((keyword, idx) => (
-                                                            <span key={idx} className="px-2 py-1 bg-red-200 text-red-800 rounded text-xs">
-                                                                {keyword}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* Reflection Prompt */}
-                                    {qaFeedback.reflectionPrompt && (
-                                        <div className="bg-gray-50 border-l-4 border-gray-400 p-4 rounded">
-                                            <h4 className="font-semibold text-gray-800 mb-2">🤔 Reflection Question</h4>
-                                            <p className="text-gray-700 italic">"{qaFeedback.reflectionPrompt}"</p>
-                                        </div>
-                                    )}
-
-                                    {/* Context */}
-                                    {qaFeedback.context && (
-                                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                                            <h4 className="font-semibold text-blue-800 mb-2 flex items-center">
-                                                <BookOpen className="w-5 h-5 mr-2" />
-                                                Additional Context
-                                            </h4>
-                                            <p className="text-blue-700">{qaFeedback.context}</p>
-                                        </div>
-                                    )}
-
-                                    {/* Model Answer Reference */}
-                                    {qaFeedback.modelAnswerReference && (
-                                        <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4 rounded">
-                                            <h4 className="font-semibold text-indigo-800 mb-2">📖 Model Answer Reference</h4>
-                                            <p className="text-indigo-700 text-sm">{qaFeedback.modelAnswerReference}</p>
+                                            <h4 className="font-semibold text-purple-800 mb-2">💡 Category Guidance</h4>
+                                            <p className="text-purple-700">{qaFeedback.categoryInsight}</p>
                                         </div>
                                     )}
                                 </div>
