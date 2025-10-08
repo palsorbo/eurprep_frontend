@@ -96,9 +96,9 @@ const ResultsView: React.FC<ResultsViewProps> = ({ questions, answers, evaluatio
 
     return (
         <div className="bg-white shadow rounded-lg p-6">
-            <div className="flex justify-between items-center mb-6">
+            {/* <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Enhanced Interview Results</h2>
-            </div>
+            </div> */}
 
             {/* Enhanced Overall Evaluation Summary */}
             <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
