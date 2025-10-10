@@ -288,7 +288,7 @@ export default function IBPSPO() {
                             </div>
                         ) : (
                             <div className="grid gap-6">
-                                {feedbackHistory.map((feedback, index) => {
+                                {feedbackHistory.map((feedback) => {
                                     const score = feedback.overall_feedback?.averageScore || 0
                                     const recommendation = feedback.overall_feedback?.recommendation || 'N/A'
 

@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
-import { Play, Target, Landmark } from 'lucide-react'
+import { Play, Landmark } from 'lucide-react'
 import LoadingScreen from '../components/LoadingScreen'
 
 export default function Dashboard() {

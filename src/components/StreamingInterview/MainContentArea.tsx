@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import type { InterviewFlowState, InterviewState } from '../../lib/streaming-interview-context';
 import StartInterviewButton from './StartInterviewButton';
-import TranscriptDisplay from './TranscriptDisplay';
+// import TranscriptDisplay from './TranscriptDisplay';
 import MicButton from './MicButton';
 interface MainContentAreaProps {
     state: InterviewState;
@@ -25,40 +25,40 @@ const MainContentArea: React.FC<MainContentAreaProps> = ({
     context
 }) => {
     // Local transcript panels (like POC): interim + completed finals
-    const [finalLines, setFinalLines] = useState<string[]>([]);
-    const [interimLine, setInterimLine] = useState<string>('');
-    const [showTranscript, setShowTranscript] = useState(false);
+    // const [finalLines, setFinalLines] = useState<string[]>([]);
+    // const [interimLine, setInterimLine] = useState<string>('');
+    // const [showTranscript, setShowTranscript] = useState(false);
 
     // Reset local panels when a new question arrives
-    useEffect(() => {
-        setFinalLines([]);
-        setInterimLine('');
-        setShowTranscript(false); // Hide transcript when new question arrives
-    }, [state.currentQuestion, state.questionNumber]);
+    // useEffect(() => {
+    //     setFinalLines([]);
+    //     setInterimLine('');
+    //     setShowTranscript(false); // Hide transcript when new question arrives
+    // }, [state.currentQuestion, state.questionNumber]);
 
     // Show transcript only when recording starts (LISTENING state)
-    useEffect(() => {
-        if (state.flowState === 'LISTENING') {
-            setShowTranscript(true);
-        } else if (state.flowState === 'IDLE' || state.flowState === 'QUESTION_PLAYING') {
-            setShowTranscript(false);
-        }
-    }, [state.flowState]);
+    // useEffect(() => {
+    //     if (state.flowState === 'LISTENING') {
+    //         setShowTranscript(true);
+    //     } else if (state.flowState === 'IDLE' || state.flowState === 'QUESTION_PLAYING') {
+    //         setShowTranscript(false);
+    //     }
+    // }, [state.flowState]);
 
     // Update local panels on new transcription data
-    useEffect(() => {
-        if (!state.transcription) {
-            if (state.isFinal) return; // ignore empty finals
-            setInterimLine('');
-            return;
-        }
-        if (state.isFinal) {
-            setFinalLines((prev: string[]) => [...prev, state.transcription.trim()]);
-            setInterimLine('');
-        } else {
-            setInterimLine(state.transcription);
-        }
-    }, [state.transcription, state.isFinal]);
+    // useEffect(() => {
+    //     if (!state.transcription) {
+    //         if (state.isFinal) return; // ignore empty finals
+    //         setInterimLine('');
+    //         return;
+    //     }
+    //     if (state.isFinal) {
+    //         setFinalLines((prev: string[]) => [...prev, state.transcription.trim()]);
+    //         setInterimLine('');
+    //     } else {
+    //         setInterimLine(state.transcription);
+    //     }
+    // }, [state.transcription, state.isFinal]);
 
     // Determine MicButton visibility based on flow state
     // Hidden during QUESTION_PLAYING and QUESTION_LOADING, visible during IDLE (when question exists) and LISTENING
@@ -114,7 +114,6 @@ const MainContentArea: React.FC<MainContentAreaProps> = ({
                         title={state.flowState === 'IDLE' ? 'Start Recording' : 'Stop Recording'}
                         onStart={() => startRecording()}
                         onStop={() => {
-                            setShowTranscript(false);
                             stopRecording(false);
                         }}
                     />

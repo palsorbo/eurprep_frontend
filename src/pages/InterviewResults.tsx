@@ -1,21 +1,18 @@
 import React from 'react';
-import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Search, Clock, AlertTriangle } from 'lucide-react';
+import { useParams, useLocation } from 'react-router-dom';
+import { RotateCcw, Search, Clock, AlertTriangle } from 'lucide-react';
 import ResultsView from '../components/StreamingInterview/ResultsView';
 import LoadingScreen from '../components/LoadingScreen';
 import { useInterviewResults } from '../hooks/useInterviewResults';
 
 const InterviewResults: React.FC = () => {
     const location = useLocation();
-    const navigate = useNavigate();
     const { sessionId } = location.state || {};
     const { feedbackId } = useParams<{ feedbackId: string }>();
 
     const { resultsData, isLoading, error } = useInterviewResults({ feedbackId, sessionId });
 
-    const handleStartNewInterview = () => {
-        navigate('/sbi-po');
-    };
+
 
     if (isLoading) {
         return (

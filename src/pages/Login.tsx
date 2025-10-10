@@ -8,7 +8,7 @@ export default function Login() {
     const [email, setEmail] = useState('')
     const [emailLoading, setEmailLoading] = useState(false)
     const [emailSent, setEmailSent] = useState(false)
-    const [showEmailOptions, setShowEmailOptions] = useState(false)
+
     const [isEmailValid, setIsEmailValid] = useState(false)
     const [otp, setOtp] = useState('')
     const [verifyingOtp, setVerifyingOtp] = useState(false)
@@ -241,29 +241,29 @@ export default function Login() {
                                                                 const updatedOtp = newOtp.join('').slice(0, 6);
                                                                 setOtp(updatedOtp);
 
-                                                            // Auto-focus next input
-                                                            if (value && index < 5) {
-                                                                const nextInput = e.target.nextElementSibling as HTMLInputElement;
-                                                                if (nextInput) nextInput.focus();
+                                                                // Auto-focus next input
+                                                                if (value && index < 5) {
+                                                                    const nextInput = e.target.nextElementSibling as HTMLInputElement;
+                                                                    if (nextInput) nextInput.focus();
+                                                                }
                                                             }
-                                                        }
-                                                    }}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Backspace' && !otp[index] && index > 0) {
-                                                            const target = e.target as HTMLInputElement;
-                                                            const prevInput = target.previousElementSibling as HTMLInputElement;
-                                                            if (prevInput) {
-                                                                prevInput.focus();
-                                                                const newOtp = otp.split('');
-                                                                newOtp[index - 1] = '';
-                                                                setOtp(newOtp.join(''));
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Backspace' && !otp[index] && index > 0) {
+                                                                const target = e.target as HTMLInputElement;
+                                                                const prevInput = target.previousElementSibling as HTMLInputElement;
+                                                                if (prevInput) {
+                                                                    prevInput.focus();
+                                                                    const newOtp = otp.split('');
+                                                                    newOtp[index - 1] = '';
+                                                                    setOtp(newOtp.join(''));
+                                                                }
                                                             }
-                                                        }
-                                                    }}
-                                                    className="w-12 h-12 text-center text-xl font-semibold border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                                    disabled={verifyingOtp}
-                                                />
-                                            ))}
+                                                        }}
+                                                        className="w-12 h-12 text-center text-xl font-semibold border-2 border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                                        disabled={verifyingOtp}
+                                                    />
+                                                ))}
                                             </div>
                                             {otp.length === 0 && (
                                                 <p className="text-sm text-gray-500 text-center mt-2">Enter the 6-digit code from your email</p>

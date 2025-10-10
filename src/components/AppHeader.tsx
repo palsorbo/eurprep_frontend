@@ -4,11 +4,7 @@ import { LogOut, Mail, Copy, Check, User, Settings, ChevronDown } from 'lucide-r
 import Logo from './Logo'
 import { useState, useEffect, useRef } from 'react'
 
-interface AppHeaderProps {
-    title?: string
-}
-
-export default function AppHeader({ title }: AppHeaderProps) {
+export default function AppHeader() {
     const { user, signOut } = useAuth()
     const navigate = useNavigate()
     const location = useLocation()

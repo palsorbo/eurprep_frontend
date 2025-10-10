@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStreamingInterview } from '../../lib/streaming-interview-context';
 import { useAuth } from '../../lib/auth-context';
 import { supabase } from '../../lib/supabase';
-import { Hand, CheckCircle, AlertTriangle, XCircle, Rocket } from 'lucide-react';
+import { Hand, Rocket } from 'lucide-react';
 
 // Full name validation function
 function validateFullName(name: string): boolean {
@@ -494,7 +494,7 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                                 Start Interview
                             </div>
                         ) : (
-                                'Allow microphone access to begin your interview'
+                            'Allow microphone access to begin your interview'
                         )}
                     </button>
 

@@ -288,106 +288,106 @@ export default function SBIPO() {
                                 <p className="text-slate-600 font-medium">Loading your interview history...</p>
                             </div>
                         ) : (
-                                <div className="grid gap-6">
-                                    {feedbackHistory.map((feedback, index) => {
-                                        const score = feedback.overall_feedback?.averageScore || 0
-                                        const recommendation = feedback.overall_feedback?.recommendation || 'N/A'
+                            <div className="grid gap-6">
+                                {feedbackHistory.map((feedback) => {
+                                    const score = feedback.overall_feedback?.averageScore || 0
+                                    const recommendation = feedback.overall_feedback?.recommendation || 'N/A'
 
-                                        return (
-                                            <div key={feedback.id} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200 overflow-hidden">
-                                                <div className="p-8">
-                                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
-                                                        <div className="flex items-center space-x-4 mb-4 lg:mb-0">
-                                                            <div className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
-                                                                <History className="w-7 h-7 text-white" />
-                                                            </div>
-                                                            <div>
-                                                                <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                                                                    {feedback.interview_set} Interview
-                                                                </h3>
-                                                                <p className="text-slate-600 font-medium">
-                                                                    Version {feedback.version}
-                                                                </p>
-                                                            </div>
+                                    return (
+                                        <div key={feedback.id} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200 overflow-hidden">
+                                            <div className="p-8">
+                                                <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
+                                                    <div className="flex items-center space-x-4 mb-4 lg:mb-0">
+                                                        <div className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+                                                            <History className="w-7 h-7 text-white" />
                                                         </div>
-                                                        <div className="text-right">
-                                                            <div className="flex items-center text-slate-500 text-sm mb-2">
-                                                                <Calendar className="w-4 h-4 mr-2" />
-                                                                <span className="font-medium">{new Date(feedback.created_at).toLocaleDateString()}</span>
-                                                            </div>
-                                                            <div className="text-xs text-slate-400">
-                                                                {new Date(feedback.created_at).toLocaleTimeString()}
-                                                            </div>
+                                                        <div>
+                                                            <h3 className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                                                {feedback.interview_set} Interview
+                                                            </h3>
+                                                            <p className="text-slate-600 font-medium">
+                                                                Version {feedback.version}
+                                                            </p>
                                                         </div>
                                                     </div>
-
-                                                    <div className="grid md:grid-cols-2 gap-8 mb-6">
-                                                        {/* Score Section */}
-                                                        <div className="space-y-4">
-                                                            <div>
-                                                                <div className="flex items-center justify-between mb-3">
-                                                                    <span className="text-lg font-bold text-slate-800">Overall Score</span>
-                                                                    <div className="flex items-center space-x-2">
-                                                                        <span className="text-2xl font-bold text-green-600">
-                                                                            {score.toFixed(1)}
-                                                                        </span>
-                                                                        <span className="text-slate-500">/10</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-                                                                    <div
-                                                                        className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-500 ease-out"
-                                                                        style={{
-                                                                            width: `${(score / 10) * 100}%`
-                                                                        }}
-                                                                    ></div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                                                                <span className="font-semibold text-slate-700">Questions Answered</span>
-                                                                <span className="text-lg font-bold text-slate-900">
-                                                                    {feedback.feedback_data?.qa_feedback?.length || 0}
-                                                                </span>
-                                                            </div>
+                                                    <div className="text-right">
+                                                        <div className="flex items-center text-slate-500 text-sm mb-2">
+                                                            <Calendar className="w-4 h-4 mr-2" />
+                                                            <span className="font-medium">{new Date(feedback.created_at).toLocaleDateString()}</span>
                                                         </div>
-
-                                                        {/* Summary Section */}
-                                                        <div className="space-y-4">
-                                                            <div>
-                                                                <h4 className="font-bold text-slate-800 mb-2">Performance Summary</h4>
-                                                                <p className="text-slate-600 leading-relaxed">
-                                                                    {feedback.overall_feedback?.summary || 'No summary available'}
-                                                                </p>
-                                                            </div>
-
-                                                            <div className="flex items-center space-x-3">
-                                                                <span className="font-semibold text-slate-700">Recommendation:</span>
-                                                                <span className={`px-3 py-2 rounded-full text-sm font-bold ${recommendation === 'Recommended'
-                                                                    ? 'text-green-700 bg-green-100'
-                                                                    : recommendation === 'Recommended with improvements'
-                                                                        ? 'text-yellow-700 bg-yellow-100'
-                                                                        : 'text-red-700 bg-red-100'
-                                                                    }`}>
-                                                                    {recommendation}
-                                                                </span>
-                                                            </div>
+                                                        <div className="text-xs text-slate-400">
+                                                            {new Date(feedback.created_at).toLocaleTimeString()}
                                                         </div>
-                                                    </div>
-
-                                                    <div className="flex items-center justify-center pt-4 border-t border-slate-100">
-                                                        <Link
-                                                            to={`/results/${feedback.id}`}
-                                                            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                                                        >
-                                                            <Eye className="w-5 h-5 mr-2" />
-                                                            View Detailed Results
-                                                        </Link>
                                                     </div>
                                                 </div>
+
+                                                <div className="grid md:grid-cols-2 gap-8 mb-6">
+                                                    {/* Score Section */}
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <div className="flex items-center justify-between mb-3">
+                                                                <span className="text-lg font-bold text-slate-800">Overall Score</span>
+                                                                <div className="flex items-center space-x-2">
+                                                                    <span className="text-2xl font-bold text-green-600">
+                                                                        {score.toFixed(1)}
+                                                                    </span>
+                                                                    <span className="text-slate-500">/10</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                                                                <div
+                                                                    className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-500 ease-out"
+                                                                    style={{
+                                                                        width: `${(score / 10) * 100}%`
+                                                                    }}
+                                                                ></div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                                                            <span className="font-semibold text-slate-700">Questions Answered</span>
+                                                            <span className="text-lg font-bold text-slate-900">
+                                                                {feedback.feedback_data?.qa_feedback?.length || 0}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Summary Section */}
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <h4 className="font-bold text-slate-800 mb-2">Performance Summary</h4>
+                                                            <p className="text-slate-600 leading-relaxed">
+                                                                {feedback.overall_feedback?.summary || 'No summary available'}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="flex items-center space-x-3">
+                                                            <span className="font-semibold text-slate-700">Recommendation:</span>
+                                                            <span className={`px-3 py-2 rounded-full text-sm font-bold ${recommendation === 'Recommended'
+                                                                ? 'text-green-700 bg-green-100'
+                                                                : recommendation === 'Recommended with improvements'
+                                                                    ? 'text-yellow-700 bg-yellow-100'
+                                                                    : 'text-red-700 bg-red-100'
+                                                                }`}>
+                                                                {recommendation}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-center pt-4 border-t border-slate-100">
+                                                    <Link
+                                                        to={`/results/${feedback.id}`}
+                                                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                                    >
+                                                        <Eye className="w-5 h-5 mr-2" />
+                                                        View Detailed Results
+                                                    </Link>
+                                                </div>
                                             </div>
-                                        )
-                                    })}
+                                        </div>
+                                    )
+                                })}
                             </div>
                         )}
                     </div>
