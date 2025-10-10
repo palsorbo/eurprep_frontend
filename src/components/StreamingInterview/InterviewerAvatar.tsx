@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface InterviewerAvatarProps {
     id: number;
@@ -16,6 +16,7 @@ const InterviewerAvatar: React.FC<InterviewerAvatarProps> = ({
     isSpeaking,
     questionText
 }) => {
+    const [isHovered, setIsHovered] = useState(false);
     // SVG icons for male and female silhouettes
     const MaleIcon = () => (
         <svg
@@ -44,22 +45,20 @@ const InterviewerAvatar: React.FC<InterviewerAvatarProps> = ({
 
     return (
         <div className="relative flex flex-col items-center">
-            {/* Subtle Speech Bubble */}
+            {/* Speech Bubble - shows on hover when speaking */}
             {isSpeaking && questionText && (
                 <div
                     className={`
                         absolute bottom-full mb-4 px-4 py-3
-                        bg-white/90 border border-blue-200/60
-                        rounded-xl shadow-lg
+                        bg-white/95 border border-blue-200/70
+                        rounded-xl shadow-lg backdrop-blur-sm
                         max-w-sm sm:max-w-md min-w-72 max-h-48 overflow-y-auto z-20
                         transition-all duration-300 ease-out
-                        ${isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+                        ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}
                     `}
                 >
-                    {/* Simple arrow */}
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-blue-200/60"></div>
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-blue-200/70"></div>
 
-                    {/* Question text */}
                     <p className="text-sm text-gray-800 leading-relaxed font-medium">
                         {questionText}
                     </p>
@@ -76,10 +75,12 @@ const InterviewerAvatar: React.FC<InterviewerAvatarProps> = ({
                         : 'scale-100 shadow-lg hover:shadow-xl hover:scale-102'
                     }
                     ${isSpeaking
-                        ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border-2 border-blue-300'
+                        ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border-2 border-blue-300 cursor-pointer'
                         : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 border-2 border-gray-300 hover:from-blue-50 hover:to-blue-100'
                     }
                 `}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
             >
                 {/* Subtle glow effect for active interviewer */}
                 {isActive && (
