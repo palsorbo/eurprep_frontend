@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth-context'
 import { supabase } from '../lib/supabase'
 import AppHeader from '../components/AppHeader'
-import { ArrowLeft, Save, X } from 'lucide-react'
+import { Save, X } from 'lucide-react'
 
 // Full name validation function
 function validateFullName(name: string): boolean {
@@ -28,7 +27,6 @@ function validateFullName(name: string): boolean {
 
 export default function Profile() {
     const { user } = useAuth()
-    const navigate = useNavigate()
     const [fullName, setFullName] = useState(user?.user_metadata?.full_name || '')
     const [isEditing, setIsEditing] = useState(false)
     const [isUpdating, setIsUpdating] = useState(false)
@@ -85,17 +83,17 @@ export default function Profile() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <AppHeader title="Profile Settings" />
+            <AppHeader />
 
             <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
                 {/* Back Button */}
-                <button
+                {/* <button
                     onClick={() => navigate('/dashboard')}
                     className="flex items-center space-x-2 text-slate-600 hover:text-slate-800 mb-8 transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     <span>Back to Dashboard</span>
-                </button>
+                </button> */}
 
                 {/* Profile Card */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">

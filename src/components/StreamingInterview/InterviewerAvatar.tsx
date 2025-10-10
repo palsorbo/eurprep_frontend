@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface InterviewerAvatarProps {
     id: number;
@@ -16,11 +16,12 @@ const InterviewerAvatar: React.FC<InterviewerAvatarProps> = ({
     isSpeaking,
     questionText
 }) => {
+    const [isHovered, setIsHovered] = useState(false);
     // SVG icons for male and female silhouettes
     const MaleIcon = () => (
         <svg
-            width="40"
-            height="40"
+            width="56"
+            height="56"
             viewBox="0 0 24 24"
             fill="currentColor"
             className="w-full h-full"
@@ -31,8 +32,8 @@ const InterviewerAvatar: React.FC<InterviewerAvatarProps> = ({
 
     const FemaleIcon = () => (
         <svg
-            width="40"
-            height="40"
+            width="56"
+            height="56"
             viewBox="0 0 24 24"
             fill="currentColor"
             className="w-full h-full"
@@ -44,26 +45,21 @@ const InterviewerAvatar: React.FC<InterviewerAvatarProps> = ({
 
     return (
         <div className="relative flex flex-col items-center">
-            {/* Speech Bubble */}
+            {/* Speech Bubble - shows on hover when speaking */}
             {isSpeaking && questionText && (
                 <div
                     className={`
-                        absolute bottom-full mb-4 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-2xl
-                        max-w-md min-w-80 max-h-48 overflow-y-auto z-10
+                        absolute bottom-full mb-4 px-4 py-3
+                        bg-white/95 border border-blue-200/70
+                        rounded-xl shadow-lg backdrop-blur-sm
+                        max-w-sm sm:max-w-md min-w-72 max-h-48 overflow-y-auto z-20
                         transition-all duration-300 ease-out
-                        ${isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}
+                        ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}
                     `}
                 >
-                    {/* Speech bubble arrow pointing down */}
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 shadow-2xl drop-shadow-2xl">
-                        <div className="w-0 h-0 border-l-24 border-r-24 border-t-24 border-l-transparent border-r-transparent border-t-white"></div>
-                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1.5">
-                            <div className="w-0 h-0 border-l-24 border-r-24 border-t-24 border-l-transparent border-r-transparent border-t-gray-500 shadow-md"></div>
-                        </div>
-                    </div>
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-blue-200/70"></div>
 
-                    {/* Question text */}
-                    <p className="text-sm text-gray-800 leading-relaxed font-medium line-clamp-6">
+                    <p className="text-sm text-gray-800 leading-relaxed font-medium">
                         {questionText}
                     </p>
                 </div>
@@ -72,27 +68,34 @@ const InterviewerAvatar: React.FC<InterviewerAvatarProps> = ({
             {/* Avatar Container */}
             <div
                 className={`
-                    relative w-28 h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-full flex items-center justify-center
+                    relative w-32 h-32 sm:w-36 sm:h-36 lg:w-40 lg:h-40 xl:w-44 xl:h-44 rounded-full flex items-center justify-center
                     transition-all duration-300 ease-out
                     ${isActive
-                        ? 'scale-110 shadow-2xl shadow-blue-500/50 ring-4 ring-blue-400'
-                        : 'scale-100 shadow-xl'
+                        ? 'scale-105 shadow-xl shadow-blue-500/40 ring-2 ring-blue-400/60'
+                        : 'scale-100 shadow-lg hover:shadow-xl hover:scale-102'
                     }
                     ${isSpeaking
-                        ? 'bg-blue-100 text-blue-600'
-                        : 'bg-gray-100 text-gray-600'
+                        ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border-2 border-blue-300 cursor-pointer'
+                        : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 border-2 border-gray-300 hover:from-blue-50 hover:to-blue-100'
                     }
                 `}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
             >
-                {/* Glow effect for active interviewer */}
+                {/* Subtle glow effect for active interviewer */}
                 {isActive && (
-                    <div className="absolute inset-0 rounded-full bg-blue-400 opacity-20 animate-pulse"></div>
+                    <div className="absolute inset-0 rounded-full bg-blue-400/15"></div>
                 )}
 
                 {/* Avatar Icon */}
                 <div className="relative z-10">
                     {gender === 'male' ? <MaleIcon /> : <FemaleIcon />}
                 </div>
+
+                {/* Subtle speaking indicator */}
+                {isSpeaking && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                )}
             </div>
 
             {/* Interviewer Name */}

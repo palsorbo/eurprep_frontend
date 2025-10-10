@@ -125,13 +125,13 @@ export default function PaymentModal({ isOpen, onClose, onSuccess, productType }
                 <div className="space-y-4">
                     <div className="bg-green-50 p-4 rounded-lg">
                         <h3 className="font-semibold text-green-800 mb-2">
-                            Premium Bundle Includes:
+                            Transform Your Interview Performance:
                         </h3>
                         <ul className="text-green-700 space-y-2">
-                            <li>✓ Access to Sets 1, 2 & 3</li>
-                            <li>✓ Advanced interview questions</li>
-                            <li>✓ Expert-level scenarios & smart evaluation</li>
-                            <li>✓ Instant access to all premium content</li>
+                            <li>✓ Master all interview scenarios with comprehensive practice</li>
+                            <li>✓ Get adaptive questions that builds real confidence</li>
+                            <li>✓ Access advanced scenarios that match actual interview standards</li>
+                            <li>✓ Unlock your potential with expert-level evaluation</li>
                         </ul>
                     </div>
 

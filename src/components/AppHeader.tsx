@@ -4,11 +4,7 @@ import { LogOut, Mail, Copy, Check, User, Settings, ChevronDown } from 'lucide-r
 import Logo from './Logo'
 import { useState, useEffect, useRef } from 'react'
 
-interface AppHeaderProps {
-    title?: string
-}
-
-export default function AppHeader({ title }: AppHeaderProps) {
+export default function AppHeader() {
     const { user, signOut } = useAuth()
     const navigate = useNavigate()
     const location = useLocation()
@@ -19,6 +15,17 @@ export default function AppHeader({ title }: AppHeaderProps) {
     const userMenuRef = useRef<HTMLDivElement>(null)
 
     const emailAddress = 'hello@eurprep.com'
+
+    const getMotivationalMessage = (firstName: string) => {
+        const messages = [
+            `Great work, ${firstName}! Let's build more confidence`,
+            `${firstName}, you're making excellent progress!`,
+            `Welcome back, ${firstName}! Ready for more practice?`,
+            `${firstName}, your interview skills are improving!`,
+            `Keep it up, ${firstName}! Every session counts`
+        ]
+        return messages[Math.floor(Math.random() * messages.length)]
+    }
 
     const handleLogout = async () => {
         try {
@@ -88,20 +95,44 @@ export default function AppHeader({ title }: AppHeaderProps) {
             isActive: location.pathname === '/dashboard'
         })
 
-        // Add other segments
-        if (pathSegments.includes('sbi-po')) {
+        // Handle profile path
+        if (pathSegments[0] === 'profile') {
+            breadcrumbs.push({
+                label: 'Profile',
+                path: '/profile',
+                isActive: true
+            })
+        }
+
+        // Handle results path
+        if (pathSegments[0] === 'results') {
+            breadcrumbs.push({
+                label: 'Results',
+                path: '/results',
+                isActive: true
+            })
+        }
+
+        // Handle exam type paths (sbi-po or ibps-po)
+        const examType = pathSegments.find(segment => segment === 'sbi-po' || segment === 'ibps-po')
+
+        if (examType) {
+            // Convert ibps-po to IBPS PO, sbi-po to SBI PO
+            const examLabel = examType.toUpperCase().replace('-', ' ')
+            const examPath = `/${examType}`
+
             if (pathSegments.length === 1) {
-                // /sbi-po
+                // /sbi-po or /ibps-po
                 breadcrumbs.push({
-                    label: 'SBI PO',
-                    path: '/sbi-po',
+                    label: examLabel,
+                    path: examPath,
                     isActive: true
                 })
             } else if (pathSegments.includes('interview')) {
-                // /sbi-po/interview/1
+                // /sbi-po/interview/1 or /ibps-po/interview/1
                 breadcrumbs.push({
-                    label: 'SBI PO',
-                    path: '/sbi-po',
+                    label: examLabel,
+                    path: examPath,
                     isActive: false
                 })
                 const setId = pathSegments[pathSegments.length - 1]
@@ -123,38 +154,38 @@ export default function AppHeader({ title }: AppHeaderProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Left side - Logo and Navigation */}
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-6">
                         {/* Logo */}
                         <button
                             onClick={handleLogoClick}
-                            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+                            className="flex items-center space-x-2 p-2 hover:opacity-80 hover:bg-slate-50 rounded-lg transition-all duration-200"
                         >
                             <Logo size="lg" />
                         </button>
 
                         {/* Page Title */}
-                        {title && (
+                        {/* {title && (
                             <div className="hidden md:block">
-                                <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
+                                <h1 className="text-xl font-semibold text-slate-900 tracking-tight">{title}</h1>
                             </div>
-                        )}
+                        )} */}
                     </div>
 
                     {/* Center - Breadcrumbs */}
-                    <div className="hidden lg:flex items-center space-x-2">
+                    <div className="hidden lg:flex items-center space-x-3">
                         {breadcrumbs.map((breadcrumb, index) => (
                             <div key={breadcrumb.path} className="flex items-center">
                                 {index > 0 && (
-                                    <span className="text-slate-400 mx-2">/</span>
+                                    <span className="text-slate-400 mx-3 text-sm">/</span>
                                 )}
                                 {breadcrumb.isActive ? (
-                                    <span className="text-slate-900 font-medium">
+                                    <span className="text-slate-900 font-semibold px-3 py-1.5 bg-slate-100 rounded-md">
                                         {breadcrumb.label}
                                     </span>
                                 ) : (
                                     <button
                                         onClick={() => navigate(breadcrumb.path)}
-                                        className="text-slate-600 hover:text-slate-900 transition-colors duration-200"
+                                        className="text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-2 py-1 rounded transition-all duration-200"
                                     >
                                         {breadcrumb.label}
                                     </button>
@@ -167,26 +198,37 @@ export default function AppHeader({ title }: AppHeaderProps) {
                     <div className="relative" ref={userMenuRef}>
                         <button
                             onClick={() => setShowUserMenu(!showUserMenu)}
-                            className="flex items-center space-x-2 px-3 py-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+                            className="flex items-center space-x-3 px-4 py-2.5 text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-200 hover:shadow-sm"
                         >
-                            <User className="w-5 h-5" />
-                            <span className="hidden sm:inline text-sm">
-                                Welcome, {user?.user_metadata?.full_name?.split(' ')[0] || 'Candidate'}
+                            {user?.user_metadata?.avatar_url ? (
+                                <img
+                                    src={user.user_metadata.avatar_url}
+                                    alt="Profile"
+                                    className="w-8 h-8 rounded-full object-cover"
+                                    referrerPolicy="no-referrer"
+                                />
+                            ) : (
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                                    <User className="w-4 h-4 text-white" />
+                                </div>
+                            )}
+                            <span className="hidden sm:inline text-sm font-medium">
+                                {getMotivationalMessage(user?.user_metadata?.full_name?.split(' ')[0] || 'Candidate')}
                             </span>
-                            <span className="sm:hidden text-sm">
+                            <span className="sm:hidden text-sm font-medium">
                                 {user?.user_metadata?.full_name?.split(' ')[0] || 'User'}
                             </span>
-                            <ChevronDown className="w-4 h-4" />
+                            <ChevronDown className="w-4 h-4 opacity-60" />
                         </button>
 
                         {/* User Dropdown Menu */}
                         {showUserMenu && (
-                            <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-50 py-2">
-                                <div className="px-4 py-3 border-b border-slate-100">
-                                    <p className="text-sm font-medium text-slate-900">
-                                        {user?.user_metadata?.full_name || 'User'}
+                            <div className="absolute right-0 top-full mt-3 w-64 bg-white border border-slate-200 rounded-xl shadow-xl shadow-slate-900/10 z-50 py-3 backdrop-blur-sm">
+                                <div className="px-5 py-3 border-b border-slate-100">
+                                    <p className="text-sm font-semibold text-slate-900">
+                                        {user?.user_metadata?.full_name || 'Candidate'}
                                     </p>
-                                    <p className="text-sm text-slate-500">
+                                    <p className="text-sm text-slate-500 mt-0.5">
                                         {user?.email}
                                     </p>
                                 </div>
@@ -196,10 +238,10 @@ export default function AppHeader({ title }: AppHeaderProps) {
                                         navigate('/profile')
                                         setShowUserMenu(false)
                                     }}
-                                    className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                    className="w-full flex items-center space-x-3 px-5 py-3 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all duration-200 rounded-lg"
                                 >
                                     <Settings className="w-4 h-4" />
-                                    <span>Profile Settings</span>
+                                    <span className="font-medium">Profile Settings</span>
                                 </button>
 
                                 <button
@@ -207,19 +249,19 @@ export default function AppHeader({ title }: AppHeaderProps) {
                                         setShowEmailTooltip(!showEmailTooltip)
                                         setShowUserMenu(false)
                                     }}
-                                    className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                    className="w-full flex items-center space-x-3 px-5 py-3 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all duration-200 rounded-lg"
                                 >
                                     <Mail className="w-4 h-4" />
-                                    <span>Contact Support</span>
+                                    <span className="font-medium">Contact Support</span>
                                 </button>
 
-                                <div className="border-t border-slate-100 mt-2 pt-2">
+                                <div className="border-t border-slate-100 mt-3 pt-3 mx-2">
                                     <button
                                         onClick={() => {
                                             handleLogout()
                                             setShowUserMenu(false)
                                         }}
-                                        className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                        className="w-full flex items-center space-x-3 px-5 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 rounded-lg font-medium"
                                     >
                                         <LogOut className="w-4 h-4" />
                                         <span>Sign Out</span>
@@ -230,23 +272,25 @@ export default function AppHeader({ title }: AppHeaderProps) {
 
                         {/* Email Tooltip (shown from dropdown) */}
                         {showEmailTooltip && (
-                            <div ref={tooltipRef} className="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-lg shadow-lg z-50 p-4">
+                            <div ref={tooltipRef} className="absolute right-0 top-full mt-3 w-80 bg-white border border-slate-200 rounded-xl shadow-xl shadow-slate-900/10 z-50 p-5 backdrop-blur-sm">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-3">
-                                        <Mail className="w-5 h-5 text-slate-600" />
+                                        {/* <div className="w-8 h-8 bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg flex items-center justify-center">
+                                            <Mail className="w-4 h-4 text-slate-600" />
+                                        </div> */}
                                         <div>
-                                            <div className="text-sm font-medium text-slate-900">Contact Email</div>
-                                            <div className="text-sm text-slate-600 font-mono">{emailAddress}</div>
+                                            <div className="text-sm font-semibold text-slate-900">Contact Email</div>
+                                            <div className="text-sm text-slate-600 font-mono bg-slate-50 px-2 py-1 rounded mt-1">{emailAddress}</div>
                                         </div>
                                     </div>
                                     <button
                                         onClick={handleCopyEmail}
-                                        className="flex items-center space-x-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition-colors duration-200"
+                                        className="flex items-center space-x-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-all duration-200 hover:shadow-sm font-medium"
                                     >
                                         {copySuccess ? (
                                             <>
                                                 <Check className="w-4 h-4 text-green-600" />
-                                                <span className="text-sm text-green-600">Copied!</span>
+                                                {/* <span className="text-sm text-green-600">Copied!</span> */}
                                             </>
                                         ) : (
                                             <>

@@ -8,6 +8,10 @@ export interface InterviewSet {
     isAvailable: boolean
     path: string
     examType: 'sbi-po' | 'ibps-po'
+    // Attempt tracking fields
+    attemptCount?: number
+    maxAttempts?: number
+    isAttemptLimitReached?: boolean
 }
 
 // SBI PO Interview Sets
@@ -15,7 +19,7 @@ export const SBI_PO_SETS: InterviewSet[] = [
     {
         id: 1,
         name: "Try for Free",
-        description: "Experience our mock interview with feedback for free",
+        description: "Try out this demo set and see how our intelligent system evaluates your response - completely free!",
         questions: 1,
         isFree: true,
         isAvailable: true,
@@ -25,7 +29,7 @@ export const SBI_PO_SETS: InterviewSet[] = [
     {
         id: 2,
         name: "Basic",
-        description: "Comprehensive interview set with 10 banking-specific questions covering personal, HR, and technical aspects. Get smart feedback on each answer.",
+        description: "Build interview confidence with essential questions. Get instant intelligent feedback on your answers to improve your communication skills and interview technique.",
         questions: 10,
         isFree: false,
         isAvailable: true,
@@ -35,7 +39,7 @@ export const SBI_PO_SETS: InterviewSet[] = [
     {
         id: 3,
         name: "Intermediate",
-        description: "Advanced interview questions focusing on economic awareness, customer handling, and leadership scenarios with smart analysis.",
+        description: "Master complex banking scenarios with advanced questions on customer service, leadership, and market awareness. Receive detailed intelligent analysis to perfect your problem-solving approach.",
         questions: 10,
         isFree: false,
         isAvailable: false,
@@ -45,7 +49,7 @@ export const SBI_PO_SETS: InterviewSet[] = [
     {
         id: 4,
         name: "Advance",
-        description: "Expert-level questions on banking operations, Basel norms, and complex situational scenarios with detailed smart feedback.",
+        description: "Excel at the highest level with expert questions on banking regulations, risk management, and complex case studies. Get comprehensive intelligent evaluation to match real interview standards.",
         questions: 10,
         isFree: false,
         isAvailable: false,
@@ -59,7 +63,7 @@ export const IBPS_PO_SETS: InterviewSet[] = [
     {
         id: 1,
         name: "Try for Free",
-        description: "Experience our mock interview with feedback for free",
+        description: "Try out this set and see how our intelligent system evaluates your response - completely free!",
         questions: 1,
         isFree: true,
         isAvailable: true,
@@ -69,7 +73,7 @@ export const IBPS_PO_SETS: InterviewSet[] = [
     {
         id: 2,
         name: "Basic",
-        description: "Comprehensive interview set with 10 banking-specific questions covering personal, HR, and technical aspects. Get smart feedback on each answer.",
+        description: "Build interview confidence with  essential  questions. Get instant intelligent feedback on your answers to improve your communication skills and interview technique.",
         questions: 10,
         isFree: false,
         isAvailable: true,
@@ -79,7 +83,7 @@ export const IBPS_PO_SETS: InterviewSet[] = [
     {
         id: 3,
         name: "Intermediate",
-        description: "Advanced interview questions focusing on economic awareness, customer handling, and leadership scenarios with smart analysis.",
+        description: "Master complex banking scenarios with advanced questions on customer service, leadership, and market awareness. Receive detailed intelligent analysis to perfect your problem-solving approach.",
         questions: 10,
         isFree: false,
         isAvailable: false,
@@ -89,7 +93,7 @@ export const IBPS_PO_SETS: InterviewSet[] = [
     {
         id: 4,
         name: "Advance",
-        description: "Expert-level questions on banking operations, Basel norms, and complex situational scenarios with detailed smart feedback.",
+        description: "Excel at the highest level with expert questions on banking regulations, risk management, and complex case studies. Get comprehensive intelligent evaluation to match real interview standards.",
         questions: 10,
         isFree: false,
         isAvailable: false,

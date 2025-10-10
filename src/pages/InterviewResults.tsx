@@ -1,21 +1,18 @@
 import React from 'react';
-import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { useParams, useLocation } from 'react-router-dom';
+import { RotateCcw, Search, Clock, AlertTriangle } from 'lucide-react';
 import ResultsView from '../components/StreamingInterview/ResultsView';
 import LoadingScreen from '../components/LoadingScreen';
 import { useInterviewResults } from '../hooks/useInterviewResults';
 
 const InterviewResults: React.FC = () => {
     const location = useLocation();
-    const navigate = useNavigate();
     const { sessionId } = location.state || {};
     const { feedbackId } = useParams<{ feedbackId: string }>();
 
     const { resultsData, isLoading, error } = useInterviewResults({ feedbackId, sessionId });
 
-    const handleStartNewInterview = () => {
-        navigate('/sbi-po');
-    };
+
 
     if (isLoading) {
         return (
@@ -34,8 +31,14 @@ const InterviewResults: React.FC = () => {
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="text-center">
                     <div className="bg-red-50 border border-red-200 rounded-lg p-8">
-                        <div className="text-red-600 text-6xl mb-4">
-                            {isFeedbackNotFound ? '🔍' : isSessionNotFound ? '⏰' : '⚠️'}
+                        <div className="flex justify-center mb-4">
+                            {isFeedbackNotFound ? (
+                                <Search className="w-16 h-16 text-red-600" />
+                            ) : isSessionNotFound ? (
+                                <Clock className="w-16 h-16 text-red-600" />
+                            ) : (
+                                <AlertTriangle className="w-16 h-16 text-red-600" />
+                            )}
                         </div>
                         <h2 className="text-2xl font-bold text-red-800 mb-4">
                             {isFeedbackNotFound ? 'Feedback Not Found' :
@@ -94,7 +97,7 @@ const InterviewResults: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header with navigation */}
             <div className="mb-8">
-                <div className="flex items-center justify-between">
+                {/* <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                         <Link
                             to="/dashboard"
@@ -116,7 +119,7 @@ const InterviewResults: React.FC = () => {
                             Start New Interview
                         </button>
                     </div>
-                </div>
+                </div> */}
 
             </div>
 

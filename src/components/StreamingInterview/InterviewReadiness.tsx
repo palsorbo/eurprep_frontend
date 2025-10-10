@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStreamingInterview } from '../../lib/streaming-interview-context';
 import { useAuth } from '../../lib/auth-context';
 import { supabase } from '../../lib/supabase';
+import { Hand, Rocket } from 'lucide-react';
 
 // Full name validation function
 function validateFullName(name: string): boolean {
@@ -146,16 +147,16 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                     stream.getTracks().forEach(track => track.stop());
 
                     if (maxLevel > 5) {
-                        setMicTestResult('✅ Microphone test successful! Audio levels detected.');
+                        setMicTestResult('Microphone test successful! Audio levels detected.');
                     } else {
-                        setMicTestResult('⚠️ Microphone detected but no audio input. Please speak into your microphone during the interview.');
+                        setMicTestResult('Microphone detected but no audio input. Please speak into your microphone during the interview.');
                     }
                     setIsMicTestRunning(false);
                 }
             }, checkInterval);
 
         } catch (error) {
-            setMicTestResult('❌ Microphone test failed. Please check your microphone settings.');
+            setMicTestResult('Microphone test failed. Please check your microphone settings.');
             setIsMicTestRunning(false);
         }
     };
@@ -175,13 +176,13 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
         // Validate full name
         if (!validateFullName(fullName)) {
             if (!fullName.trim()) {
-                setProfileUpdateMessage('Please enter your full name (first and last name)');
+                setProfileUpdateMessage('Please enter your first and last name');
             } else {
                 const words = fullName.trim().split(/\s+/);
                 if (words.length < 2) {
                     setProfileUpdateMessage('Please enter your full name (first and last name)');
                 } else {
-                    setProfileUpdateMessage('Please enter a valid name (letters, hyphens, and apostrophes only)');
+                    setProfileUpdateMessage('Please use only letters, hyphens, and apostrophes');
                 }
             }
             return;
@@ -200,7 +201,7 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
             if (error) {
                 setProfileUpdateMessage('Failed to update profile. Please try again.');
             } else {
-                setProfileUpdateMessage('✅ Profile updated successfully!');
+                setProfileUpdateMessage('Perfect! Your profile has been updated.');
                 // Clear the message after 3 seconds
                 setTimeout(() => {
                     setProfileUpdateMessage('');
@@ -256,13 +257,13 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                     <div className={`overflow-hidden transition-all duration-300 ${expandedSections.interviewInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
                         }`}>
                         <div className="p-4 bg-blue-25 rounded-lg">
-                            <div className="space-y-2 text-sm text-blue-800">
-                                <p>• <strong>Duration:</strong> Each interview typically takes 15-30 minutes</p>
-                                <p>• <strong>Questions:</strong> You will receive questions one at a time</p>
-                                <p>• <strong>Adaptive:</strong> Questions are adapted based on your previous responses</p>
-                                <p>• <strong>Recording:</strong> Your responses will be recorded for evaluation</p>
-                                <p>• <strong>Format:</strong> Listen to each question and respond verbally</p>
-                            </div>
+                            <ul className="space-y-2 text-sm text-blue-800">
+                                <li> <strong>Duration:</strong> Plan for 15-25 minutes of focused interview time</li>
+                                <li> <strong>Recording:</strong> Click the start recording button when you're ready to answer, then stop recording when you're finished speaking</li>
+                                {/* <li> <strong>Question Flow:</strong> You'll receive one question at a time - take your time to think and respond naturally</li> */}
+                                <li> <strong>Smart Adaptation:</strong> Questions also evolve based on your previous answers, creating a personalized interview experience</li>
+                                <li> <strong>Interview Format:</strong> Listen carefully to each question, then respond verbally - just like a real interview</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -298,14 +299,14 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                                 <div className="space-y-4">
                                     <div className="flex items-start space-x-3">
                                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                            <span className="text-blue-600 text-sm">👋</span>
+                                            <Hand className="w-5 h-5 text-blue-600" />
                                         </div>
                                         <div>
                                             <h3 className="font-medium text-gray-900 mb-1">
                                                 Add your name to personalize your experience
                                             </h3>
                                             <p className="text-sm text-gray-600 mb-4">
-                                                Enter your name to make this interview experience truly yours.
+                                                Help us personalize your interview experience with your name.
                                             </p>
                                         </div>
                                     </div>
@@ -371,8 +372,8 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                                 micPermissionStatus === 'denied' ? 'text-red-600' :
                                     'text-gray-600'
                                 }`}>
-                                {micPermissionStatus === 'granted' && 'Microphone access granted'}
-                                {micPermissionStatus === 'denied' && 'Click "Grant Mic Access" to enable microphone'}
+                                {micPermissionStatus === 'granted' && 'Great! Your microphone is ready'}
+                                {micPermissionStatus === 'denied' && 'Please allow microphone access to continue'}
                                 {micPermissionStatus === 'checking' && 'Requesting microphone access...'}
                                 {micPermissionStatus === 'unknown' && 'Checking microphone permissions...'}
                             </p>
@@ -395,7 +396,7 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                         <div className="flex-1">
                             <h3 className="font-medium text-gray-900">Quiet Environment</h3>
                             <p className="text-sm text-green-600">
-                                Please make sure you are in a quiet environment.
+                                Ready to go! Just ensure you're in a quiet space for the best experience.
                             </p>
                         </div>
                     </div>
@@ -470,7 +471,7 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                             <div>
                                 <h3 className="font-medium text-yellow-800">Connection Issues Detected</h3>
                                 <p className="text-sm text-yellow-700 mt-1">
-                                    We detected potential internet connectivity issues. You can still proceed, but the interview may be affected if your connection is unstable.
+                                    We notice your connection might be unstable. You can continue, but a stable internet connection will ensure the best interview experience.
                                 </p>
                             </div>
                         </div>
@@ -487,7 +488,14 @@ const InterviewReadiness: React.FC<InterviewReadinessProps> = ({
                             : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             }`}
                     >
-                        {isReadyToStart ? '🚀 Start Interview' : 'Grant microphone access to continue'}
+                        {isReadyToStart ? (
+                            <div className="flex items-center justify-center">
+                                <Rocket className="w-5 h-5 mr-2" />
+                                Start Interview
+                            </div>
+                        ) : (
+                            'Allow microphone access to begin your interview'
+                        )}
                     </button>
 
                     {!isReadyToStart && (
