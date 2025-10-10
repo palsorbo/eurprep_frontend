@@ -333,7 +333,7 @@ export function StreamingInterviewProvider({ children, apiUrl, context }: Stream
         currentFlowStateRef.current = state.flowState;
     }, [state.flowState]);
 
-    const MAX_RECORDING_SECONDS = 120; // 2 minutes
+    // const MAX_RECORDING_SECONDS = 120; // 2 minutes
 
     // Timer utility functions
     const formatTime = audioUtils.formatTime;
@@ -347,10 +347,10 @@ export function StreamingInterviewProvider({ children, apiUrl, context }: Stream
             if (startTimeRef.current) {
                 const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
                 dispatch({ type: 'SET_ELAPSED_TIME', payload: elapsed });
-                if (elapsed >= MAX_RECORDING_SECONDS) {
-                    // Auto-stop recording and streaming
-                    stopRecording();
-                }
+                // if (elapsed >= MAX_RECORDING_SECONDS) {
+                //     // Auto-stop recording and streaming
+                //     stopRecording();
+                // }
             }
         }, 1000);
     };
