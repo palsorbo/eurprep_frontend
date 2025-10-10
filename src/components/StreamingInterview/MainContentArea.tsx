@@ -94,7 +94,7 @@ const MainContentArea: React.FC<MainContentAreaProps> = ({
             )}
 
             {/* Subtle Transcript Display - Only visible during LISTENING state */}
-            <div className={`w-full max-w-2xl mb-4 transition-opacity duration-300 ${showTranscript && state.flowState === 'LISTENING' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            {/* <div className={`w-full max-w-2xl mb-4 transition-opacity duration-300 ${showTranscript && state.flowState === 'LISTENING' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 {state.flowState === 'LISTENING' && (
                     <div className="bg-white/80 rounded-xl border border-blue-200/40 shadow-lg">
                         <TranscriptDisplay
@@ -104,7 +104,7 @@ const MainContentArea: React.FC<MainContentAreaProps> = ({
                         />
                     </div>
                 )}
-            </div>
+            </div> */}
 
             {/* Clean Microphone Button Container */}
             {shouldShowMicButton() && (
